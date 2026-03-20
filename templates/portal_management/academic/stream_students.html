@@ -1,0 +1,1488 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Students in {{ stream.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Students in {{ stream.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STREAM STUDENTS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.capacity::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.available::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.capacity { background: var(--success-light); color: var(--success); }
+    .stat-icon.available { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Capacity Bar */
+    .capacity-bar-container {
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+        height: 10px;
+        width: 100%;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+
+    .capacity-bar-fill {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.3s ease;
+    }
+
+    .capacity-bar-fill.low {
+        background: var(--success);
+    }
+
+    .capacity-bar-fill.medium {
+        background: var(--warning);
+    }
+
+    .capacity-bar-fill.high {
+        background: var(--danger);
+    }
+
+    /* Stream Info Card */
+    .stream-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .stream-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Bulk Actions Bar */
+    .bulk-actions-bar {
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-sm);
+        animation: slideDown 0.3s ease-out;
+        background-color: var(--gray-50);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .student-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 1000px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Student Badges */
+    .student-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .student-reg {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-200);
+    }
+
+    .subject-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.2rem 0.4rem;
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+        margin: 0.1rem;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Available Students List */
+    .available-students-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 0.5rem;
+    }
+
+    .student-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .student-item:last-child {
+        border-bottom: none;
+    }
+
+    .student-item:hover {
+        background: var(--gray-50);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .stream-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-people-fill me-2"></i>
+                Students in {{ stream.name }}
+            </h1>
+            <p class="mb-0">{{ stream.class_level.name }} | {{ stream.class_level.educational_level.get_level_type_display }}</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-people me-2"></i>
+                Total Students: {{ student_count }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon total">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ student_count }}</div>
+        <div class="stat-label">Enrolled Students</div>
+    </div>
+    
+    <div class="stat-card capacity">
+        <div class="stat-icon capacity">
+            <i class="bi bi-person-plus"></i>
+        </div>
+        <div class="stat-value">{{ stream.capacity }}</div>
+        <div class="stat-label">Total Capacity</div>
+    </div>
+    
+    <div class="stat-card available">
+        <div class="stat-icon available">
+            <i class="bi bi-door-open"></i>
+        </div>
+        <div class="stat-value">{{ capacity_available }}</div>
+        <div class="stat-label">Available Spots</div>
+    </div>
+</div>
+
+<!-- Capacity Bar -->
+<div class="stream-info-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-semibold">Capacity Usage</span>
+        <span class="text-muted">{{ capacity_used }} / {{ stream.capacity }} students</span>
+    </div>
+    <div class="capacity-bar-container">
+        <div class="capacity-bar-fill 
+            {% if capacity_percentage < 50 %}low
+            {% elif capacity_percentage < 80 %}medium
+            {% else %}high
+            {% endif %}" 
+            style="width: {{ capacity_percentage }}%;"></div>
+    </div>
+</div>
+
+<!-- Stream Info Card -->
+<div class="stream-info-card">
+    <div class="stream-info-grid">
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-grid"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Stream</div>
+                <div class="info-value">{{ stream.name }}</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Class Level</div>
+                <div class="info-value">{{ stream.class_level.name }}</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-calendar"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Academic Year</div>
+                <div class="info-value">{{ current_academic_year.name|default:"Not Set" }}</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-{% if capacity_available > 0 %}check-circle text-success{% else %}exclamation-circle text-danger{% endif %}"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                    {% if capacity_available > 0 %}
+                        <span class="badge bg-success">Available</span>
+                    {% else %}
+                        <span class="badge bg-danger">Full</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Assign Card -->
+{% if capacity_available > 0 %}
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-plus-circle text-primary me-2"></i>
+            Assign Students to {{ stream.name }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="bulkAssignForm" method="POST" action="{% url 'management:stream_bulk_assign' stream.pk %}">
+            {% csrf_token %}
+            <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                    <label for="studentSearch" class="form-label">Search Available Students</label>
+                    <input type="text" class="form-control" id="studentSearch" placeholder="Name or registration number...">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary w-100" id="searchStudentsBtn">
+                        <i class="bi bi-search me-2"></i>
+                        Search
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Available Students List -->
+            <div id="availableStudentsContainer" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">
+                        <span id="availableCount">0</span> available students
+                    </h6>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllAvailable">
+                        <label class="form-check-label" for="selectAllAvailable">
+                            Select All
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="available-students-list" id="availableStudentsList">
+                    <!-- Students will be loaded here -->
+                </div>
+                
+                <div class="mt-3 d-flex justify-content-end gap-2">
+                    <input type="hidden" name="student_ids" id="selectedStudentIds">
+                    <button type="button" class="btn btn-secondary" id="cancelAssignBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="bulkAssignBtn" disabled>
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Assign Selected (Max {{ capacity_available }})
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Students List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-people"></i>
+            Students in This Stream
+            {% if student_count == 0 %}
+            <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2" style="font-size: 0.8rem;">
+                <i class="bi bi-info-circle me-1"></i>
+                No students assigned yet
+            </span>
+            {% endif %}
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:class_streams' stream.class_level.pk %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Streams</span>
+            </a>
+            <button class="btn-export" onclick="exportToExcel()">
+                <i class="bi bi-file-earmark-excel"></i>
+                <span>Export</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bulk Operations Toolbar -->
+    <div class="bulk-actions-bar p-3" id="bulkActionsBar" style="display: none;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold fs-5" id="selectedCount">0</span>
+                <span class="text-muted">students selected</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-danger" id="bulkRemoveBtn" data-bs-toggle="modal" data-bs-target="#bulkRemoveModal">
+                    <i class="bi bi-trash me-2"></i>
+                    Remove Selected
+                </button>
+                <button type="button" class="btn btn-secondary" id="clearSelectionBtn">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="studentsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th width="40">
+                        <input class="form-check-input" type="checkbox" id="selectAllStudents">
+                    </th>
+                    <th>Student</th>
+                    <th>Registration #</th>
+                    <th>Class</th>
+                    <th>Academic Year</th>
+                    {% if class_level.educational_level.level_type == 'O_LEVEL' %}
+                    <th>Optional Subjects</th>
+                    {% elif class_level.educational_level.level_type == 'A_LEVEL' %}
+                    <th>Combination</th>
+                    {% endif %}
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr id="student-row-{{ student.pk }}">
+                    <td>
+                        <input class="form-check-input student-checkbox" 
+                               type="checkbox" 
+                               value="{{ student.pk }}"
+                               data-student-name="{{ student.full_name }}">
+                    </td>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ student.full_name }}</div>
+                                {% if student.middle_name %}
+                                <small class="text-muted">{{ student.middle_name }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                            <i class="bi bi-diagram-3 me-1"></i>
+                            {{ student.current_class }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">
+                            <i class="bi bi-calendar me-1"></i>
+                            {{ student.academic_year }}
+                        </span>
+                    </td>
+                    {% if class_level.educational_level.level_type == 'O_LEVEL' %}
+                    <td>
+                        {% if student.optional_subjects %}
+                            {% for subject in student.optional_subjects %}
+                                <span class="subject-badge">{{ subject.subject.code }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    {% elif class_level.educational_level.level_type == 'A_LEVEL' %}
+                    <td>
+                        {% if student.combination %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2">
+                                <i class="bi bi-journal-code me-1"></i>
+                                {{ student.combination }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'management:student_detail' student.pk %}" 
+                               class="btn-action view" 
+                               title="View Student Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Remove from Stream"
+                                    onclick="showRemoveModal({{ student.pk }}, '{{ student.full_name|escapejs }}')">
+                                <i class="bi bi-person-x"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>                
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Single Remove Confirmation Modal -->
+<div class="modal fade" id="removeStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Removal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="removeStudentForm" method="POST" action="{% url 'management:stream_remove_student' stream.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="removeStudentName"></strong> from {{ stream.name }}?</p>
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This student will need to be reassigned to another stream.
+                    </p>
+                    <input type="hidden" name="student_id" id="removeStudentId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirmRemoveBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Remove Student</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Remove Confirmation Modal -->
+<div class="modal fade" id="bulkRemoveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Bulk Removal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulkRemoveForm" method="POST" action="{% url 'management:stream_bulk_remove' stream.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="bulkRemoveCount">0</strong> selected student(s) from {{ stream.name }}?</p>
+                    <div id="bulkRemoveList" class="mt-3 p-3 bg-light rounded" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Selected students will be listed here -->
+                    </div>
+                    <input type="hidden" name="student_ids" id="bulkRemoveStudentIds">
+                    <p class="text-danger mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirmBulkRemoveBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Remove Selected</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let selectedStudents = new Set();
+let csrfToken = '{{ csrf_token }}';
+const maxCapacity = {{ stream.capacity }};
+const currentCount = {{ student_count }};
+const availableSpots = {{ capacity_available }};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#studentsTable').length && $.fn.DataTable) {
+        const table = $('#studentsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: '{{ stream.name }} - Students List'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: '{{ stream.name }} - Students List',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: '{{ stream.name }} - Students List'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[1, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: [0, -1] }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search students...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ students",
+                infoEmpty: "Showing 0 to 0 of 0 students",
+                infoFiltered: "(filtered from _MAX_ total students)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // BULK OPERATIONS - SELECTION HANDLING
+    // ============================================
+
+    function updateSelectionUI() {
+        const count = selectedStudents.size;
+        $('#selectedCount').text(count);
+        
+        if (count > 0) {
+            $('#bulkActionsBar').slideDown();
+            $('#selectAllStudents').prop('checked', count === $('.student-checkbox').length);
+        } else {
+            $('#bulkActionsBar').slideUp();
+            $('#selectAllStudents').prop('checked', false);
+        }
+        
+        $('#bulkRemoveStudentIds').val(Array.from(selectedStudents).join(','));
+    }
+
+    $(document).on('change', '.student-checkbox', function() {
+        const studentId = $(this).val();
+        
+        if ($(this).is(':checked')) {
+            selectedStudents.add(studentId);
+        } else {
+            selectedStudents.delete(studentId);
+        }
+        
+        updateSelectionUI();
+    });
+
+    $('#selectAllStudents').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        
+        $('.student-checkbox').each(function() {
+            $(this).prop('checked', isChecked).trigger('change');
+        });
+    });
+
+    $('#clearSelectionBtn').on('click', function() {
+        $('.student-checkbox').prop('checked', false).trigger('change');
+        selectedStudents.clear();
+        updateSelectionUI();
+    });
+
+    // ============================================
+    // BULK REMOVE MODAL
+    // ============================================
+
+    $('#bulkRemoveModal').on('show.bs.modal', function() {
+        const count = selectedStudents.size;
+        $('#bulkRemoveCount').text(count);
+        
+        let listHtml = '<ul class="list-unstyled mb-0">';
+        $('.student-checkbox:checked').each(function() {
+            const name = $(this).data('student-name');
+            listHtml += `<li><i class="bi bi-person-x text-danger me-2"></i>${name}</li>`;
+        });
+        listHtml += '</ul>';
+        
+        $('#bulkRemoveList').html(listHtml);
+    });
+
+    // ============================================
+    // SINGLE REMOVE MODAL
+    // ============================================
+
+    window.showRemoveModal = function(studentId, studentName) {
+        $('#removeStudentId').val(studentId);
+        $('#removeStudentName').text(studentName);
+        
+        const modal = new bootstrap.Modal(document.getElementById('removeStudentModal'));
+        modal.show();
+    };
+
+    // ============================================
+    // AVAILABLE STUDENTS SEARCH
+    // ============================================
+
+    $('#searchStudentsBtn').on('click', function() {
+        const search = $('#studentSearch').val();
+        
+        $('#availableStudentsList').html('<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>');
+        $('#availableStudentsContainer').show();
+        
+        $.ajax({
+            url: '{% url "management:get_available_students_for_stream" stream.pk %}',
+            method: 'GET',
+            data: { search: search },
+            success: function(data) {
+                renderAvailableStudents(data.students);
+            },
+            error: function() {
+                $('#availableStudentsList').html('<div class="text-center py-4 text-danger">Error loading students</div>');
+            }
+        });
+    });
+
+    function renderAvailableStudents(students) {
+        $('#availableCount').text(students.length);
+        
+        if (students.length === 0) {
+            $('#availableStudentsList').html('<div class="text-center py-4 text-muted">No available students found</div>');
+            $('#bulkAssignBtn').prop('disabled', true);
+            return;
+        }
+        
+        let html = '';
+        students.forEach(student => {
+            html += `
+                <div class="student-item d-flex align-items-center gap-2">
+                    <input class="form-check-input available-checkbox" 
+                           type="checkbox" 
+                           value="${student.id}"
+                           data-student-name="${student.full_name}">
+                    <div class="flex-grow-1">
+                        <strong>${student.full_name}</strong>
+                        <small class="text-muted d-block">${student.registration_number}</small>
+                    </div>
+                </div>
+            `;
+        });
+        
+        $('#availableStudentsList').html(html);
+        $('#bulkAssignBtn').prop('disabled', true);
+        $('#selectAllAvailable').prop('checked', false);
+    }
+
+    $('#selectAllAvailable').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        $('.available-checkbox').prop('checked', isChecked);
+        updateSelectedStudentIds();
+    });
+
+    $(document).on('change', '.available-checkbox', function() {
+        updateSelectedStudentIds();
+    });
+
+    function updateSelectedStudentIds() {
+        const selected = [];
+        $('.available-checkbox:checked').each(function() {
+            selected.push($(this).val());
+        });
+        
+        $('#selectedStudentIds').val(selected.join(','));
+        $('#bulkAssignBtn').prop('disabled', selected.length === 0 || selected.length > availableSpots);
+        
+        if (selected.length > availableSpots) {
+            $('#bulkAssignBtn').attr('title', `Cannot assign more than ${availableSpots} students`);
+        } else {
+            $('#bulkAssignBtn').removeAttr('title');
+        }
+    }
+
+    $('#cancelAssignBtn').on('click', function() {
+        $('#availableStudentsContainer').hide();
+        $('#studentSearch').val('');
+    });
+
+    // ============================================
+    // BULK ASSIGN FORM SUBMISSION
+    // ============================================
+
+    $('#bulkAssignForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedIds = $('#selectedStudentIds').val();
+        if (!selectedIds) {
+            showNotification('No students selected.', 'error');
+            return;
+        }
+        
+        const selectedCount = selectedIds.split(',').length;
+        if (selectedCount > availableSpots) {
+            showNotification(`Cannot assign ${selectedCount} students. Only ${availableSpots} spot(s) available.`, 'error');
+            return;
+        }
+        
+        const assignBtn = $('#bulkAssignBtn');
+        const originalText = assignBtn.html();
+        assignBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Assigning...');
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showNotification(data.message || 'Error assigning students', 'error');
+                    assignBtn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                assignBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // ============================================
+    // REMOVE FORM SUBMISSIONS
+    // ============================================
+
+    $('#removeStudentForm, #bulkRemoveForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const removeBtn = form.find('button[type="submit"]');
+        const originalText = removeBtn.html();
+        removeBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Removing...');
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    form.closest('.modal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showNotification(data.message || 'Error removing students', 'error');
+                    removeBtn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                removeBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#removeStudentModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirmRemoveBtn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove Student');
+    });
+
+    $('#bulkRemoveModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirmBulkRemoveBtn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove Selected');
+    });
+});
+
+// ============================================
+// EXPORT FUNCTION
+// ============================================
+
+function exportToExcel() {
+    $('#loadingOverlay').addClass('show');
+    
+    const table = $('#studentsTable').DataTable();
+    table.button('.buttons-excel').trigger();
+    
+    setTimeout(function() {
+        $('#loadingOverlay').removeClass('show');
+    }, 1000);
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

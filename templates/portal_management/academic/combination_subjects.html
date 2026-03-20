@@ -1,0 +1,1461 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Subjects in {{ combination.code }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Subjects in {{ combination.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM COMBINATION SUBJECTS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.core::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.subsidiary::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.core { background: var(--success-light); color: var(--success); }
+    .stat-icon.subsidiary { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Combination Info Card */
+    .combination-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .combination-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .combination-code-badge {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action.core:hover {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .btn-action.subsidiary:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 800px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Subject Badges */
+    .subject-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+    }
+
+    .role-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .role-badge.core {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .role-badge.subsidiary {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .compulsory-badge {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    /* Available Subjects Section */
+    .available-subjects-section {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .section-header h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .available-count {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .subject-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .subject-item:last-child {
+        border-bottom: none;
+    }
+
+    .subject-item:hover {
+        background: var(--gray-50);
+    }
+
+    .subject-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .add-subject-form {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .role-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        transition: var(--transition);
+        min-width: 120px;
+    }
+
+    .role-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-add-subject {
+        background: var(--primary);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: var(--transition);
+        border: none;
+    }
+
+    .btn-add-subject:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-add-subject:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .combination-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .subject-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .add-subject-form {
+            width: 100%;
+        }
+
+        .role-select {
+            flex: 1;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            border-radius: var(--radius-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-book-fill me-2"></i>
+                Subjects in {{ combination.code }}
+            </h1>
+            <p class="mb-0">{{ combination.name }}</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Total Subjects: {{ total_subjects }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon total">
+            <i class="bi bi-book"></i>
+        </div>
+        <div class="stat-value">{{ total_subjects }}</div>
+        <div class="stat-label">Total Subjects</div>
+    </div>
+    
+    <div class="stat-card core">
+        <div class="stat-icon core">
+            <i class="bi bi-star-fill"></i>
+        </div>
+        <div class="stat-value">{{ core_count }}</div>
+        <div class="stat-label">Core Subjects</div>
+    </div>
+    
+    <div class="stat-card subsidiary">
+        <div class="stat-icon subsidiary">
+            <i class="bi bi-star"></i>
+        </div>
+        <div class="stat-value">{{ subsidiary_count }}</div>
+        <div class="stat-label">Subsidiary</div>
+    </div>
+</div>
+
+<!-- Combination Info Card -->
+<div class="combination-info-card">
+    <div class="combination-info-grid">
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-journal-code"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Combination Code</div>
+                <div class="info-value">
+                    <span class="combination-code-badge">{{ combination.code }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-card-text"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Combination Name</div>
+                <div class="info-value">{{ combination.name }}</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Educational Level</div>
+                <div class="info-value">
+                    <span class="level-badge a-level">
+                        <i class="bi bi-tag"></i>
+                        {{ combination.educational_level.name }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        {% if combination.description %}
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Description</div>
+                <div class="info-value"><small>{{ combination.description }}</small></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Available Subjects Section -->
+{% if available_subjects %}
+<div class="available-subjects-section">
+    <div class="section-header">
+        <h6>
+            <i class="bi bi-plus-circle text-primary"></i>
+            Available Subjects to Add
+            <span class="available-count">{{ available_count }} available</span>
+        </h6>
+    </div>
+    
+    <div class="available-subjects-list">
+        {% for subject in available_subjects %}
+        <div class="subject-item" id="available-subject-{{ subject.pk }}">
+            <div class="subject-info">
+                <span class="subject-code">{{ subject.code }}</span>
+                <span class="fw-semibold">{{ subject.name }}</span>
+                {% if subject.is_compulsory %}
+                <span class="compulsory-badge">
+                    <i class="bi bi-check-circle"></i>
+                    Compulsory
+                </span>
+                {% endif %}
+                {% if subject.short_name and subject.short_name != subject.name %}
+                <small class="text-muted">{{ subject.short_name }}</small>
+                {% endif %}
+            </div>
+            
+            <form class="add-subject-form" data-subject-id="{{ subject.pk }}">
+                {% csrf_token %}
+                <input type="hidden" name="combination_id" value="{{ combination.pk }}">
+                <input type="hidden" name="subject_id" value="{{ subject.pk }}">
+                <select name="role" class="role-select" required>
+                    <option value="CORE">Core Subject</option>
+                    <option value="SUBSIDIARY" {% if subject.is_compulsory %}disabled{% endif %}>
+                        Subsidiary {% if subject.is_compulsory %}(Compulsory cannot be subsidiary){% endif %}
+                    </option>
+                </select>
+                <button type="submit" class="btn-add-subject">
+                    <i class="bi bi-plus-lg"></i>
+                    Add
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Subjects List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            Subjects in This Combination
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:combination_list' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Combinations</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="subjectsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Subject</th>
+                    <th>Role</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for combo_subject in combination_subjects %}
+                <tr id="combo-subject-row-{{ combo_subject.pk }}">
+                    <td>
+                        <span class="subject-code">{{ combo_subject.subject.code }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="fw-semibold">{{ combo_subject.subject.name }}</span>
+                            {% if combo_subject.subject.short_name and combo_subject.subject.short_name != combo_subject.subject.name %}
+                            <small class="text-muted">{{ combo_subject.subject.short_name }}</small>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge {% if combo_subject.role == 'CORE' %}core{% else %}subsidiary{% endif %}">
+                            <i class="bi bi-{% if combo_subject.role == 'CORE' %}star-fill{% else %}star{% endif %}"></i>
+                            {{ combo_subject.get_role_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if combo_subject.subject.is_compulsory %}
+                        <span class="compulsory-badge">
+                            <i class="bi bi-check-circle"></i>
+                            Compulsory
+                        </span>
+                        {% else %}
+                        <span class="compulsory-badge">
+                            <i class="bi bi-circle"></i>
+                            Optional
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Change Role Button -->
+                            <button type="button"
+                                    class="btn-action {% if combo_subject.role == 'CORE' %}subsidiary{% else %}core{% endif %}"
+                                    title="Change to {% if combo_subject.role == 'CORE' %}Subsidiary{% else %}Core{% endif %}"
+                                    onclick="changeRole({{ combo_subject.pk }}, '{{ combo_subject.role }}')"
+                                    {% if combo_subject.subject.is_compulsory and combo_subject.role == 'CORE' %}disabled{% endif %}>
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            
+                            <!-- Remove Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Remove from Combination"
+                                    onclick="showRemoveModal({{ combo_subject.pk }}, '{{ combo_subject.subject.code|escapejs }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>                
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Change Role Confirmation Modal -->
+<div class="modal fade" id="changeRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Change Subject Role
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="change-role-form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Change role for <strong id="change-role-subject"></strong>?</p>
+                    <div class="mb-3">
+                        <label for="new-role" class="form-label">New Role</label>
+                        <select class="form-select" id="new-role" name="role" required>
+                            <option value="CORE">Core Subject</option>
+                            <option value="SUBSIDIARY">Subsidiary Subject</option>
+                        </select>
+                    </div>
+                    <input type="hidden" name="id" id="change-role-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="confirm-change-role-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Change Role</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Subject Confirmation Modal -->
+<div class="modal fade" id="removeSubjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Removal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="remove-subject-form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="remove-subject-code"></strong> from {{ combination.code }}?</p>
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This subject will no longer be part of this combination.
+                    </p>
+                    <input type="hidden" name="id" id="remove-subject-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-remove-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Remove Subject</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#subjectsTable').length && $.fn.DataTable) {
+        const table = $('#subjectsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: '{{ combination.code }} - Subjects'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: '{{ combination.code }} - Subjects',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: '{{ combination.code }} - Subjects'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[0, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search subjects...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ subjects",
+                infoEmpty: "Showing 0 to 0 of 0 subjects",
+                infoFiltered: "(filtered from _MAX_ total subjects)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // ERROR HANDLING HELPER FUNCTIONS
+    // ============================================
+    
+    function showNotification(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon ${type}">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${message}</div>
+            </div>
+            <button class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        const container = document.getElementById('toast-container');
+        if (container) {
+            container.appendChild(toast);
+        } else {
+            document.body.appendChild(toast);
+        }
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    // ============================================
+    // ADD SUBJECT TO COMBINATION
+    // ============================================
+
+    $('.add-subject-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const subjectId = form.data('subject-id');
+        const combinationId = form.find('input[name="combination_id"]').val();
+        const role = form.find('select[name="role"]').val();
+        const addBtn = form.find('.btn-add-subject');
+        
+        // Disable button and show loading
+        const originalText = addBtn.html();
+        addBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        
+        $.ajax({
+            url: '{% url "management:combination_subject_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                action: 'add_subject',
+                combination_id: combinationId,
+                subject_id: subjectId,
+                role: role,
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Remove the subject from available list and reload the page
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error adding subject', 'error');
+                    addBtn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                addBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // ============================================
+    // CHANGE ROLE FUNCTIONS
+    // ============================================
+
+    window.changeRole = function(comboSubjectId, currentRole) {
+        const row = $(`#combo-subject-row-${comboSubjectId}`);
+        const subjectCode = row.find('.subject-code').text();
+        
+        $('#change-role-id').val(comboSubjectId);
+        $('#change-role-subject').text(subjectCode);
+        
+        // Set current role in dropdown
+        const newRoleSelect = $('#new-role');
+        if (currentRole === 'CORE') {
+            newRoleSelect.val('SUBSIDIARY');
+        } else {
+            newRoleSelect.val('CORE');
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('changeRoleModal'));
+        modal.show();
+    };
+
+    $('#change-role-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const changeBtn = $('#confirm-change-role-btn');
+        const spinner = changeBtn.find('.spinner-border');
+        const btnText = changeBtn.find('.btn-text');
+        
+        changeBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Changing...');
+        
+        $.ajax({
+            url: '{% url "management:combination_subject_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                action: 'update_role',
+                id: $('#change-role-id').val(),
+                role: $('#new-role').val(),
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function(data) {
+                if (data.success) {
+                    $('#changeRoleModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error changing role', 'error');
+                    changeBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Change Role');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                changeBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Change Role');
+            }
+        });
+    });
+
+    // ============================================
+    // REMOVE SUBJECT FUNCTIONS
+    // ============================================
+
+    window.showRemoveModal = function(comboSubjectId, subjectCode) {
+        $('#remove-subject-id').val(comboSubjectId);
+        $('#remove-subject-code').text(subjectCode);
+        
+        const modal = new bootstrap.Modal(document.getElementById('removeSubjectModal'));
+        modal.show();
+    };
+
+    $('#remove-subject-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const removeBtn = $('#confirm-remove-btn');
+        const spinner = removeBtn.find('.spinner-border');
+        const btnText = removeBtn.find('.btn-text');
+        
+        removeBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Removing...');
+        
+        $.ajax({
+            url: '{% url "management:combination_subject_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                action: 'remove_subject',
+                id: $('#remove-subject-id').val(),
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function(data) {
+                if (data.success) {
+                    $('#removeSubjectModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error removing subject', 'error');
+                    removeBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Remove Subject');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                removeBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Remove Subject');
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#changeRoleModal').on('hidden.bs.modal', function() {
+        const changeBtn = $('#confirm-change-role-btn');
+        changeBtn.prop('disabled', false);
+        changeBtn.find('.spinner-border').addClass('d-none');
+        changeBtn.find('.btn-text').text('Change Role');
+    });
+
+    $('#removeSubjectModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirm-remove-btn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove Subject');
+    });
+
+    // ============================================
+    // LOADING OVERLAY
+    // ============================================
+
+    // Show loading overlay on form submissions (except AJAX forms)
+    document.querySelectorAll('form:not(.add-subject-form):not(#change-role-form):not(#remove-subject-form)').forEach(form => {
+        form.addEventListener('submit', function() {
+            if (!this.classList.contains('no-loading')) {
+                document.getElementById('loadingOverlay').classList.add('show');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

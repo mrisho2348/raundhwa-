@@ -1,0 +1,1800 @@
+<!-- templates/portal_management/students/manage_parents.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Manage Parents — {{ student.full_name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Manage Parents for {{ student.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM PARENT MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .student-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .student-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .student-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-2xl);
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border: 4px solid rgba(255,255,255,0.5);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .student-avatar:hover {
+        transform: scale(1.05);
+        border-color: white;
+    }
+
+    .student-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        text-decoration: none;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .action-btn.primary {
+        background: var(--primary);
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .action-btn.primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .action-btn.outline {
+        background: white;
+        border: 1.5px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .action-btn.outline:hover {
+        background: var(--gray-50);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    /* Parents Grid */
+    .parents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .parent-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .parent-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary);
+    }
+
+    .parent-card.primary {
+        border-left: 4px solid var(--primary);
+    }
+
+    .parent-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge-primary {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .badge-success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .parent-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: var(--radius-2xl);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-right: 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .parent-info h5 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .relationship-tag {
+        background: var(--gray-100);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        color: var(--gray-600);
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .contact-info {
+        margin-top: 0.75rem;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .contact-item i {
+        width: 16px;
+        color: var(--primary);
+    }
+
+    .parent-actions {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--gray-200);
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .parent-action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        transition: var(--transition);
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-edit {
+        background: var(--gray-100);
+        color: var(--gray-700);
+    }
+
+    .btn-edit:hover {
+        background: var(--gray-200);
+        color: var(--gray-900);
+    }
+
+    .btn-primary-contact {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .btn-primary-contact:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-fee {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .btn-fee:hover {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-remove {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-remove:hover {
+        background: var(--danger);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Recent Parents Section */
+    .recent-parents {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+    }
+
+    .recent-parent-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .recent-parent-item:hover {
+        background: var(--gray-50);
+        transform: translateX(5px);
+    }
+
+    .recent-parent-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%) !important;
+    }
+
+    .modal-header.bg-success {
+        background: linear-gradient(135deg, #0f7b3a 0%, #20c997 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 42px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Checkbox Styles */
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    /* Character Counter */
+    .character-counter {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .student-header {
+            padding: 1.5rem;
+        }
+
+        .student-avatar {
+            width: 70px;
+            height: 70px;
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .parents-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            width: 100%;
+        }
+
+        .parent-actions {
+            flex-direction: column;
+        }
+
+        .parent-action-btn {
+            width: 100%;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Student Header -->
+    <div class="student-header">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="student-avatar">
+                {% if student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+            </div>
+            <div class="flex-grow-1">
+                <h1 class="h2 mb-2">{{ student.full_name }}</h1>
+                <div class="d-flex flex-wrap gap-3">
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                        <i class="bi bi-qr-code me-2"></i>
+                        {{ student.registration_number }}
+                    </span>
+                    {% if student.gender %}
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                        <i class="bi bi-gender-{{ student.gender }} me-2"></i>
+                        {{ student.get_gender_display }}
+                    </span>
+                    {% endif %}
+                    {% if student.date_of_birth %}
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                        <i class="bi bi-calendar me-2"></i>
+                        Age: {{ student.age }} years
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-success px-4 py-2 rounded-pill fs-6">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    {{ student.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-value">{{ relationships.count }}</div>
+            <div class="stat-label">Total Parents</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-star"></i>
+            </div>
+            <div class="stat-value">
+                {% for rel in relationships %}{% if rel.is_primary_contact %}1{% endif %}{% endfor %}
+            </div>
+            <div class="stat-label">Primary Contact</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="stat-value">{{ fee_responsible_count }}</div>
+            <div class="stat-label">Fee Responsible</div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <button type="button" class="action-btn primary" data-bs-toggle="modal" data-bs-target="#addParentModal">
+            <i class="bi bi-person-plus"></i>
+            Add New Parent
+        </button>
+        
+        <a href="{% url 'management:student_detail' student.pk %}" class="action-btn outline">
+            <i class="bi bi-arrow-left"></i>
+            Back to Student
+        </a>
+    </div>
+
+    <!-- Parents Grid -->
+    {% if relationships %}
+        <div class="parents-grid">
+            {% for relationship in relationships %}
+                <div class="parent-card {% if relationship.is_primary_contact %}primary{% endif %}" id="parent-card-{{ relationship.pk }}" data-relationship-id="{{ relationship.pk }}">
+                    {% if relationship.is_primary_contact %}
+                        <span class="parent-badge badge-primary">
+                            <i class="bi bi-star-fill me-1"></i>Primary Contact
+                        </span>
+                    {% endif %}
+                    
+                    <div class="d-flex">
+                        <div class="parent-avatar">
+                            {{ relationship.parent.full_name|make_list|first|upper }}{{ relationship.parent.full_name|slice:"1:2"|upper }}
+                        </div>
+                        <div class="parent-info flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5>{{ relationship.parent.full_name }}</h5>
+                                <span class="relationship-tag">{{ relationship.parent.get_relationship_display }}</span>
+                            </div>
+                            
+                            <div class="contact-info">
+                                <div class="contact-item">
+                                    <i class="bi bi-telephone"></i>
+                                    {{ relationship.parent.phone_number }}
+                                </div>
+                                {% if relationship.parent.email %}
+                                <div class="contact-item">
+                                    <i class="bi bi-envelope"></i>
+                                    {{ relationship.parent.email }}
+                                </div>
+                                {% endif %}
+                                {% if relationship.parent.address %}
+                                <div class="contact-item">
+                                    <i class="bi bi-geo-alt"></i>
+                                    {{ relationship.parent.address|truncatechars:30 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="badge {% if relationship.is_fee_responsible %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 text-dark me-2">
+                                    <i class="bi bi-cash me-1"></i>
+                                    {% if relationship.is_fee_responsible %}Fee Responsible{% else %}Not Fee Responsible{% endif %}
+                                </span>
+                                {% if relationship.fee_responsible_from %}
+                                <small class="text-muted">
+                                    since {{ relationship.fee_responsible_from|date:"M Y" }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="parent-actions">
+                        <button type="button" class="parent-action-btn btn-edit" onclick="editParent({{ relationship.parent.pk }})">
+                            <i class="bi bi-pencil"></i>
+                            Edit
+                        </button>
+                        
+                        {% if not relationship.is_primary_contact %}
+                        <button type="button" class="parent-action-btn btn-primary-contact" onclick="showSetPrimaryModal({{ relationship.pk }}, '{{ relationship.parent.full_name|escapejs }}')">
+                            <i class="bi bi-star"></i>
+                            Set Primary
+                        </button>
+                        {% endif %}
+                        
+                        <button type="button" class="parent-action-btn btn-fee" onclick="showFeeModal({{ relationship.pk }}, '{{ relationship.parent.full_name|escapejs }}', {{ relationship.is_fee_responsible|lower }})">
+                            <i class="bi bi-cash"></i>
+                            {% if relationship.is_fee_responsible %}Remove Fee{% else %}Set Fee{% endif %}
+                        </button>
+                        
+                        <button type="button" class="parent-action-btn btn-remove" onclick="showRemoveModal({{ relationship.pk }}, '{{ relationship.parent.full_name|escapejs }}')">
+                            <i class="bi bi-trash"></i>
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3 class="h4 mb-3">No Parents Added Yet</h3>
+            <p class="text-muted mb-4">Start by adding a parent for this student.</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addParentModal">
+                <i class="bi bi-person-plus me-2"></i>
+                Add First Parent
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Recent Parents (Quick Link) -->
+    {% if recent_parents %}
+    <div class="recent-parents">
+        <h5 class="mb-3">
+            <i class="bi bi-clock-history me-2"></i>
+            Recently Added Parents
+        </h5>
+        <div class="row">
+            {% for parent in recent_parents %}
+            <div class="col-md-6 col-lg-4">
+                <div class="recent-parent-item" onclick="quickLinkParent({{ parent.pk }})">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="parent-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                            {{ parent.full_name|make_list|first|upper }}
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ parent.full_name }}</h6>
+                            <small class="text-muted">{{ parent.phone_number }}</small>
+                        </div>
+                    </div>
+                    <i class="bi bi-plus-circle text-primary"></i>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Parent Modal -->
+<div class="modal fade" id="addParentModal" tabindex="-1" aria-labelledby="addParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addParentModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Add New Parent for {{ student.full_name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'management:student_add_parent' student.pk %}" id="addParentForm" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-12">
+                            <label class="form-label required-field">
+                                <i class="bi bi-person me-1"></i>
+                                Full Name
+                            </label>
+                            <input type="text" 
+                                   name="full_name" 
+                                   id="modal_full_name"
+                                   class="form-control"
+                                   placeholder="Enter parent's full name"
+                                   required
+                                   maxlength="255">
+                            <div class="invalid-feedback" id="fullNameError"></div>
+                            <div class="character-counter">
+                                <span id="fullNameCount">0</span>/255
+                            </div>
+                        </div>
+                        
+                        <!-- Relationship -->
+                        <div class="col-md-6">
+                            <label class="form-label required-field">
+                                <i class="bi bi-tag me-1"></i>
+                                Relationship
+                            </label>
+                            <select name="relationship" 
+                                    id="modal_relationship"
+                                    class="form-select select2-relationship"
+                                    required>
+                                <option value="">Select relationship</option>
+                                {% for value, label in relationship_choices %}
+                                    <option value="{{ value }}">
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback" id="relationshipError"></div>
+                        </div>
+                        
+                        <!-- Phone Number -->
+                        <div class="col-md-6">
+                            <label class="form-label required-field">
+                                <i class="bi bi-telephone me-1"></i>
+                                Phone Number
+                            </label>
+                            <input type="tel" 
+                                   name="phone_number" 
+                                   id="modal_phone"
+                                   class="form-control"
+                                   placeholder="0712 345 678"
+                                   required>
+                            <div class="invalid-feedback" id="phoneError"></div>
+                            <small class="text-muted">Tanzanian phone number format</small>
+                        </div>
+                        
+                        <!-- Alternate Phone -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="bi bi-telephone me-1"></i>
+                                Alternate Phone
+                            </label>
+                            <input type="tel" 
+                                   name="alternate_phone" 
+                                   id="modal_alt_phone"
+                                   class="form-control"
+                                   placeholder="Optional alternate number">
+                            <div class="invalid-feedback" id="altPhoneError"></div>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="bi bi-envelope me-1"></i>
+                                Email Address
+                            </label>
+                            <input type="email" 
+                                   name="email" 
+                                   id="modal_email"
+                                   class="form-control"
+                                   placeholder="parent@example.com">
+                            <div class="invalid-feedback" id="emailError"></div>
+                        </div>
+                        
+                        <!-- Address -->
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="bi bi-house me-1"></i>
+                                Address
+                            </label>
+                            <textarea name="address" 
+                                      id="modal_address"
+                                      class="form-control"
+                                      rows="2"
+                                      placeholder="Physical address"></textarea>
+                            <div class="character-counter">
+                                <span id="addressCount">0</span>/500
+                            </div>
+                        </div>
+                        
+                        <!-- Relationship Settings Divider -->
+                        <div class="col-12">
+                            <hr class="my-3">
+                            <h6 class="mb-3">
+                                <i class="bi bi-gear me-2"></i>
+                                Relationship Settings
+                            </h6>
+                        </div>
+                        
+                        <!-- Primary Contact Checkbox -->
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" 
+                                       name="is_primary_contact" 
+                                       id="modal_is_primary"
+                                       class="form-check-input">
+                                <label class="form-check-label fw-semibold" for="modal_is_primary">
+                                    Primary Contact
+                                </label>
+                                <small class="d-block text-muted">Main point of contact for school communications</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Fee Responsible Checkbox -->
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" 
+                                       name="is_fee_responsible" 
+                                       id="modal_is_fee"
+                                       class="form-check-input">
+                                <label class="form-check-label fw-semibold" for="modal_is_fee">
+                                    Fee Responsible
+                                </label>
+                                <small class="d-block text-muted">Primary payer of school fees</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Fee Responsible From Date -->
+                        <div class="col-12" id="modal_fee_date_div" style="display: none;">
+                            <label class="form-label">
+                                <i class="bi bi-calendar me-1"></i>
+                                Fee Responsible From
+                            </label>
+                            <input type="date" 
+                                   name="fee_responsible_from" 
+                                   id="modal_fee_date"
+                                   class="form-control">
+                            <small class="text-muted">Date from which this parent became fee responsible</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitParentBtn">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Add Parent
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Set Primary Contact Modal -->
+<div class="modal fade" id="setPrimaryModal" tabindex="-1" aria-labelledby="setPrimaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="setPrimaryModalLabel">
+                    <i class="bi bi-star-fill me-2"></i>
+                    Set Primary Contact
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="setPrimaryMessage">Set this parent as the primary contact?</p>
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    This will remove primary status from other parents.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSetPrimaryBtn">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fee Responsibility Modal -->
+<div class="modal fade" id="feeModal" tabindex="-1" aria-labelledby="feeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="feeModalLabel">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    Fee Responsibility
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="feeMessage"></p>
+                <div class="mb-3" id="feeDateField" style="display: none;">
+                    <label class="form-label">Fee Responsible From</label>
+                    <input type="date" class="form-control" id="feeFromDate" value="{% now 'Y-m-d' %}">
+                    <small class="text-muted">Date from which this parent becomes fee responsible</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmFeeBtn">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Parent Modal -->
+<div class="modal fade" id="removeParentModal" tabindex="-1" aria-labelledby="removeParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="removeParentModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Remove Parent
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="removeMessage"></p>
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">
+                    <i class="bi bi-trash me-1"></i>
+                    Remove
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Parent Modal -->
+<div class="modal fade" id="editParentModal" tabindex="-1" aria-labelledby="editParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="editParentModalLabel">
+                    <i class="bi bi-pencil me-2"></i>
+                    Edit Parent Information
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editParentContent">
+                <!-- Content loaded via AJAX -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading parent details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let currentRelationshipId = null;
+let currentParentName = '';
+
+$(document).ready(function() {
+    'use strict';
+
+    // ============================================
+    // INITIALIZE SELECT2
+    // ============================================
+    
+    // Initialize relationship Select2 in add modal
+    $('.select2-relationship').select2({
+        width: '100%',
+        placeholder: 'Select relationship...',
+        allowClear: true,
+        dropdownParent: $('#addParentModal')
+    });
+
+    // ============================================
+    // CHARACTER COUNTERS
+    // ============================================
+    
+    function setupCounter(inputId, counterId, maxLength) {
+        const input = $('#' + inputId);
+        const counter = $('#' + counterId);
+        
+        if (input.length && counter.length) {
+            counter.text(input.val().length);
+            
+            input.on('input', function() {
+                counter.text($(this).val().length);
+                if ($(this).val().length > maxLength * 0.9) {
+                    counter.css('color', '#dc3545');
+                } else {
+                    counter.css('color', '#6c757d');
+                }
+            });
+        }
+    }
+    
+    setupCounter('modal_full_name', 'fullNameCount', 255);
+    setupCounter('modal_address', 'addressCount', 500);
+    
+    // ============================================
+    // PHONE VALIDATION
+    // ============================================
+    
+    function validateTZPhone(input) {
+        const phone = input.val().replace(/\D/g, '');
+        const isValid = /^(0|255)?[67]\d{8}$/.test(phone) || phone.length === 0;
+        
+        if (!isValid && phone) {
+            input.addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            if (phone) {
+                input.addClass('is-valid');
+            }
+            return true;
+        }
+    }
+    
+    const phoneInput = $('#modal_phone');
+    const altPhoneInput = $('#modal_alt_phone');
+    
+    phoneInput.on('input', function() {
+        validateTZPhone($(this));
+    });
+    
+    altPhoneInput.on('input', function() {
+        validateTZPhone($(this));
+    });
+    
+    // ============================================
+    // EMAIL VALIDATION
+    // ============================================
+    
+    const emailInput = $('#modal_email');
+    emailInput.on('input', function() {
+        const email = $(this).val();
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length === 0;
+        
+        if (!isValid && email) {
+            $(this).addClass('is-invalid');
+            $('#emailError').text('Enter a valid email address');
+        } else {
+            $(this).removeClass('is-invalid');
+            if (email) {
+                $(this).addClass('is-valid');
+            }
+        }
+    });
+    
+    // ============================================
+    // FEE RESPONSIBLE DATE TOGGLE
+    // ============================================
+    
+    const isFeeCheckbox = $('#modal_is_fee');
+    const feeDateDiv = $('#modal_fee_date_div');
+    
+    function toggleFeeDate() {
+        if (isFeeCheckbox.is(':checked')) {
+            feeDateDiv.slideDown();
+        } else {
+            feeDateDiv.slideUp();
+        }
+    }
+    
+    toggleFeeDate();
+    isFeeCheckbox.on('change', toggleFeeDate);
+});
+
+// ============================================
+// AJAX FORM SUBMISSION FOR ADD PARENT
+// ============================================
+
+document.getElementById('addParentForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Clear previous errors
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    
+    const formData = new FormData(this);
+    const submitBtn = document.getElementById('submitParentBtn');
+    
+    // Validate required fields
+    let isValid = true;
+    const fullName = document.getElementById('modal_full_name');
+    const relationship = document.getElementById('modal_relationship');
+    const phone = document.getElementById('modal_phone');
+    
+    if (!fullName.value.trim()) {
+        fullName.classList.add('is-invalid');
+        document.getElementById('fullNameError').textContent = 'Full name is required';
+        isValid = false;
+    }
+    
+    if (!relationship.value) {
+        $(relationship).next('.select2-container').addClass('is-invalid');
+        document.getElementById('relationshipError').textContent = 'Please select a relationship';
+        isValid = false;
+    }
+    
+    if (!phone.value.trim()) {
+        phone.classList.add('is-invalid');
+        document.getElementById('phoneError').textContent = 'Phone number is required';
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addParentModal'));
+            modal.hide();
+            showNotification(data.message, 'success');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(field => {
+                    const fieldMap = {
+                        'full_name': 'modal_full_name',
+                        'relationship': 'modal_relationship',
+                        'phone_number': 'modal_phone',
+                        'alternate_phone': 'modal_alt_phone',
+                        'email': 'modal_email',
+                        'address': 'modal_address'
+                    };
+                    
+                    const inputId = fieldMap[field];
+                    if (inputId) {
+                        const input = document.getElementById(inputId);
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            const errorDiv = document.getElementById(`${field}Error`);
+                            if (errorDiv) {
+                                errorDiv.textContent = Array.isArray(data.errors[field]) 
+                                    ? data.errors[field].join(', ') 
+                                    : data.errors[field];
+                            }
+                        } else if (field === 'relationship') {
+                            const select2Container = $('#modal_relationship').next('.select2-container');
+                            select2Container.addClass('is-invalid');
+                            document.getElementById('relationshipError').textContent = data.errors[field];
+                        }
+                    }
+                });
+                
+                const errorMessages = [];
+                Object.values(data.errors).forEach(errors => {
+                    if (Array.isArray(errors)) {
+                        errorMessages.push(...errors);
+                    } else if (typeof errors === 'string') {
+                        errorMessages.push(errors);
+                    }
+                });
+                
+                if (errorMessages.length > 0) {
+                    showNotification(errorMessages.join(' • '), 'danger');
+                }
+            } else if (data.error) {
+                showNotification(data.error, 'danger');
+            } else {
+                showNotification('An unknown error occurred', 'danger');
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Add Parent';
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        showNotification('Network error. Please try again.', 'danger');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Add Parent';
+    });
+});
+
+// ============================================
+// QUICK LINK PARENT
+// ============================================
+
+function quickLinkParent(parentId) {
+    fetch(`/management/api/parents/${parentId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('modal_full_name').value = data.full_name;
+            document.getElementById('modal_phone').value = data.phone_number;
+            document.getElementById('modal_email').value = data.email || '';
+            document.getElementById('modal_address').value = data.address || '';
+            
+            const relationshipSelect = $('#modal_relationship');
+            relationshipSelect.val(data.relationship).trigger('change');
+            
+            const modal = new bootstrap.Modal(document.getElementById('addParentModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Quick link error:', error);
+            showNotification('Error loading parent details', 'danger');
+        });
+}
+
+// ============================================
+// EDIT PARENT FUNCTION
+// ============================================
+
+function editParent(parentId) {
+    const modalBody = document.getElementById('editParentContent');
+    
+    modalBody.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading parent details...</p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editParentModal'));
+    modal.show();
+    
+    fetch(`/management/api/parents/${parentId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            const editUrl = `/management/parents/${data.id}/update/`;
+            
+            modalBody.innerHTML = `
+                <form id="editParentForm" method="post" action="${editUrl}">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="full_name"
+                               value="${escapeHtml(data.full_name)}" required>
+                        <div class="invalid-feedback" id="editFull_nameError"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Relationship <span class="text-danger">*</span></label>
+                        <select class="form-select select2-relationship-edit" name="relationship" required>
+                            <option value="">Select relationship</option>
+                            {% for value, label in relationship_choices %}
+                            <option value="{{ value }}" ${data.relationship === '{{ value }}' ? 'selected' : ''}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback" id="editRelationshipError"></div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" name="phone_number"
+                                   value="${escapeHtml(data.phone_number)}" required>
+                            <div class="invalid-feedback" id="editPhone_numberError"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Alternate Phone</label>
+                            <input type="tel" class="form-control" name="alternate_phone"
+                                   value="${escapeHtml(data.alternate_phone || '')}">
+                            <div class="invalid-feedback" id="editAlternate_phoneError"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="email" class="form-control" name="email"
+                               value="${escapeHtml(data.email || '')}">
+                        <div class="invalid-feedback" id="editEmailError"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Address</label>
+                        <textarea class="form-control" name="address" rows="2">${escapeHtml(data.address || '')}</textarea>
+                        <div class="invalid-feedback" id="editAddressError"></div>
+                    </div>
+                    
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-info text-white" id="updateParentBtn">
+                            <i class="bi bi-check-lg me-1"></i>Update Parent
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            // Initialize Select2 for edit form
+            $('.select2-relationship-edit').select2({
+                width: '100%',
+                placeholder: 'Select relationship...',
+                allowClear: true,
+                dropdownParent: $('#editParentModal')
+            });
+            
+            // Handle edit form submission
+            document.getElementById('editParentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const updateBtn = document.getElementById('updateParentBtn');
+                updateBtn.disabled = true;
+                updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+                
+                this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                this.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('editParentModal')).hide();
+                        showNotification(result.message || 'Parent updated successfully.', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        if (result.errors) {
+                            Object.entries(result.errors).forEach(([field, errors]) => {
+                                const input = this.querySelector(`[name="${field}"]`);
+                                if (input) {
+                                    input.classList.add('is-invalid');
+                                    const errId = 'edit' + field.charAt(0).toUpperCase() + field.slice(1) + 'Error';
+                                    const errDiv = document.getElementById(errId);
+                                    if (errDiv) {
+                                        errDiv.textContent = Array.isArray(errors) ? errors.join(', ') : errors;
+                                    }
+                                } else if (field === 'relationship') {
+                                    const select2Container = $(this).find('[name="relationship"]').next('.select2-container');
+                                    select2Container.addClass('is-invalid');
+                                    document.getElementById('editRelationshipError').textContent = errors;
+                                }
+                            });
+                        }
+                        showNotification(result.error || 'Error updating parent.', 'danger');
+                        updateBtn.disabled = false;
+                        updateBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Parent';
+                    }
+                })
+                .catch(error => {
+                    console.error('Update error:', error);
+                    showNotification('Network error. Please try again.', 'danger');
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Parent';
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Load parent details error:', error);
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Error loading parent details: ${error.message}
+                </div>
+                <div class="text-center mt-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-primary ms-2" onclick="editParent(${parentId})">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Retry
+                    </button>
+                </div>
+            `;
+        });
+}
+
+// ============================================
+// MODAL HANDLERS
+// ============================================
+
+function showSetPrimaryModal(relationshipId, parentName) {
+    currentRelationshipId = relationshipId;
+    currentParentName = parentName;
+    document.getElementById('setPrimaryMessage').innerHTML = `Set <strong>${escapeHtml(parentName)}</strong> as the primary contact?`;
+    new bootstrap.Modal(document.getElementById('setPrimaryModal')).show();
+}
+
+function showFeeModal(relationshipId, parentName, isCurrentlyFee) {
+    currentRelationshipId = relationshipId;
+    currentParentName = parentName;
+    
+    const message = isCurrentlyFee ? 
+        `Remove fee responsibility from <strong>${escapeHtml(parentName)}</strong>?` : 
+        `Set <strong>${escapeHtml(parentName)}</strong> as fee responsible?`;
+    
+    document.getElementById('feeMessage').innerHTML = message;
+    const feeDateField = document.getElementById('feeDateField');
+    feeDateField.style.display = isCurrentlyFee ? 'none' : 'block';
+    
+    new bootstrap.Modal(document.getElementById('feeModal')).show();
+}
+
+function showRemoveModal(relationshipId, parentName) {
+    currentRelationshipId = relationshipId;
+    currentParentName = parentName;
+    document.getElementById('removeMessage').innerHTML = `Are you sure you want to remove <strong>${escapeHtml(parentName)}</strong> from this student?`;
+    new bootstrap.Modal(document.getElementById('removeParentModal')).show();
+}
+
+// ============================================
+// CONFIRMATION BUTTON HANDLERS
+// ============================================
+
+document.getElementById('confirmSetPrimaryBtn')?.addEventListener('click', function() {
+    if (!currentRelationshipId) return;
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Setting...';
+    
+    fetch(`/management/students/${currentRelationshipId}/set-primary/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('setPrimaryModal')).hide();
+            showNotification(data.message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'An error occurred', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Set primary error:', error);
+        showNotification('Network error. Please try again.', 'danger');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Confirm';
+    });
+});
+
+document.getElementById('confirmFeeBtn')?.addEventListener('click', function() {
+    if (!currentRelationshipId) return;
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    const formData = new FormData();
+    formData.append('is_fee_responsible', 'true');
+    
+    const feeDate = document.getElementById('feeFromDate')?.value;
+    if (feeDate) {
+        formData.append('fee_responsible_from', feeDate);
+    }
+    
+    fetch(`/management/students/${currentRelationshipId}/update-fee/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('feeModal')).hide();
+            showNotification(data.message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'An error occurred', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Fee toggle error:', error);
+        showNotification('Network error. Please try again.', 'danger');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Confirm';
+    });
+});
+
+document.getElementById('confirmRemoveBtn')?.addEventListener('click', function() {
+    if (!currentRelationshipId) return;
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Removing...';
+    
+    fetch(`/management/students/${currentRelationshipId}/remove-parent/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('removeParentModal')).hide();
+            showNotification(data.message, 'success');
+            
+            const card = document.getElementById(`parent-card-${currentRelationshipId}`);
+            if (card) card.remove();
+            
+            if (document.querySelectorAll('.parent-card').length === 0) {
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        } else {
+            showNotification(data.error || 'An error occurred', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Remove error:', error);
+        showNotification('Network error. Please try again.', 'danger');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-trash me-1"></i>Remove';
+    });
+});
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+</script>
+{% endblock %}

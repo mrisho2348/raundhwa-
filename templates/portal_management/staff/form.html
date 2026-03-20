@@ -1,0 +1,79 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="form-card">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-person-badge me-2 text-primary"></i>{{ title }}</h5>
+        <a href="{% url 'management:staff_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+      </div>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Personal Info -->
+        <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">Personal Information</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4"><label class="form-label fw-semibold">First Name *</label>{{ form.first_name }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Middle Name</label>{{ form.middle_name }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Last Name *</label>{{ form.last_name }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Gender</label>{{ form.gender }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Date of Birth</label>{{ form.date_of_birth }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Phone</label>{{ form.phone_number }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Marital Status</label>{{ form.marital_status }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Profile Picture</label>{{ form.profile_picture }}</div>
+        </div>
+
+        <!-- Employment -->
+        <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">Employment Information</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4"><label class="form-label fw-semibold">Employment Type</label>{{ form.employment_type }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Work Place</label>{{ form.work_place }}</div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Joining Date</label>{{ form.joining_date }}</div>
+        </div>
+
+        <!-- System Account -->
+        <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">System Login Account</h6>
+        <div class="mb-3">
+          <div class="form-check">
+            {{ form.create_user }}
+            <label class="form-check-label fw-semibold" for="createUserCheck">
+              Create system login account for this staff member
+            </label>
+          </div>
+          <small class="text-muted">Leave unchecked for non-system staff (cook, driver with no portal access, etc.)</small>
+        </div>
+        <div id="userFields" class="row g-3">
+          <div class="col-md-3"><label class="form-label">Username</label>{{ form.username }}</div>
+          <div class="col-md-3"><label class="form-label">Email</label>{{ form.email }}</div>
+          <div class="col-md-3"><label class="form-label">First Name</label>{{ form.user_first_name }}</div>
+          <div class="col-md-3"><label class="form-label">Last Name</label>{{ form.user_last_name }}</div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ action }}</button>
+          <a href="{% url 'management:staff_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const check = document.getElementById('createUserCheck');
+const fields = document.getElementById('userFields');
+function toggleFields() { fields.style.display = check.checked ? 'flex' : 'none'; }
+check.addEventListener('change', toggleFields);
+toggleFields();
+</script>
+{% endblock %}

@@ -1,0 +1,1722 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM DESIGN SYSTEM
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-dark: #0b5e2c;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ============================================
+       PROGRESS INDICATOR
+       ============================================ */
+    
+    .progress-container {
+        margin-bottom: 2rem;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .progress-indicator {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background: white;
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-indicator::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+    
+    .progress-step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-400);
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+        transition: var(--transition);
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+    }
+    
+    .progress-step:hover {
+        background: var(--gray-100);
+    }
+    
+    .progress-step.active {
+        color: var(--primary);
+    }
+    
+    .progress-step.completed {
+        color: var(--success);
+    }
+    
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        background: var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .progress-step.active .step-number {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    }
+    
+    .progress-step.completed .step-number {
+        background: var(--success);
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.95rem;
+    }
+    
+    @media (max-width: 768px) {
+        .progress-indicator {
+            flex-direction: column;
+            gap: 0.5rem;
+            border-radius: var(--radius-lg);
+        }
+        
+        .progress-step {
+            width: 100%;
+        }
+        
+        .step-label {
+            display: none;
+        }
+    }
+
+    /* ============================================
+       LIVE PREVIEW CARD
+       ============================================ */
+    
+    .preview-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.4s ease-out;
+    }
+    
+    .preview-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .preview-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        border: 3px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+    
+    .preview-avatar:hover {
+        transform: scale(1.05);
+        border-color: white;
+    }
+    
+    .preview-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .preview-details {
+        flex: 1;
+    }
+    
+    .preview-badge {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        padding: 0.25rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* ============================================
+       FORM SECTIONS
+       ============================================ */
+    
+    .form-section {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        animation: slideUp 0.3s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .form-section:nth-child(1) { animation-delay: 0.1s; }
+    .form-section:nth-child(2) { animation-delay: 0.2s; }
+    .form-section:nth-child(3) { animation-delay: 0.3s; }
+    .form-section:nth-child(4) { animation-delay: 0.4s; }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-section:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.25rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+    
+    .section-subtitle {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-left: auto;
+    }
+
+    /* ============================================
+       FORM CONTROLS
+       ============================================ */
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .required-star {
+        color: var(--danger);
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+    
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+    
+    .form-control:hover, .form-select:hover {
+        border-color: var(--gray-400);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+        outline: none;
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+    
+    .form-control.is-valid, .form-select.is-valid {
+        border-color: var(--success);
+        background-image: none;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+    
+    .valid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        color: var(--success);
+        background: var(--success-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #c3e6cb;
+    }
+    
+    .field-hint {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .field-hint i {
+        font-size: 0.9rem;
+    }
+    
+    .character-counter {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-align: right;
+        margin-top: 0.25rem;
+        font-family: monospace;
+    }
+    
+    .character-counter.warning {
+        color: var(--warning);
+    }
+    
+    .character-counter.danger {
+        color: var(--danger);
+    }
+
+    /* ============================================
+       FILE UPLOAD
+       ============================================ */
+    
+    .file-upload-area {
+        border: 2px dashed var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+        background: var(--gray-50);
+    }
+    
+    .file-upload-area:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+    
+    .file-upload-area i {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .file-preview {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: var(--gray-100);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.2s ease-out;
+    }
+    
+    .file-preview img {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+    }
+
+    /* ============================================
+       DROPDOWN ACTION MENU - BOOTSTRAP OVERRIDES
+       ============================================ */
+    
+    .action-menu-container {
+        position: sticky;
+        bottom: 1rem;
+        z-index: 1000;
+        margin-top: 2rem;
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    .action-menu-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .action-menu-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .action-menu-title {
+        font-weight: 600;
+        color: var(--gray-700);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .action-menu-title i {
+        color: var(--primary);
+    }
+    
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+    
+    .btn i {
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(26, 115, 232, 0.4);
+    }
+    
+    .btn-success {
+        background: var(--success);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: var(--success-dark);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-primary {
+        border: 1.5px solid var(--primary);
+        color: var(--primary);
+        background: transparent;
+    }
+    
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-success {
+        border: 1.5px solid var(--success);
+        color: var(--success);
+        background: transparent;
+    }
+    
+    .btn-outline-success:hover {
+        background: var(--success);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-info {
+        border: 1.5px solid var(--info);
+        color: var(--info);
+        background: transparent;
+    }
+    
+    .btn-outline-info:hover {
+        background: var(--info);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary {
+        border: 1.5px solid var(--gray-300);
+        color: var(--gray-600);
+        background: transparent;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-400);
+        transform: translateY(-2px);
+    }
+    
+    /* Bootstrap Dropdown Customization */
+    .dropdown-menu {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 0.5rem;
+        margin-top: 0.5rem !important;
+        min-width: 280px;
+        animation: slideUp 0.2s ease-out;
+    }
+    
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: var(--gray-700);
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+    
+    .dropdown-item i {
+        width: 20px;
+        color: var(--gray-500);
+        font-size: 1.1rem;
+        transition: var(--transition);
+    }
+    
+    .dropdown-item:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateX(4px);
+    }
+    
+    .dropdown-item:hover i {
+        color: var(--primary);
+    }
+    
+    .dropdown-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: 0.5rem 0;
+    }
+    
+    .dropdown-header {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: transparent;
+    }
+    
+    .dropdown-toggle::after {
+        display: none; /* Remove default Bootstrap caret */
+    }
+    
+    .btn.dropdown-toggle {
+        background: white;
+        border: 1.5px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+    
+    .btn.dropdown-toggle:hover {
+        background: var(--gray-100);
+    }
+    
+    .btn.dropdown-toggle:focus {
+        box-shadow: none;
+        border-color: var(--primary);
+    }
+    
+    .btn.dropdown-toggle[aria-expanded="true"] {
+        background: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .action-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 1rem;
+        padding-left: 1rem;
+        border-left: 1px solid var(--gray-200);
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+    
+    .action-status i {
+        color: var(--success);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .action-shortcut {
+        margin-left: auto;
+        font-size: 0.75rem;
+        color: var(--gray-400);
+        font-family: monospace;
+    }
+    
+    @media (max-width: 992px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn, .dropdown {
+            width: 100%;
+        }
+        
+        .dropdown-menu {
+            width: 100%;
+            margin-top: 0.25rem !important;
+        }
+        
+        .action-status {
+            margin-left: 0;
+            padding-left: 0;
+            border-left: none;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1rem;
+        }
+        
+        .preview-avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+    }
+
+    /* ============================================
+       SELECT2 CUSTOMIZATION
+       ============================================ */
+    
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300) !important;
+        border-radius: var(--radius-lg) !important;
+        height: 42px !important;
+        padding: 0.25rem 0;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 38px !important;
+        padding-left: 1rem !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+        right: 10px !important;
+    }
+    
+    .select2-container--default .select2-selection--multiple {
+        border: 1.5px solid var(--gray-300) !important;
+        border-radius: var(--radius-lg) !important;
+        min-height: 42px !important;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15) !important;
+    }
+    
+    .select2-dropdown {
+        border: 1px solid var(--gray-300) !important;
+        border-radius: var(--radius-lg) !important;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .select2-results__option--selected {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+    }
+
+    /* ============================================
+       ALERTS & NOTIFICATIONS
+       ============================================ */
+    
+    .alert {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .alert-danger {
+        background: var(--danger-light);
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    
+    .alert i {
+        font-size: 1.2rem;
+    }
+    
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+    
+    .toast-notification.info {
+        border-left: 4px solid var(--info);
+    }
+    
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+    
+    .toast-notification.danger {
+        border-left: 4px solid var(--danger);
+    }
+    
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    
+    .toast-icon.info {
+        background: var(--info-light);
+        color: var(--info);
+    }
+    
+    .toast-icon.warning {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+    
+    .toast-icon.danger {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+        <div class="progress-indicator">
+            <div class="progress-step active" onclick="scrollToSection(1)">
+                <span class="step-number">1</span>
+                <span class="step-label">Student Details</span>
+            </div>
+            <div class="progress-step" onclick="scrollToSection(2)">
+                <span class="step-number">2</span>
+                <span class="step-label">Contact & ID</span>
+            </div>
+            <div class="progress-step" onclick="scrollToSection(3)">
+                <span class="step-number">3</span>
+                <span class="step-label">Enrollment</span>
+            </div>
+            <div class="progress-step" onclick="scrollToSection(4)">
+                <span class="step-number">4</span>
+                <span class="step-label">Parent/Guardian</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Preview Card -->
+    <div class="preview-card" id="livePreview">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="preview-avatar" id="previewAvatar">
+                {% if student and student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+            </div>
+            <div class="preview-details">
+                <h3 class="mb-2" id="previewName">
+                    {% if student %}
+                        {{ student.full_name }}
+                    {% else %}
+                        New Student
+                    {% endif %}
+                </h3>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="preview-badge" id="previewGender">
+                        <i class="bi bi-gender-ambiguous"></i>
+                        {% if student %}
+                            {{ student.get_gender_display|default:"Gender not set" }}
+                        {% else %}
+                            Gender not set
+                        {% endif %}
+                    </span>
+                    <span class="preview-badge" id="previewAge">
+                        <i class="bi bi-calendar"></i>
+                        {% if student and student.date_of_birth %}
+                            Age: {{ student.age }} years
+                        {% else %}
+                            Age not set
+                        {% endif %}
+                    </span>
+                </div>
+                <small class="text-white-50" id="previewRegNumber">
+                    <i class="bi bi-qr-code me-1"></i>
+                    {% if student and student.registration_number %}
+                        {{ student.registration_number }}
+                    {% else %}
+                        Registration will be auto-generated
+                    {% endif %}
+                </small>
+            </div>
+            <div class="ms-auto">
+                <span class="preview-badge">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    {% if student and student.admission_date %}
+                        Admitted: {{ student.admission_date|date:"d M Y" }}
+                    {% else %}
+                        Admission: {% now "d M Y" %}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <form method="post" enctype="multipart/form-data" novalidate id="studentForm">
+        {% csrf_token %}
+        
+        <!-- Section 1: Personal Information -->
+        <div class="form-section" id="section1">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <h5 class="section-title">Personal Information</h5>
+                <span class="section-subtitle">Basic details</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            First Name
+                            <span class="required-star">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        <div class="invalid-feedback" id="firstNameError"></div>
+                        <div class="character-counter">
+                            <span id="firstNameCount">{{ form.first_name.value|length|default:0 }}</span>/100
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Middle Name</label>
+                        {{ form.middle_name }}
+                        <div class="character-counter">
+                            <span id="middleNameCount">{{ form.middle_name.value|length|default:0 }}</span>/100
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Last Name
+                            <span class="required-star">*</span>
+                        </label>
+                        {{ form.last_name }}
+                        <div class="invalid-feedback" id="lastNameError"></div>
+                        <div class="character-counter">
+                            <span id="lastNameCount">{{ form.last_name.value|length|default:0 }}</span>/100
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        {{ form.gender }}
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Select student's gender
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        {{ form.date_of_birth }}
+                        <div class="invalid-feedback" id="dobError"></div>
+                        <div class="field-hint" id="ageDisplay"></div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Admission Date
+                            <span class="required-star">*</span>
+                        </label>
+                        {{ form.admission_date }}
+                        <div class="invalid-feedback" id="admissionDateError"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Contact & Identification -->
+        <div class="form-section" id="section2">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+                <h5 class="section-title">Contact & Identification</h5>
+                <span class="section-subtitle">Address & ID</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        {{ form.address }}
+                        <div class="character-counter">
+                            <span id="addressCount">{{ form.address.value|length|default:0 }}</span>/200
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label class="form-label">National ID</label>
+                        {{ form.national_id }}
+                        <div class="invalid-feedback" id="nationalIdError"></div>
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Format: YYYY-XXXXXX-XXXXX
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label class="form-label">Physical Disability</label>
+                        {{ form.physical_disability }}
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Specify any disabilities or leave blank
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label class="form-label">Profile Picture</label>
+                        <div class="file-upload-area" onclick="document.getElementById('id_profile_picture').click()">
+                            <i class="bi bi-cloud-upload"></i>
+                            <div class="fw-semibold">Click to upload</div>
+                            <small class="text-muted">PNG, JPG up to 2MB</small>
+                            {{ form.profile_picture }}
+                        </div>
+                        <div id="filePreview" class="file-preview" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Dropdown Action Menu with Bootstrap Dropdown -->
+        <div class="action-menu-container">
+            <div class="action-menu-card">
+                <div class="action-menu-header">
+                    <div class="action-menu-title">
+                        <i class="bi bi-lightning-charge"></i>
+                        Quick Actions
+                    </div>
+                    <div class="action-status">
+                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                        Ready to save
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <!-- Primary Save Button -->
+                    <button type="submit" name="action" value="save_view" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Save & View Details
+                        <span class="action-shortcut">⌘S</span>
+                    </button>
+                    
+                    <!-- Bootstrap Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="actionDropdown" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-chevron-down"></i>
+                            More Options
+                        </button>
+                        
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionDropdown">
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="bi bi-save"></i>
+                                    Save Options
+                                </h6>
+                            </li>
+                            <li>
+                                <button type="submit" name="action" value="save_list" class="dropdown-item">
+                                    <i class="bi bi-list-ul"></i>
+                                    Save & Return to List
+                                    <span class="action-shortcut">⌘L</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="submit" name="action" value="save_new" class="dropdown-item">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Save & Add Another Student
+                                    <span class="action-shortcut">⌘N</span>
+                                </button>
+                            </li>
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                    Continue With
+                                </h6>
+                            </li>
+                            <li>
+                                <button type="submit" name="action" value="save_enroll" class="dropdown-item">
+                                    <i class="bi bi-building"></i>
+                                    Save & Continue to Enrollment
+                                    <span class="action-shortcut">⌘E</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="submit" name="action" value="save_parent" class="dropdown-item">
+                                    <i class="bi bi-people"></i>
+                                    Save & Continue to Add Parent
+                                    <span class="action-shortcut">⌘P</span>
+                                </button>
+                            </li>
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Other Actions
+                                </h6>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item text-warning" id="saveDraftBtn">
+                                    <i class="bi bi-cloud-arrow-down"></i>
+                                    Save as Draft
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item text-danger" id="cancelBtn">
+                                    <i class="bi bi-x-lg"></i>
+                                    Cancel & Discard
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Quick Action Buttons -->
+                    <button type="submit" name="action" value="save_enroll" class="btn btn-outline-primary">
+                        <i class="bi bi-building"></i>
+                        <span class="d-none d-xl-inline">Enrollment</span>
+                    </button>
+                    
+                    <button type="submit" name="action" value="save_parent" class="btn btn-outline-success">
+                        <i class="bi bi-people"></i>
+                        <span class="d-none d-xl-inline">Add Parent</span>
+                    </button>
+                </div>
+                
+                <div class="mt-2 text-center text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Fields marked with <span class="text-danger">*</span> are required
+                    {% if is_update %}
+                    <span class="mx-2">|</span>
+                    <i class="bi bi-pencil-square"></i>
+                    Editing existing student
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Draft Save Confirmation Modal -->
+<div class="modal fade" id="draftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-cloud-arrow-down me-2"></i>
+                    Save as Draft
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Save this student record as a draft? Drafts are not visible in the main student list and can be completed later.</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You can access drafts from the "Drafts" section in the sidebar.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmDraft">Save Draft</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                    Discard Changes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel? Any unsaved changes will be lost.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Editing</button>
+                <a href="{% url 'management:student_list' %}" class="btn btn-danger">Yes, Discard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+
+    // Initialize Bootstrap components
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // ============================================
+    // CHARACTER COUNTERS
+    // ============================================
+    
+    const countFields = [
+        { id: 'first_name', max: 100, element: 'firstNameCount' },
+        { id: 'middle_name', max: 100, element: 'middleNameCount' },
+        { id: 'last_name', max: 100, element: 'lastNameCount' },
+        { id: 'address', max: 200, element: 'addressCount' }
+    ];
+    
+    countFields.forEach(field => {
+        const input = document.getElementById(`id_${field.id}`);
+        const counter = document.getElementById(field.element);
+        
+        if (input && counter) {
+            const updateCounter = () => {
+                const length = input.value.length;
+                counter.textContent = length;
+                
+                counter.classList.remove('warning', 'danger');
+                if (length > field.max * 0.9) {
+                    counter.classList.add('danger');
+                } else if (length > field.max * 0.7) {
+                    counter.classList.add('warning');
+                }
+            };
+            
+            updateCounter();
+            input.addEventListener('input', updateCounter);
+        }
+    });
+    
+    // ============================================
+    // LIVE PREVIEW
+    // ============================================
+    
+    const firstName = document.getElementById('id_first_name');
+    const middleName = document.getElementById('id_middle_name');
+    const lastName = document.getElementById('id_last_name');
+    const gender = document.getElementById('id_gender');
+    const dob = document.getElementById('id_date_of_birth');
+    const previewName = document.getElementById('previewName');
+    const previewGender = document.getElementById('previewGender');
+    const previewAge = document.getElementById('previewAge');
+    
+    function updatePreview() {
+        const first = firstName?.value || '';
+        const middle = middleName?.value ? middleName.value + ' ' : '';
+        const last = lastName?.value || '';
+        const fullName = [first, middle, last].join('').trim() || 'New Student';
+        if (previewName) previewName.textContent = fullName;
+        
+        if (gender && previewGender) {
+            const genderText = gender.options[gender.selectedIndex]?.text || 'Gender not set';
+            previewGender.innerHTML = `<i class="bi bi-gender-ambiguous"></i>${genderText}`;
+        }
+        
+        if (dob && previewAge) {
+            if (dob.value) {
+                const birthDate = new Date(dob.value);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                previewAge.innerHTML = `<i class="bi bi-calendar"></i>Age: ${age} years`;
+                
+                const ageDisplay = document.getElementById('ageDisplay');
+                if (ageDisplay) {
+                    ageDisplay.innerHTML = `<i class="bi bi-info-circle"></i>Age: ${age} years`;
+                }
+            } else {
+                previewAge.innerHTML = '<i class="bi bi-calendar"></i>Age not set';
+            }
+        }
+    }
+    
+    [firstName, middleName, lastName, gender, dob].forEach(field => {
+        if (field) {
+            field.addEventListener('input', updatePreview);
+            field.addEventListener('change', updatePreview);
+        }
+    });
+    
+    updatePreview();
+    
+    // ============================================
+    // FILE UPLOAD PREVIEW
+    // ============================================
+    
+    const fileInput = document.getElementById('id_profile_picture');
+    const filePreview = document.getElementById('filePreview');
+    
+    if (fileInput) {
+        fileInput.style.display = 'none';
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                if (file.size > 2 * 1024 * 1024) {
+                    showNotification('File size must be less than 2MB', 'danger');
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    filePreview.style.display = 'flex';
+                    filePreview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">${file.name}</div>
+                            <small class="text-muted">${(file.size/1024).toFixed(1)} KB</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFileInput()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    `;
+                    
+                    const previewAvatar = document.getElementById('previewAvatar');
+                    if (previewAvatar) {
+                        previewAvatar.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // ============================================
+    // FORM VALIDATION
+    // ============================================
+    
+    function validateField(field, errorId, message) {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            document.getElementById(errorId).textContent = message;
+            return false;
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            return true;
+        }
+    }
+    
+    if (firstName) {
+        firstName.addEventListener('input', function() {
+            validateField(this, 'firstNameError', 'First name is required');
+        });
+    }
+    
+    if (lastName) {
+        lastName.addEventListener('input', function() {
+            validateField(this, 'lastNameError', 'Last name is required');
+        });
+    }
+    
+    const nationalId = document.getElementById('id_national_id');
+    if (nationalId) {
+        const idPattern = /^\d{4}-\d{6}-\d{5}$/;
+        nationalId.addEventListener('input', function() {
+            if (this.value && !idPattern.test(this.value)) {
+                this.classList.add('is-invalid');
+                document.getElementById('nationalIdError').textContent = 'Format: YYYY-XXXXXX-XXXXX';
+            } else {
+                this.classList.remove('is-invalid');
+                if (this.value) this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    const admissionDate = document.getElementById('id_admission_date');
+    const dobInput = document.getElementById('id_date_of_birth');
+    
+    function validateDates() {
+        if (dobInput?.value && admissionDate?.value) {
+            const birth = new Date(dobInput.value);
+            const admission = new Date(admissionDate.value);
+            
+            birth.setHours(0, 0, 0, 0);
+            admission.setHours(0, 0, 0, 0);
+            
+            if (admission < birth) {
+                admissionDate.classList.add('is-invalid');
+                document.getElementById('admissionDateError').textContent = 
+                    'Admission date cannot be before date of birth';
+                return false;
+            } else {
+                admissionDate.classList.remove('is-invalid');
+                admissionDate.classList.add('is-valid');
+                return true;
+            }
+        }
+        return true;
+    }
+    
+    if (dobInput && admissionDate) {
+        dobInput.addEventListener('change', validateDates);
+        admissionDate.addEventListener('change', validateDates);
+    }
+    
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    
+    function validateForm() {
+        let isValid = true;
+        
+        if (firstName && !firstName.value.trim()) {
+            validateField(firstName, 'firstNameError', 'First name is required');
+            isValid = false;
+        }
+        
+        if (lastName && !lastName.value.trim()) {
+            validateField(lastName, 'lastNameError', 'Last name is required');
+            isValid = false;
+        }
+        
+        if (!validateDates()) {
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    const form = document.getElementById('studentForm');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+            
+            showNotification('Please fix the errors before submitting', 'danger');
+            return;
+        }
+        
+        const submitter = e.submitter;
+        const action = submitter ? submitter.value : 'save_view';
+        
+        const submitBtn = submitter || document.querySelector('button[value="save_view"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = action;
+            form.appendChild(actionInput);
+            
+            form.submit();
+        }
+    });
+    
+    // ============================================
+    // BUTTON HANDLERS
+    // ============================================
+    
+    document.getElementById('cancelBtn')?.addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+        modal.show();
+    });
+    
+    document.getElementById('saveDraftBtn')?.addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('draftModal'));
+        modal.show();
+    });
+    
+    document.getElementById('confirmDraft')?.addEventListener('click', function() {
+        const form = document.getElementById('studentForm');
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'save_draft';
+        form.appendChild(actionInput);
+        form.submit();
+    });
+    
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.target.matches('input, textarea, select')) {
+            return;
+        }
+        
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            const form = document.getElementById('studentForm');
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'save_view';
+            form.appendChild(actionInput);
+            form.submit();
+        }
+        
+        if (e.ctrlKey && e.key === 'l') {
+            e.preventDefault();
+            const form = document.getElementById('studentForm');
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'save_list';
+            form.appendChild(actionInput);
+            form.submit();
+        }
+        
+        if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault();
+            const form = document.getElementById('studentForm');
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'save_new';
+            form.appendChild(actionInput);
+            form.submit();
+        }
+        
+        if (e.ctrlKey && e.key === 'e') {
+            e.preventDefault();
+            const form = document.getElementById('studentForm');
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'save_enroll';
+            form.appendChild(actionInput);
+            form.submit();
+        }
+        
+        if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            const form = document.getElementById('studentForm');
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'save_parent';
+            form.appendChild(actionInput);
+            form.submit();
+        }
+    });
+    
+    // ============================================
+    // SCROLL TO SECTION
+    // ============================================
+    
+    window.scrollToSection = function(sectionNumber) {
+        const section = document.getElementById(`section${sectionNumber}`);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+    
+    const sections = document.querySelectorAll('.form-section');
+    const steps = document.querySelectorAll('.progress-step');
+    
+    window.addEventListener('scroll', function() {
+        let current = 1;
+        sections.forEach((section, index) => {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= 200) {
+                current = index + 1;
+            }
+        });
+        
+        steps.forEach((step, index) => {
+            step.classList.remove('active', 'completed');
+            if (index + 1 < current) {
+                step.classList.add('completed');
+            } else if (index + 1 === current) {
+                step.classList.add('active');
+            }
+        });
+    });
+    
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    
+    window.clearFileInput = function() {
+        if (fileInput) {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            
+            const previewAvatar = document.getElementById('previewAvatar');
+            if (previewAvatar) {
+                previewAvatar.innerHTML = '<i class="bi bi-person-circle"></i>';
+            }
+        }
+    };
+    
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon ${type}">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 
+                                   type === 'danger' ? 'exclamation-triangle' : 
+                                   type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${message}</div>
+            </div>
+            <button class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}Dashboard — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  {% with cards=True %}
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value text-primary">{{ total_students }}</div>
+          <div class="stat-label">Active Students</div>
+        </div>
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-people-fill"></i></div>
+      </div>
+      <a href="{% url 'management:student_list' %}" class="small text-muted mt-2 d-block">View all →</a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value text-success">{{ total_staff }}</div>
+          <div class="stat-label">Staff Members</div>
+        </div>
+        <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-person-badge-fill"></i></div>
+      </div>
+      <a href="{% url 'management:staff_list' %}" class="small text-muted mt-2 d-block">View all →</a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value text-warning">{{ total_classes }}</div>
+          <div class="stat-label">Class Levels</div>
+        </div>
+        <div class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-building-fill"></i></div>
+      </div>
+      <a href="{% url 'management:class_level_list' %}" class="small text-muted mt-2 d-block">View all →</a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value text-info">{{ online_users }}</div>
+          <div class="stat-label">Online Now</div>
+        </div>
+        <div class="stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-wifi"></i></div>
+      </div>
+      <a href="{% url 'management:online_users' %}" class="small text-muted mt-2 d-block">View all →</a>
+    </div>
+  </div>
+  {% endwith %}
+</div>
+
+<!-- Active Year/Term Banner -->
+{% if active_year %}
+<div class="alert alert-info d-flex align-items-center gap-3 mb-4 border-0 shadow-sm">
+  <i class="bi bi-calendar-check-fill fs-4"></i>
+  <div>
+    <strong>Active Academic Year:</strong> {{ active_year.name }}
+    {% if active_term %}
+      &nbsp;·&nbsp; <strong>Current Term:</strong> {{ active_term.name }}
+      ({{ active_term.start_date }} – {{ active_term.end_date }})
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Recent Audit Log -->
+<div class="dt-card">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-journal-text me-2 text-primary"></i>Recent Activity</h6>
+    <a href="{% url 'management:audit_log' %}" class="btn btn-sm btn-outline-primary">View Full Log</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Time</th><th>User</th><th>Action</th><th>Record</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_audit %}
+        <tr>
+          <td class="text-muted small">{{ log.timestamp|date:"d M H:i" }}</td>
+          <td>{{ log.user|default:"System" }}</td>
+          <td>
+            <span class="badge bg-{% if log.action == 'CREATE' %}success{% elif log.action == 'UPDATE' %}warning text-dark{% elif log.action == 'DELETE' %}danger{% elif log.action == 'LOGIN' %}info{% else %}secondary{% endif %}">
+              {{ log.get_action_display }}
+            </span>
+          </td>
+          <td class="text-truncate" style="max-width:220px;">
+            <small>{{ log.content_type.model|default:"—"|title }} · {{ log.object_repr|truncatechars:40 }}</small>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-3">No recent activity</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

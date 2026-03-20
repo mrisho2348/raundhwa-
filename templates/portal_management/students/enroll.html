@@ -1,0 +1,420 @@
+{# templates/portal_management/students/enroll.html #}
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Enrollment Styles */
+    :root {
+        --enroll-primary: #2563eb;
+        --enroll-success: #059669;
+        --enroll-warning: #d97706;
+        --enroll-gradient: linear-gradient(145deg, #2563eb, #7c3aed);
+    }
+
+    .enrollment-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .student-summary-card {
+        background: var(--enroll-gradient);
+        border-radius: 24px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 40px -15px rgba(37, 99, 235, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .student-summary-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    .enrollment-form-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .current-enrollment-card {
+        background: linear-gradient(145deg, #f8fafc, #ffffff);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .stream-info {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+
+    .capacity-indicator {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    .capacity-fill {
+        height: 100%;
+        background: var(--enroll-primary);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .capacity-warning {
+        background: #f59e0b;
+    }
+
+    .capacity-danger {
+        background: #ef4444;
+    }
+
+    .stream-option {
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .stream-option:hover {
+        border-color: var(--enroll-primary);
+        background: #f8fafc;
+    }
+
+    .stream-option.selected {
+        border-color: var(--enroll-primary);
+        background: #eff6ff;
+    }
+
+    .stream-option .capacity-badge {
+        background: #f1f5f9;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+    }
+
+    .stream-option.selected .capacity-badge {
+        background: white;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .enrollment-form-card {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="enrollment-container">
+    <!-- Student Summary Card -->
+    <div class="student-summary-card">
+        <div class="d-flex align-items-center gap-4">
+            <div class="rounded-circle bg-white bg-opacity-25 p-4">
+                <i class="bi bi-person-circle fs-1"></i>
+            </div>
+            <div>
+                <h2 class="mb-2">{{ student.full_name }}</h2>
+                <div class="d-flex gap-3">
+                    <span class="badge bg-white text-primary">
+                        <i class="bi bi-qr-code me-1"></i>
+                        {{ student.registration_number }}
+                    </span>
+                    <span class="badge bg-white text-primary">
+                        <i class="bi bi-tag me-1"></i>
+                        {{ student.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Enrollment Info -->
+    {% if current_enrollment %}
+    <div class="current-enrollment-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                Current Enrollment
+            </h5>
+            <span class="badge bg-success">{{ current_enrollment.get_status_display }}</span>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <small class="text-muted">Academic Year</small>
+                <p class="fw-semibold">{{ current_enrollment.academic_year.name }}</p>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted">Class Level</small>
+                <p class="fw-semibold">{{ current_enrollment.class_level.name }}</p>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted">Enrolled Since</small>
+                <p class="fw-semibold">{{ current_enrollment.enrollment_date|date:"d M Y" }}</p>
+            </div>
+        </div>
+        {% if current_enrollment.stream_assignment %}
+        <div class="stream-info mt-2">
+            <i class="bi bi-diagram-3"></i>
+            Current Stream: {{ current_enrollment.stream_assignment.stream_class.name }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Enrollment Form -->
+    <div class="enrollment-form-card">
+        <h4 class="mb-4">
+            <i class="bi bi-plus-circle-fill text-primary me-2"></i>
+            New Enrollment
+        </h4>
+
+        <form method="post" id="enrollmentForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Hidden student field -->
+            <input type="hidden" name="student" value="{{ student.pk }}">
+
+            <!-- Academic Year -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Academic Year</label>
+                <select name="academic_year" class="form-select form-select-lg" required id="academicYear">
+                    <option value="">Select academic year...</option>
+                    {% for year in form.fields.academic_year.queryset %}
+                    <option value="{{ year.pk }}" {% if year.is_active %}selected{% endif %}>
+                        {{ year.name }} {% if year.is_active %}(Current){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Class Level -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Class Level</label>
+                <select name="class_level" class="form-select form-select-lg" required id="classLevel">
+                    <option value="">Select class level...</option>
+                    {% for level in form.fields.class_level.queryset %}
+                    <option value="{{ level.pk }}" data-level-type="{{ level.educational_level.level_type }}">
+                        {{ level.name }} ({{ level.educational_level.name }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Stream Selection (Dynamic) -->
+            <div class="mb-4" id="streamSection" style="display: none;">
+                <label class="form-label fw-semibold">Select Stream</label>
+                <div id="streamList" class="mt-2">
+                    <!-- Streams will be loaded via AJAX -->
+                </div>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Stream assignment is optional. Students can be assigned later.
+                </small>
+            </div>
+
+            <!-- Combination (For A-Level) -->
+            <div class="mb-4" id="combinationSection" style="display: none;">
+                <label class="form-label fw-semibold">Combination</label>
+                <select name="combination" class="form-select form-select-lg" id="combination">
+                    <option value="">Select combination...</option>
+                    {% for combo in form.fields.combination.queryset %}
+                    <option value="{{ combo.pk }}" data-code="{{ combo.code }}">
+                        {{ combo.code }} — {{ combo.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Required for A-Level students
+                </small>
+            </div>
+
+            <!-- Enrollment Date -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Enrollment Date</label>
+                <input type="date" name="enrollment_date" class="form-control form-control-lg" 
+                       value="{{ form.enrollment_date.value|date:'Y-m-d'|default:'' }}" required>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Status</label>
+                <select name="status" class="form-select form-select-lg">
+                    {% for value, label in form.fields.status.choices %}
+                    <option value="{{ value }}" {% if value == 'active' %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Remarks -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Remarks (Optional)</label>
+                <textarea name="remarks" class="form-control" rows="3">{{ form.remarks.value|default:'' }}</textarea>
+            </div>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+                <a href="{% url 'management:student_detail' student.pk %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-x-lg"></i>
+                    Cancel
+                </a>
+                
+                <button type="submit" name="action" value="save" class="btn btn-primary btn-lg">
+                    <i class="bi bi-check-lg"></i>
+                    Enroll Student
+                </button>
+                
+                <button type="submit" name="action" value="save_and_stream" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-diagram-3"></i>
+                    Enroll & Assign Stream
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const classLevel = document.getElementById('classLevel');
+    const streamSection = document.getElementById('streamSection');
+    const streamList = document.getElementById('streamList');
+    const combinationSection = document.getElementById('combinationSection');
+    const academicYear = document.getElementById('academicYear');
+
+    // Load streams when class level changes
+    classLevel.addEventListener('change', function() {
+        const classLevelId = this.value;
+        
+        if (!classLevelId) {
+            streamSection.style.display = 'none';
+            combinationSection.style.display = 'none';
+            return;
+        }
+
+        // Check if A-Level
+        const selectedOption = this.options[this.selectedIndex];
+        const levelType = selectedOption.dataset.levelType;
+        
+        if (levelType === 'A_LEVEL') {
+            combinationSection.style.display = 'block';
+        } else {
+            combinationSection.style.display = 'none';
+        }
+
+        // Load streams
+        fetch(`/management/get-streams/?class_level_id=${classLevelId}`)
+            .then(response => response.json())
+            .then(streams => {
+                if (streams.length > 0) {
+                    streamList.innerHTML = '';
+                    streams.forEach(stream => {
+                        const fillPercent = (stream.student_count / stream.capacity) * 100;
+                        let capacityClass = '';
+                        if (fillPercent >= 90) capacityClass = 'capacity-danger';
+                        else if (fillPercent >= 75) capacityClass = 'capacity-warning';
+                        
+                        streamList.innerHTML += `
+                            <div class="stream-option" onclick="selectStream(${stream.id})">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">${stream.name}</h6>
+                                        <small class="text-muted">Capacity: ${stream.student_count}/${stream.capacity}</small>
+                                    </div>
+                                    <span class="capacity-badge">
+                                        ${Math.round((stream.student_count / stream.capacity) * 100)}% Full
+                                    </span>
+                                </div>
+                                <div class="capacity-indicator">
+                                    <div class="capacity-fill ${capacityClass}" style="width: ${fillPercent}%"></div>
+                                </div>
+                                <input type="radio" name="stream" value="${stream.id}" style="display: none;">
+                            </div>
+                        `;
+                    });
+                    streamSection.style.display = 'block';
+                } else {
+                    streamList.innerHTML = '<p class="text-muted">No streams available for this class level.</p>';
+                    streamSection.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading streams:', error);
+                streamList.innerHTML = '<p class="text-danger">Error loading streams.</p>';
+            });
+    });
+
+    // Form validation
+    document.getElementById('enrollmentForm').addEventListener('submit', function(e) {
+        const classLevelValue = classLevel.value;
+        const selectedOption = classLevel.options[classLevel.selectedIndex];
+        
+        if (selectedOption && selectedOption.dataset.levelType === 'A_LEVEL') {
+            const combination = document.getElementById('combination').value;
+            if (!combination) {
+                e.preventDefault();
+                alert('Please select a combination for A-Level student.');
+            }
+        }
+    });
+});
+
+// Global function to select stream
+function selectStream(streamId) {
+    // Remove selected class from all options
+    document.querySelectorAll('.stream-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    const selectedOption = Array.from(document.querySelectorAll('.stream-option')).find(
+        opt => opt.querySelector(`input[value="${streamId}"]`)
+    );
+    if (selectedOption) {
+        selectedOption.classList.add('selected');
+        selectedOption.querySelector('input').checked = true;
+    }
+}
+</script>
+{% endblock %}

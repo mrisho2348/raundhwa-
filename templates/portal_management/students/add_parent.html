@@ -1,0 +1,946 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Add Parent/Guardian — {{ student.full_name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Add Parent/Guardian for {{ student.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .student-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        border: 3px solid white;
+    }
+    
+    .student-info h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .student-info .reg-number {
+        background: rgba(255,255,255,0.2);
+        padding: 0.25rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+        font-size: 0.9rem;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        border-color: #1a73e8;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #1a73e8;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: #1a73e8;
+        font-size: 1.3rem;
+    }
+    
+    .required-field label::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #334155;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        padding: 0.6rem 1rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+        background-image: none;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        color: #dc3545;
+    }
+    
+    .field-hint {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+    
+    .existing-parent-card {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .existing-parent-card:hover {
+        border-color: #1a73e8;
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .existing-parent-card.selected {
+        border-color: #1a73e8;
+        background: #e8f0fe;
+    }
+    
+    .existing-parent-card.selected::before {
+        content: '\F26E';
+        font-family: 'bootstrap-icons';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #1a73e8;
+        font-size: 1.2rem;
+    }
+    
+    .parent-initials {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .parent-details h6 {
+        margin: 0;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .parent-details small {
+        color: #64748b;
+    }
+    
+    .relationship-badge {
+        background: #e2e8f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #475569;
+    }
+    
+    .quick-actions {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .quick-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+    
+    .quick-action-btn:hover {
+        background: #1a73e8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.2);
+    }
+    
+    .quick-action-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .action-buttons {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid #e9ecef;
+        margin-top: 2rem;
+        position: sticky;
+        bottom: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        z-index: 100;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+    
+    .btn-action i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: #1a73e8;
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: #1557b0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+    
+    .btn-success {
+        background: #0f7b3a;
+        border: none;
+    }
+    
+    .btn-success:hover {
+        background: #0b5e2c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15,123,58,0.3);
+    }
+    
+    .btn-outline-secondary {
+        border: 1.5px solid #e2e8f0;
+        color: #475569;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+    }
+    
+    .existing-parents-section {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+    
+    .existing-parents-section::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .existing-parents-section::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    
+    .existing-parents-section::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 10px;
+    }
+    
+    .existing-parents-section::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+    
+    @media (max-width: 768px) {
+        .student-summary-card {
+            padding: 1rem;
+        }
+        
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .action-buttons .d-flex {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-action {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Student Summary Card -->
+    <div class="student-summary-card">
+        <div class="d-flex align-items-center gap-4">
+            <div class="student-avatar">
+                {% if student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}" class="w-100 h-100 rounded-circle" style="object-fit: cover;">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+            </div>
+            <div class="student-info flex-grow-1">
+                <h4>{{ student.full_name }}</h4>
+                <div class="d-flex flex-wrap gap-3 mt-2">
+                    <span class="reg-number">
+                        <i class="bi bi-qr-code me-1"></i>
+                        {{ student.registration_number }}
+                    </span>
+                    {% if student.gender %}
+                        <span class="reg-number">
+                            <i class="bi bi-gender-{{ student.gender }} me-1"></i>
+                            {{ student.get_gender_display }}
+                        </span>
+                    {% endif %}
+                    {% if student.date_of_birth %}
+                        <span class="reg-number">
+                            <i class="bi bi-calendar me-1"></i>
+                            Age: {{ student.age }} years
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-end d-none d-md-block">
+                <span class="badge bg-success bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    {{ student.get_status_display|default:'Active' }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{% url 'management:student_detail' student.pk %}" class="quick-action-btn text-decoration-none text-dark">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Student</span>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'management:student_enroll' student.pk %}" class="quick-action-btn text-decoration-none text-dark">
+                    <i class="bi bi-building"></i>
+                    <span>Enrollment Details</span>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="quick-action-btn text-decoration-none text-dark border-0 w-100" data-bs-toggle="modal" data-bs-target="#searchParentModal">
+                    <i class="bi bi-search"></i>
+                    <span>Search Existing Parent</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Parents (if any) -->
+    {% if existing_parents %}
+    <div class="form-section">
+        <div class="section-title">
+            <i class="bi bi-people"></i>
+            Existing Parents/Guardians
+        </div>
+        <p class="text-muted mb-3">Select an existing parent to link to this student, or add a new one below.</p>
+        
+        <div class="existing-parents-section">
+            <div class="row g-3">
+                {% for parent in existing_parents %}
+                <div class="col-md-6">
+                    <div class="existing-parent-card" data-parent-id="{{ parent.id }}" onclick="selectParent(this)">
+                        <div class="d-flex gap-3">
+                            <div class="parent-initials">
+                                {{ parent.full_name|make_list|first|upper }}{{ parent.full_name|slice:"1:2"|upper }}
+                            </div>
+                            <div class="parent-details flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6>{{ parent.full_name }}</h6>
+                                    <span class="relationship-badge">{{ parent.get_relationship_display }}</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="d-block">
+                                        <i class="bi bi-telephone me-1"></i>
+                                        {{ parent.phone_number }}
+                                    </small>
+                                    {% if parent.email %}
+                                    <small class="d-block">
+                                        <i class="bi bi-envelope me-1"></i>
+                                        {{ parent.email }}
+                                    </small>
+                                    {% endif %}
+                                    {% if parent.address %}
+                                    <small class="d-block">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        {{ parent.address|truncatechars:30 }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="mt-3 text-center">
+            <button type="button" class="btn btn-outline-primary" id="linkSelectedParent">
+                <i class="bi bi-link"></i>
+                Link Selected Parent
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Add New Parent Form -->
+    <form method="post" id="parentForm">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-person-plus"></i>
+                Add New Parent/Guardian
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-6 required-field">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" 
+                           name="full_name" 
+                           id="full_name"
+                           class="form-control {% if form.full_name.errors %}is-invalid{% endif %}"
+                           value="{{ form.full_name.value|default:'' }}"
+                           placeholder="Enter parent's full name"
+                           required>
+                    <div class="invalid-feedback" id="fullNameError"></div>
+                    <div class="character-counter"><span id="fullNameCount">0</span>/255</div>
+                </div>
+                
+                <div class="col-lg-6 required-field">
+                    <label class="form-label">Relationship</label>
+                    <select name="relationship" 
+                            id="relationship"
+                            class="form-select select2 {% if form.relationship.errors %}is-invalid{% endif %}"
+                            required>
+                        <option value="">---------</option>
+                        {% for value, label in relationship_choices %}
+                            <option value="{{ value }}" {% if form.relationship.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback" id="relationshipError"></div>
+                </div>
+                
+                <div class="col-lg-6 required-field">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" 
+                           name="phone_number" 
+                           id="phone_number"
+                           class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}"
+                           value="{{ form.phone_number.value|default:'' }}"
+                           placeholder="e.g., 0712345678"
+                           required>
+                    <div class="invalid-feedback" id="phoneError"></div>
+                    <div class="field-hint">Enter a valid Tanzanian phone number</div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <label class="form-label">Alternate Phone</label>
+                    <input type="tel" 
+                           name="alternate_phone" 
+                           id="alternate_phone"
+                           class="form-control {% if form.alternate_phone.errors %}is-invalid{% endif %}"
+                           value="{{ form.alternate_phone.value|default:'' }}"
+                           placeholder="Alternate contact number">
+                    <div class="invalid-feedback" id="altPhoneError"></div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" 
+                           name="email" 
+                           id="email"
+                           class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                           value="{{ form.email.value|default:'' }}"
+                           placeholder="parent@example.com">
+                    <div class="invalid-feedback" id="emailError"></div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" 
+                              id="address"
+                              class="form-control {% if form.address.errors %}is-invalid{% endif %}"
+                              rows="2"
+                              placeholder="Physical address">{{ form.address.value|default:'' }}</textarea>
+                    <div class="character-counter"><span id="addressCount">0</span>/255</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relationship Settings -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-gear"></i>
+                Relationship Settings
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" 
+                               name="is_primary_contact" 
+                               id="is_primary_contact"
+                               class="form-check-input"
+                               {% if form.is_primary_contact.value or not form.is_primary_contact.value == False %}checked{% endif %}>
+                        <label class="form-check-label fw-semibold" for="is_primary_contact">
+                            Primary Contact
+                        </label>
+                        <div class="field-hint">
+                            Main point of contact for school communications
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" 
+                               name="is_fee_responsible" 
+                               id="is_fee_responsible"
+                               class="form-check-input"
+                               {% if form.is_fee_responsible.value or not form.is_fee_responsible.value == False %}checked{% endif %}>
+                        <label class="form-check-label fw-semibold" for="is_fee_responsible">
+                            Fee Responsible
+                        </label>
+                        <div class="field-hint">
+                            Primary payer of school fees for this student
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6" id="feeResponsibleFromDiv" style="display: none;">
+                    <label class="form-label">Fee Responsible From</label>
+                    <input type="date" 
+                           name="fee_responsible_from" 
+                           id="fee_responsible_from"
+                           class="form-control"
+                           value="{{ form.fee_responsible_from.value|default:'' }}">
+                    <div class="field-hint">
+                        Date from which this parent became fee responsible
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-pencil"></i>
+                Additional Information
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <label class="form-label">Remarks / Notes</label>
+                    <textarea name="remarks" 
+                              id="remarks"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Any additional notes about this parent/guardian...">{{ form.remarks.value|default:'' }}</textarea>
+                    <div class="character-counter"><span id="remarksCount">0</span>/500</div>
+                </div>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="d-flex gap-3 justify-content-end flex-wrap">
+                <button type="button" class="btn btn-outline-secondary btn-action" id="cancelBtn">
+                    <i class="bi bi-x-lg"></i>Cancel
+                </button>
+                
+                <button type="submit" name="action" value="save" class="btn btn-primary btn-action">
+                    <i class="bi bi-check-lg"></i>Save Parent
+                </button>
+                
+                <button type="submit" name="action" value="save_add_another" class="btn btn-success btn-action">
+                    <i class="bi bi-plus-circle"></i>Save & Add Another Parent
+                </button>
+                
+                <button type="submit" name="action" value="save_finish" class="btn btn-info btn-action text-white" style="background: #17a2b8;">
+                    <i class="bi bi-check-all"></i>Save & Finish
+                </button>
+            </div>
+            
+            <div class="mt-3 text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Fields marked with <span class="text-danger">*</span> are required
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Search Parent Modal -->
+<div class="modal fade" id="searchParentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-search me-2"></i>
+                    Search Existing Parent
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" 
+                           class="form-control" 
+                           id="parentSearchInput" 
+                           placeholder="Search by name or phone number...">
+                </div>
+                <div id="searchResults" class="existing-parents-section" style="max-height: 400px;">
+                    <!-- Results will be loaded here -->
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-arrow-up" style="font-size: 2rem;"></i>
+                        <p>Type to search for existing parents</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    const countFields = [
+        { id: 'full_name', max: 255 },
+        { id: 'address', max: 255 },
+        { id: 'remarks', max: 500 }
+    ];
+    
+    countFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        const counter = document.getElementById(`${field.id}Count`);
+        
+        if (input && counter) {
+            counter.textContent = input.value.length;
+            input.addEventListener('input', function() {
+                counter.textContent = this.value.length;
+                if (this.value.length > field.max * 0.9) {
+                    counter.style.color = '#dc3545';
+                } else {
+                    counter.style.color = '#6c757d';
+                }
+            });
+        }
+    });
+    
+    // Show/hide fee responsible from date
+    const isFeeResponsible = document.getElementById('is_fee_responsible');
+    const feeResponsibleFromDiv = document.getElementById('feeResponsibleFromDiv');
+    
+    if (isFeeResponsible && feeResponsibleFromDiv) {
+        function toggleFeeResponsibleFrom() {
+            if (isFeeResponsible.checked) {
+                feeResponsibleFromDiv.style.display = 'block';
+            } else {
+                feeResponsibleFromDiv.style.display = 'none';
+            }
+        }
+        
+        toggleFeeResponsibleFrom();
+        isFeeResponsible.addEventListener('change', toggleFeeResponsibleFrom);
+    }
+    
+    // Phone number validation (Tanzanian format)
+    const phoneInput = document.getElementById('phone_number');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            const phone = this.value.replace(/\D/g, '');
+            const isValid = /^(0|255)?[67]\d{8}$/.test(phone) || phone.length === 0;
+            
+            if (!isValid && this.value) {
+                this.classList.add('is-invalid');
+                document.getElementById('phoneError').textContent = 'Enter a valid Tanzanian phone number (e.g., 0712345678 or 255712345678)';
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    // Email validation
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value;
+            const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length === 0;
+            
+            if (!isValid && email) {
+                this.classList.add('is-invalid');
+                document.getElementById('emailError').textContent = 'Enter a valid email address';
+            } else {
+                this.classList.remove('is-invalid');
+                if (email) {
+                    this.classList.add('is-valid');
+                }
+            }
+        });
+    }
+    
+    // Cancel button
+    document.getElementById('cancelBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to cancel? Any unsaved data will be lost.')) {
+            window.location.href = "{% url 'management:student_detail' student.pk %}";
+        }
+    });
+    
+    // Form submission validation
+    document.getElementById('parentForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Required fields validation
+        const requiredFields = ['full_name', 'phone_number'];
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field && !field.value.trim()) {
+                field.classList.add('is-invalid');
+                document.getElementById(`${fieldId}Error`).textContent = 'This field is required';
+                isValid = false;
+            }
+        });
+        
+        // Relationship validation
+        const relationship = document.getElementById('relationship');
+        if (relationship && !relationship.value) {
+            relationship.classList.add('is-invalid');
+            document.getElementById('relationshipError').textContent = 'Please select a relationship';
+            isValid = false;
+        }
+        
+        // Phone validation
+        if (phoneInput && phoneInput.value) {
+            const phone = phoneInput.value.replace(/\D/g, '');
+            if (!/^(0|255)?[67]\d{8}$/.test(phone)) {
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fix the errors before submitting.');
+            
+            // Scroll to first error
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    });
+    
+    // Loading state on submit
+    const form = document.getElementById('parentForm');
+    form.addEventListener('submit', function() {
+        const submitButtons = this.querySelectorAll('button[type="submit"]');
+        submitButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+        });
+    });
+});
+
+// Parent selection functionality
+let selectedParentCard = null;
+
+function selectParent(card) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.existing-parent-card').forEach(c => {
+        c.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    card.classList.add('selected');
+    selectedParentCard = card;
+}
+
+// Link selected parent
+document.getElementById('linkSelectedParent')?.addEventListener('click', function() {
+    if (!selectedParentCard) {
+        alert('Please select a parent to link');
+        return;
+    }
+    
+    const parentId = selectedParentCard.dataset.parentId;
+    
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '';
+    
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    form.appendChild(csrfInput);
+    
+    const parentInput = document.createElement('input');
+    parentInput.type = 'hidden';
+    parentInput.name = 'link_parent_id';
+    parentInput.value = parentId;
+    form.appendChild(parentInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+});
+
+// Parent search functionality
+const searchInput = document.getElementById('parentSearchInput');
+if (searchInput) {
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            document.getElementById('searchResults').innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-arrow-up" style="font-size: 2rem;"></i>
+                    <p>Type at least 2 characters to search</p>
+                </div>
+            `;
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            fetch(`/management/ajax/search-parents/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('searchResults');
+                    
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = `
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-exclamation-circle" style="font-size: 2rem;"></i>
+                                <p>No parents found matching "${query}"</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    let html = '<div class="row g-3">';
+                    data.forEach(parent => {
+                        html += `
+                            <div class="col-md-6">
+                                <div class="existing-parent-card" onclick="selectParent(this)" data-parent-id="${parent.id}">
+                                    <div class="d-flex gap-3">
+                                        <div class="parent-initials">
+                                            ${parent.initials}
+                                        </div>
+                                        <div class="parent-details flex-grow-1">
+                                            <h6>${parent.full_name}</h6>
+                                            <div class="mt-2">
+                                                <small class="d-block">
+                                                    <i class="bi bi-telephone me-1"></i>
+                                                    ${parent.phone_number}
+                                                </small>
+                                                ${parent.email ? `
+                                                    <small class="d-block">
+                                                        <i class="bi bi-envelope me-1"></i>
+                                                        ${parent.email}
+                                                    </small>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                    resultsDiv.innerHTML = html;
+                });
+        }, 300);
+    });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S to save
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        document.querySelector('button[value="save"]').click();
+    }
+    // Ctrl+Shift+S to save and add another
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        document.querySelector('button[value="save_add_another"]').click();
+    }
+    // Esc to cancel
+    if (e.key === 'Escape') {
+        document.getElementById('cancelBtn').click();
+    }
+});
+</script>
+{% endblock %}

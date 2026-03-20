@@ -1,0 +1,1281 @@
+<!-- templates/portal_management/parents/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ parent.full_name }} — Parent Details — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Parent Details: {{ parent.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM PARENT DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Parent Header Card */
+    .parent-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .parent-icon-large {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-2xl);
+        background: linear-gradient(135deg, var(--primary), var(--info));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .parent-info {
+        flex: 1;
+    }
+
+    .parent-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .parent-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-top: 0.5rem;
+    }
+
+    .parent-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .parent-meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .relationship-badge-large {
+        padding: 0.5rem 1.2rem;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .relationship-badge-large.father, 
+    .relationship-badge-large.mother {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .relationship-badge-large.guardian {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .relationship-badge-large.other {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stat-card.students::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.primary::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.fee::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.students { background: var(--success-light); color: var(--success); }
+    .stat-icon.primary { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.fee { background: var(--info-light); color: var(--info); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Detail Grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .info-card-header i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 0.75rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .info-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .phone-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+
+    /* Students Table */
+    .students-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .students-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .students-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .students-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 600px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+    }
+
+    .badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-primary {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .badge-success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .badge-info {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-warning {
+        background: var(--warning);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .parent-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .parent-meta {
+            justify-content: center;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .students-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-warning, .btn-danger, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-person-badge me-2"></i>
+                Parent Details
+            </h1>
+            <p class="mb-0">View complete information for {{ parent.full_name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:parent_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Parents</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Parent Header Card -->
+<div class="parent-header-card">
+    <div class="parent-icon-large">
+        <i class="bi bi-person-badge"></i>
+    </div>
+    <div class="parent-info">
+        <h2>{{ parent.full_name }}</h2>
+        <div class="parent-meta">
+            <div class="parent-meta-item">
+                <i class="bi bi-people"></i>
+                <span class="relationship-badge-large {{ parent.relationship }}">
+                    {{ parent.get_relationship_display }}
+                </span>
+            </div>
+            <div class="parent-meta-item">
+                <i class="bi bi-telephone"></i>
+                <span>{{ parent.phone_number }}</span>
+            </div>
+            {% if parent.alternate_phone %}
+            <div class="parent-meta-item">
+                <i class="bi bi-telephone-inbound"></i>
+                <span>Alt: {{ parent.alternate_phone }}</span>
+            </div>
+            {% endif %}
+            <div class="parent-meta-item">
+                <i class="bi bi-calendar"></i>
+                <span>Registered: {{ parent.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card students">
+        <div class="stat-icon students">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ student_count }}</div>
+        <div class="stat-label">Linked Students</div>
+    </div>
+    
+    <div class="stat-card primary">
+        <div class="stat-icon primary">
+            <i class="bi bi-star-fill"></i>
+        </div>
+        <div class="stat-value">{{ primary_contacts }}</div>
+        <div class="stat-label">Primary Contacts</div>
+    </div>
+    
+    <div class="stat-card fee">
+        <div class="stat-icon fee">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="stat-value">{{ fee_responsible }}</div>
+        <div class="stat-label">Fee Responsible</div>
+    </div>
+</div>
+
+<!-- Detail Grid -->
+<div class="detail-grid">
+    <!-- Contact Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-telephone"></i>
+            <h3>Contact Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Primary Phone</span>
+                <span class="info-value">
+                    <span class="phone-code">{{ parent.phone_number }}</span>
+                </span>
+            </div>
+            {% if parent.alternate_phone %}
+            <div class="info-row">
+                <span class="info-label">Alternate Phone</span>
+                <span class="info-value">
+                    <span class="phone-code">{{ parent.alternate_phone }}</span>
+                </span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="info-label">Email Address</span>
+                <span class="info-value">
+                    {% if parent.email %}
+                        <a href="mailto:{{ parent.email }}" class="text-decoration-none">{{ parent.email }}</a>
+                    {% else %}
+                        <span class="text-muted">Not provided</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Physical Address</span>
+                <span class="info-value">{{ parent.address }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-info-circle"></i>
+            <h3>Additional Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Relationship Type</span>
+                <span class="info-value">
+                    <span class="relationship-badge-large {{ parent.relationship }}">
+                        {{ parent.get_relationship_display }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Record Created</span>
+                <span class="info-value">{{ parent.created_at|date:"F d, Y H:i" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Last Updated</span>
+                <span class="info-value">{{ parent.updated_at|date:"F d, Y H:i" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Parent ID</span>
+                <span class="info-value">
+                    <span class="phone-code">PR-{{ parent.pk|stringformat:"06d" }}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Students Linked Card -->
+<div class="students-card">
+    <div class="students-header">
+        <h5>
+            <i class="bi bi-people-fill"></i>
+            Students Linked to {{ parent.full_name }}
+        </h5>
+        <a href="{% url 'management:parent_link_from_parent' parent.pk %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-person-plus"></i>
+            Link Another Student
+        </a>
+    </div>
+
+    {% if student_parents %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration Number</th>
+                    <th>Role</th>
+                    <th>Primary Contact</th>
+                    <th>Fee Responsible</th>
+                    <th>Actions</th>
+                </thead>
+            <tbody>
+                {% for sp in student_parents %}
+                <tr id="relationship-row-{{ sp.pk }}">
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ sp.student.first_name|first|upper }}{{ sp.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ sp.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ sp.student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">{{ sp.student.get_status_display }}</span>
+                    </td>
+                    <td>
+                        {% if sp.is_primary_contact %}
+                            <span class="badge badge-primary">
+                                <i class="bi bi-star-fill"></i> Primary
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sp.is_fee_responsible %}
+                            <span class="badge badge-success">
+                                <i class="bi bi-cash-stack"></i> Responsible
+                                {% if sp.fee_responsible_from %}
+                                <br><small>since {{ sp.fee_responsible_from|date:"M Y" }}</small>
+                                {% endif %}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-danger" 
+                                onclick="showUnlinkModal({{ sp.pk }}, '{{ sp.student.full_name|escapejs }}')"
+                                title="Unlink this student">
+                            <i class="bi bi-x-lg"></i> Unlink
+                        </button>
+                        <a href="{% url 'management:student_detail' sp.student.pk %}" 
+                           class="btn btn-sm btn-outline-primary"
+                           title="View Student Details">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <h6 class="text-muted mb-2">No Students Linked</h6>
+        <p class="text-muted small">This parent is not linked to any students yet.</p>
+        <a href="{% url 'management:parent_link_from_parent' parent.pk %}" class="btn btn-primary btn-sm mt-2">
+            <i class="bi bi-person-plus"></i>
+            Link Student
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'management:parent_update' parent.pk %}" class="btn-warning">
+        <i class="bi bi-pencil"></i>
+        Edit Parent
+    </a>
+    
+    <a href="{% url 'management:parent_link_from_parent' parent.pk %}" class="btn-primary">
+        <i class="bi bi-person-plus"></i>
+        Link Student
+    </a>
+    
+    {% if student_count == 0 %}
+    <button type="button" class="btn-danger" onclick="showDeleteModal()">
+        <i class="bi bi-trash"></i>
+        Delete Parent
+    </button>
+    {% else %}
+    <button type="button" class="btn-danger" disabled style="opacity: 0.6; cursor: not-allowed;" title="Cannot delete parent with linked students">
+        <i class="bi bi-trash"></i>
+        Delete Parent
+    </button>
+    {% endif %}
+    
+    <a href="{% url 'management:parent_list' %}" class="btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+    </a>
+</div>
+
+<!-- Unlink Confirmation Modal -->
+<div class="modal fade" id="unlinkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Unlink
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to unlink <strong id="unlink-student-name"></strong> from <strong>{{ parent.full_name }}</strong>?</p>
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Note:</strong> This student will no longer be associated with this parent.
+                </div>
+                <p class="text-danger mt-2">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-unlink-btn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span class="btn-text">Unlink Student</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteParentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-parent-form" method="POST" action="{% url 'management:parent_delete' parent.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>{{ parent.full_name }}</strong>?</p>
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone. Only parents with no linked students can be deleted.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Delete Parent</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let currentRelationshipId = null;
+let currentStudentName = '';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // UNLINK MODAL HANDLING
+    // ============================================
+    
+    window.showUnlinkModal = function(relationshipId, studentName) {
+        currentRelationshipId = relationshipId;
+        currentStudentName = studentName;
+        $('#unlink-student-name').text(studentName);
+        
+        const modal = new bootstrap.Modal(document.getElementById('unlinkModal'));
+        modal.show();
+    };
+
+    $('#confirm-unlink-btn').on('click', function() {
+        if (!currentRelationshipId) return;
+        
+        const unlinkBtn = $(this);
+        const spinner = unlinkBtn.find('.spinner-border');
+        const btnText = unlinkBtn.find('.btn-text');
+        
+        unlinkBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Unlinking...');
+        
+        $.ajax({
+            url: '{% url "management:parent_unlink" 0 %}'.replace('/0/', '/' + currentRelationshipId + '/'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(data) {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('unlinkModal')).hide();
+                    showNotification(data.message, 'success');
+                    $(`#relationship-row-${currentRelationshipId}`).fadeOut(300, function() {
+                        $(this).remove();
+                        // Update counts if needed
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    });
+                } else {
+                    showNotification(data.message || 'Error unlinking student', 'error');
+                    unlinkBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Unlink Student');
+                }
+            },
+            error: function(xhr) {
+                unlinkBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Unlink Student');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch(e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // Reset modal state when hidden
+    $('#unlinkModal').on('hidden.bs.modal', function() {
+        currentRelationshipId = null;
+        currentStudentName = '';
+        const unlinkBtn = $('#confirm-unlink-btn');
+        unlinkBtn.prop('disabled', false);
+        unlinkBtn.find('.spinner-border').addClass('d-none');
+        unlinkBtn.find('.btn-text').text('Unlink Student');
+    });
+
+    // ============================================
+    // DELETE MODAL HANDLING
+    // ============================================
+    
+    window.showDeleteModal = function() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteParentModal'));
+        modal.show();
+    };
+
+    $('#delete-parent-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteParentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = '{% url "management:parent_list" %}';
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error deleting parent', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Parent');
+                }
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Parent');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch(e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // Modal reset handlers
+    $('#deleteParentModal').on('hidden.bs.modal', function() {
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Parent');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

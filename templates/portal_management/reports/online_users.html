@@ -1,0 +1,73 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}Online Users — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Online Users{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Currently Online -->
+  <div class="col-12">
+    <div class="form-card">
+      <h6 class="fw-semibold mb-3">
+        <i class="bi bi-circle-fill text-success me-2" style="font-size:0.6rem;vertical-align:middle;"></i>
+        Currently Online ({{ online_sessions|length }})
+      </h6>
+      {% if online_sessions %}
+      <div class="row g-3">
+        {% for sess in online_sessions %}
+        <div class="col-md-4">
+          <div class="border rounded p-3 d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:40px;height:40px;font-size:0.9rem;font-weight:700;">
+              {{ sess.user.get_full_name|first|upper }}
+            </div>
+            <div class="overflow-hidden">
+              <div class="fw-semibold text-truncate">{{ sess.user.get_full_name|default:sess.user.username }}</div>
+              <small class="text-muted">Logged in {{ sess.logged_in_at|timesince }} ago</small><br>
+              <small class="text-muted"><i class="bi bi-geo me-1"></i>{{ sess.ip_address|default:"—" }}</small>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted">No users currently online.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Session History -->
+  <div class="col-12">
+    <div class="dt-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-clock-history me-2 text-secondary"></i>Recent Sessions</h6>
+      <div class="table-responsive">
+        <table id="sessionsTable" class="table table-sm table-hover align-middle w-100">
+          <thead class="table-light">
+            <tr><th>User</th><th>Login</th><th>Last Active</th><th>Logout</th><th>Duration</th><th>IP</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for sess in recent_sessions %}
+            <tr>
+              <td>{{ sess.user.get_full_name|default:sess.user.username }}</td>
+              <td class="small">{{ sess.logged_in_at|date:"d M H:i" }}</td>
+              <td class="small">{{ sess.last_activity|date:"d M H:i" }}</td>
+              <td class="small">{{ sess.logged_out_at|date:"d M H:i"|default:"—" }}</td>
+              <td class="small text-muted">
+                {% if sess.logged_out_at %}{{ sess.duration }}{% else %}Active{% endif %}
+              </td>
+              <td class="small text-muted">{{ sess.ip_address|default:"—" }}</td>
+              <td>{% if sess.is_online %}<span class="badge bg-success">Online</span>{% else %}<span class="badge bg-secondary">Offline</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center text-muted py-4">No session records.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>$(document).ready(function(){ $('#sessionsTable').DataTable({order:[[1,'desc']]}); });</script>
+{% endblock %}

@@ -1,0 +1,1198 @@
+<!-- templates/portal_management/academic/schools/list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Schools — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Schools Registry{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM SCHOOL MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.schools::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.histories::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.transfers::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.schools { background: var(--info-light); color: var(--info); }
+    .stat-icon.histories { background: var(--success-light); color: var(--success); }
+    .stat-icon.transfers { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 1000px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .table tbody tr.school-group-header {
+        background: var(--gray-50);
+        border-top: 2px solid var(--gray-300);
+        border-bottom: 2px solid var(--gray-300);
+    }
+
+    .table tbody tr.school-group-header td {
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    .table tbody tr.school-group-header:hover {
+        background: var(--gray-100);
+    }
+
+    .school-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 1rem;
+    }
+
+    .school-location {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+    }
+
+    .registration-badge {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-200);
+    }
+
+    .level-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    .level-type-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.2rem 0.4rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.7rem;
+        margin-left: 0.25rem;
+    }
+
+    .count-badge {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .count-badge i {
+        color: var(--primary);
+    }
+
+    .count-badge.primary {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .count-badge.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .table tbody td {
+            display: block;
+            text-align: right;
+            padding: 0.75rem;
+            border-bottom: 1px dashed var(--gray-200);
+        }
+
+        .table tbody td::before {
+            content: attr(data-label);
+            float: left;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+
+        .table tbody td:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            justify-content: flex-end;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-building me-2"></i>
+                Schools Registry
+            </h1>
+            <p class="mb-0">Manage schools for student education history and transfers</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-building me-2"></i>
+                Total Schools: {{ total_schools }}
+            </span>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill ms-2">
+                <i class="bi bi-bar-chart me-2"></i>
+                Unique Names: {{ unique_school_names }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card schools">
+        <div class="stat-icon schools">
+            <i class="bi bi-building"></i>
+        </div>
+        <div class="stat-value">{{ total_schools }}</div>
+        <div class="stat-label">Registered Schools</div>
+    </div>
+    
+    <div class="stat-card histories">
+        <div class="stat-icon histories">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-value">{{ total_student_histories }}</div>
+        <div class="stat-label">Student Histories</div>
+    </div>
+    
+    <div class="stat-card transfers">
+        <div class="stat-icon transfers">
+            <i class="bi bi-arrow-right-circle"></i>
+        </div>
+        <div class="stat-value">{{ total_transfers_in }}</div>
+        <div class="stat-label">Incoming Transfers</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="search" class="filter-label">Search</label>
+                <input type="text" class="filter-input" id="search" name="search" 
+                       placeholder="School name, registration..." value="{{ search_query }}">
+            </div>
+            
+            <div class="filter-group">
+                <label for="location" class="filter-label">Location</label>
+                <input type="text" class="filter-input" id="location" name="location" 
+                       placeholder="City, region..." value="{{ location_query }}">
+            </div>
+            
+            <div class="filter-group">
+                <label for="level" class="filter-label">Educational Level</label>
+                <select name="level" id="level" class="filter-select">
+                    <option value="">All Levels</option>
+                    {% for level in educational_levels %}
+                    <option value="{{ level.pk }}" {% if selected_level == level.pk %}selected{% endif %}>{{ level.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:school_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Schools List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            All Schools
+        </h5>
+        <a href="{% url 'management:school_create' %}" class="btn-add">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New School</span>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="schoolsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>School Name</th>
+                    <th>Location</th>
+                    <th>Registration #</th>
+                    <th>Educational Level</th>
+                    <th>Level Type</th>
+                    <th>Student Histories</th>
+                    <th>Incoming Transfers</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for school in schools %}
+                <tr id="school-row-{{ school.pk }}">
+                    <td data-label="School Name">
+                        <div class="d-flex flex-column">
+                            <span class="school-name">{{ school.name }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Location">
+                        {% if school.location %}
+                        <span class="school-location">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            {{ school.location }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Registration #">
+                        {% if school.registration_number %}
+                        <span class="registration-badge">{{ school.registration_number }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Educational Level">
+                        {% if school.educational_level %}
+                        <span class="level-badge">{{ school.educational_level.name }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Level Type">
+                        {% if school.educational_level %}
+                        <span class="level-type-badge">{{ school.educational_level.get_level_type_display }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Student Histories">
+                        <span class="count-badge primary">
+                            <i class="bi bi-clock-history"></i>
+                            {{ school.student_history_count }}
+                        </span>
+                    </td>
+                    <td data-label="Incoming Transfers">
+                        <span class="count-badge success">
+                            <i class="bi bi-arrow-right-circle"></i>
+                            {{ school.transfer_in_count }}
+                        </span>
+                    </td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <a href="{% url 'management:school_detail' school.pk %}" 
+                               class="btn-action view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <a href="{% url 'management:school_update' school.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete"
+                                    onclick="showDeleteModal({{ school.pk }}, '{{ school.name|escapejs }} ({{ school.educational_level.name|escapejs }})', {{ school.student_history_count }}, {{ school.transfer_in_count }})"
+                                    {% if school.student_history_count > 0 or school.transfer_in_count > 0 %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>              
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteSchoolModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-school-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete school <strong id="delete-school-name"></strong>?</p>
+                    
+                    <div class="alert alert-warning" id="delete-school-warning" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This school has associated records that will also be deleted.
+                    </div>
+                    
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Delete School</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+// URL endpoints
+const URLS = {
+    delete: "{% url 'management:school_delete' 0 %}".replace('/0', '')
+};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#schoolsTable').length && $.fn.DataTable) {
+        const table = $('#schoolsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Schools Registry'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Schools Registry',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Schools Registry'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[0, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search schools...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ schools",
+                infoEmpty: "Showing 0 to 0 of 0 schools",
+                infoFiltered: "(filtered from _MAX_ total schools)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // DELETE SCHOOL
+    // ============================================
+
+    window.showDeleteModal = function(schoolId, schoolName, historyCount, transferCount) {
+        $('#delete-school-name').text(schoolName);
+        
+        if (historyCount > 0 || transferCount > 0) {
+            $('#delete-school-warning').show();
+        } else {
+            $('#delete-school-warning').hide();
+        }
+        
+        $('#delete-school-form').attr('action', `${URLS.delete}${schoolId}/`);
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteSchoolModal'));
+        modal.show();
+    };
+
+    $('#delete-school-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteSchoolModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error deleting school', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete School');
+                }
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete School');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLER
+    // ============================================
+
+    $('#deleteSchoolModal').on('hidden.bs.modal', function() {
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete School');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

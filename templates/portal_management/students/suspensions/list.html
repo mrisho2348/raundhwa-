@@ -1,0 +1,1218 @@
+<!-- templates/portal_management/students/suspensions/list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Student Suspensions — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Student Suspensions{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM SUSPENSION MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.active::before { background: linear-gradient(90deg, var(--warning), #ffc107); }
+    .stat-card.lifted::before { background: linear-gradient(90deg, var(--success), #20c997); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.active { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.lifted { background: var(--success-light); color: var(--success); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background: white;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--warning);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons - Always horizontal */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        min-width: 70px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        flex-shrink: 0;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+        width: 100%;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gray-400) var(--gray-200);
+    }
+
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--gray-400);
+        border-radius: var(--radius-full);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: var(--gray-500);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 1400px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+        background-color: white;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    .table tbody tr.active-suspension td {
+        border-left: 4px solid var(--warning);
+    }
+
+    .table tbody tr.lifted-suspension td {
+        border-left: 4px solid var(--success);
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    /* Student Badges */
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--warning-light);
+        color: var(--warning);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .student-avatar.lifted {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 180px;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+        white-space: nowrap;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .status-badge.active {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.lifted {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Reason Badges */
+    .reason-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .reason-badge.discipline {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .reason-badge.fees {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .reason-badge.examination {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .reason-badge.other {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    /* Date Badge */
+    .date-badge {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        font-family: 'Courier New', monospace;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 42px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .toast-icon.warning {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            min-width: 1400px;
+        }
+        
+        .table tbody td {
+            display: table-cell;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .table tbody td::before {
+            display: none;
+        }
+        
+        .table thead {
+            display: table-header-group;
+        }
+        
+        .action-buttons {
+            flex-wrap: nowrap;
+            min-width: 70px;
+            justify-content: flex-start;
+        }
+        
+        .btn-action {
+            flex-shrink: 0;
+        }
+        
+        .student-info {
+            min-width: 180px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Student Suspensions
+            </h1>
+            <p class="mb-0">Manage student suspensions and reinstatements</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Total: {{ total_suspensions }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon total">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="stat-value">{{ total_suspensions }}</div>
+        <div class="stat-label">Total Suspensions</div>
+    </div>
+    
+    <div class="stat-card active">
+        <div class="stat-icon active">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div class="stat-value">{{ active_suspensions }}</div>
+        <div class="stat-label">Active</div>
+    </div>
+    
+    <div class="stat-card lifted">
+        <div class="stat-icon lifted">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ lifted_suspensions }}</div>
+        <div class="stat-label">Lifted</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="status" class="filter-label">Status</label>
+                <select name="status" id="status" class="filter-select select2-filter">
+                    <option value="">All Status</option>
+                    <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="lifted" {% if selected_status == 'lifted' %}selected{% endif %}>Lifted</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="reason" class="filter-label">Reason</label>
+                <select name="reason" id="reason" class="filter-select select2-filter">
+                    <option value="">All Reasons</option>
+                    {% for value, label in reason_choices %}
+                    <option value="{{ value }}" {% if selected_reason == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="academic_year" class="filter-label">Academic Year</label>
+                <select name="academic_year" id="academic_year" class="filter-select select2-filter">
+                    <option value="">All Years</option>
+                    {% for year in academic_years %}
+                    <option value="{{ year.pk }}" {% if selected_academic_year == year.pk %}selected{% endif %}>{{ year.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="class_level" class="filter-label">Class Level</label>
+                <select name="class_level" id="class_level" class="filter-select select2-filter">
+                    <option value="">All Classes</option>
+                    {% for class in class_levels %}
+                    <option value="{{ class.pk }}" {% if selected_class_level == class.pk %}selected{% endif %}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search" class="filter-label">Search</label>
+                <input type="text" class="filter-input" id="search" name="search" 
+                       placeholder="Student name, reg no..." value="{{ search_query }}">
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1" id="apply-filters">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:suspension_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Suspensions List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            Suspension Records
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:suspension_create' %}" class="btn-add">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Suspension</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="suspensionsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration #</th>
+                    <th>Suspension Date</th>
+                    <th>Reason</th>
+                    <th>Expected Return</th>
+                    <th>Status</th>
+                    <th>Lifted Date</th>
+                    <th>Lifted By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for suspension in suspensions %}
+                <tr id="suspension-row-{{ suspension.pk }}">
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar {% if suspension.is_lifted %}lifted{% endif %}">
+                                {{ suspension.student.first_name|first|upper }}{{ suspension.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ suspension.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ suspension.student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="date-badge">{{ suspension.suspension_date|date:"M d, Y" }}</span>
+                    </td>
+                    <td>
+                        <span class="reason-badge {{ suspension.reason }}">
+                            {{ suspension.get_reason_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if suspension.expected_return_date %}
+                            <span class="date-badge">{{ suspension.expected_return_date|date:"M d, Y" }}</span>
+                        {% else %}
+                            <span class="text-muted">Indefinite</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if suspension.is_lifted %}
+                            <span class="status-badge lifted">
+                                <i class="bi bi-check-circle"></i> Lifted
+                            </span>
+                        {% else %}
+                            <span class="status-badge active">
+                                <i class="bi bi-exclamation-triangle"></i> Active
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if suspension.lifted_date %}
+                            <span class="date-badge">{{ suspension.lifted_date|date:"M d, Y" }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if suspension.lifted_by %}
+                            {{ suspension.lifted_by.get_full_name }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- View Details Button -->
+                            <a href="{% url 'management:suspension_detail' suspension.pk %}" 
+                               class="btn-action view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <!-- Edit Button -->
+                            <a href="{% url 'management:suspension_update' suspension.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>              
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR FILTERS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function(){
+            return $(this).data('placeholder');
+        }
+    });
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#suspensionsTable').length && $.fn.DataTable) {
+        const table = $('#suspensionsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Student Suspensions'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Student Suspensions',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Student Suspensions'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[2, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search suspensions...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ suspensions",
+                infoEmpty: "Showing 0 to 0 of 0 suspensions",
+                infoFiltered: "(filtered from _MAX_ total suspensions)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            // Responsive fixes
+            scrollX: true,
+            autoWidth: false,
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+                
+                // Fix responsive issues
+                $('.dataTables_scrollBody').css('overflow-x', 'auto');
+                
+                // Add status-based row coloring
+                $('#suspensionsTable tbody tr').each(function() {
+                    const row = $(this);
+                    if (row.find('.status-badge.lifted').length) {
+                        row.addClass('lifted-suspension');
+                    } else if (row.find('.status-badge.active').length) {
+                        row.addClass('active-suspension');
+                    }
+                });
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // FILTER FORM SUBMIT - ONLY ON BUTTON CLICK
+    // ============================================
+    $('#apply-filters').on('click', function(e) {
+        e.preventDefault();
+        
+        // Show loading indicator
+        $('#loadingOverlay').addClass('show');
+        
+        // Get form data
+        const form = $('#filter-form');
+        const formData = form.serialize();
+        
+        // Submit the form
+        window.location.href = `${window.location.pathname}?${formData}`;
+    });
+
+    // ============================================
+    // ENTER KEY IN SEARCH FIELD - SUBMIT FILTERS
+    // ============================================
+    $('#search').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#apply-filters').click();
+        }
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1719 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Class Levels — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Class Levels Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM CLASS LEVELS MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.final::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.streams::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.final { background: var(--success-light); color: var(--success); }
+    .stat-icon.streams { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action.streams:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 1000px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Level Badges */
+    .level-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .level-badge.nursery {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .level-badge.primary {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .level-badge.o-level {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .level-badge.a-level {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .final-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .final-badge.yes {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .final-badge.no {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    .class-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        display: inline-block;
+    }
+
+    .count-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .count-badge.warning {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .count-badge.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Order Badge */
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        background: var(--gray-100);
+        color: var(--gray-700);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            border-radius: var(--radius-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-diagram-3-fill me-2"></i>
+                Class Levels
+            </h1>
+            <p class="mb-0">Manage class levels across all educational levels</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Total Classes: {{ total_classes }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon total">
+            <i class="bi bi-diagram-3"></i>
+        </div>
+        <div class="stat-value">{{ total_classes }}</div>
+        <div class="stat-label">Total Classes</div>
+    </div>
+    
+    <div class="stat-card final">
+        <div class="stat-icon final">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-value">{{ final_count }}</div>
+        <div class="stat-label">Final Classes</div>
+    </div>
+    
+    <div class="stat-card streams">
+        <div class="stat-icon streams">
+            <i class="bi bi-grid"></i>
+        </div>
+        <div class="stat-value">{{ streams_total }}</div>
+        <div class="stat-label">Total Streams</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="level" class="filter-label">Educational Level</label>
+                <select name="level" id="level" class="filter-select">
+                    <option value="">All Levels</option>
+                    {% for level in educational_levels %}
+                    <option value="{{ level.pk }}" {% if selected_level == level.pk %}selected{% endif %}>
+                        {{ level.name }} ({{ level.get_level_type_display }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="final" class="filter-label">Class Type</label>
+                <select name="final" id="final" class="filter-select">
+                    <option value="">All Classes</option>
+                    <option value="final" {% if selected_final == 'final' %}selected{% endif %}>Final Classes Only</option>
+                    <option value="non_final" {% if selected_final == 'non_final' %}selected{% endif %}>Non-Final Classes Only</option>
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:class_level_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Class Levels List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            All Class Levels
+        </h5>
+        <button type="button" class="btn-add" data-bs-toggle="modal" data-bs-target="#addClassLevelModal">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New Class</span>
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table id="classLevelsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Class</th>
+                    <th>Code</th>
+                    <th>Level</th>
+                    <th>Type</th>
+                    <th>Streams</th>
+                    <th>Students</th>
+                    <th>Teachers</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in class_levels %}
+                <tr id="class-row-{{ class.pk }}">
+                    <td>
+                        <span class="order-badge">{{ class.order }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold">{{ class.name }}</span>
+                    </td>
+                    <td>
+                        <span class="class-code">{{ class.code }}</span>
+                    </td>
+                    <td>
+                        <span class="level-badge 
+                            {% if class.educational_level.level_type == 'NURSERY' %}nursery
+                            {% elif class.educational_level.level_type == 'PRIMARY' %}primary
+                            {% elif class.educational_level.level_type == 'O_LEVEL' %}o-level
+                            {% elif class.educational_level.level_type == 'A_LEVEL' %}a-level
+                            {% endif %}">
+                            <i class="bi bi-tag"></i>
+                            {{ class.educational_level.name }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="final-badge {% if class.is_final %}yes{% else %}no{% endif %}">
+                            <i class="bi bi-{% if class.is_final %}check-circle{% else %}circle{% endif %}"></i>
+                            {% if class.is_final %}Final{% else %}Regular{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if class.stream_count == 0 %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                                <i class="bi bi-grid me-1"></i>
+                                No Streams
+                            </span>
+                        {% else %}
+                            <span class="count-badge">
+                                <i class="bi bi-grid me-1"></i>
+                                {{ class.stream_count }} Stream{{ class.stream_count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if class.student_count == 0 %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                                <i class="bi bi-people me-1"></i>
+                                No Students
+                            </span>
+                        {% else %}
+                            <span class="count-badge success">
+                                <i class="bi bi-people me-1"></i>
+                                {{ class.student_count }} Student{{ class.student_count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if class.teacher_count == 0 %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                                <i class="bi bi-person-badge me-1"></i>
+                                No Teachers
+                            </span>
+                        {% else %}
+                            <span class="count-badge warning">
+                                <i class="bi bi-person-badge me-1"></i>
+                                {{ class.teacher_count }} Teacher{{ class.teacher_count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- View Streams Button -->
+                            <a href="{% url 'management:class_streams' class.pk %}" 
+                               class="btn-action streams" 
+                               title="View Streams">
+                                <i class="bi bi-grid"></i>
+                            </a>
+                            
+                            <!-- Edit Button -->
+                            <button type="button"
+                                    class="btn-action edit"
+                                    title="Edit Class Level"
+                                    onclick="editClassLevel({{ class.pk }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete Class Level"
+                                    onclick="showDeleteModal({{ class.pk }}, '{{ class.name|escapejs }}')"
+                                    {% if class.stream_count > 0 or class.student_count > 0 %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>                
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Class Level Modal -->
+<div class="modal fade" id="addClassLevelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add New Class Level
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="add-class-form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div id="add-form-general-error" class="alert alert-danger alert-general-error" style="display: none;"></div>
+                    
+                    <div class="mb-3">
+                        <label for="add-educational_level" class="form-label required-field">Educational Level</label>
+                        <select class="form-select" id="add-educational_level" name="educational_level" required>
+                            <option value="">Select educational level...</option>
+                            {% for level in educational_levels %}
+                            <option value="{{ level.pk }}">{{ level.name }} ({{ level.get_level_type_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="add-name" class="form-label required-field">Class Name</label>
+                            <input type="text" class="form-control" id="add-name" name="name" required 
+                                   placeholder="e.g., Form 1, Std 3">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="add-code" class="form-label required-field">Class Code</label>
+                            <input type="text" class="form-control" id="add-code" name="code" required 
+                                   placeholder="e.g., F1, STD3">
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Uppercase letters and numbers only
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="add-order" class="form-label required-field">Order</label>
+                            <input type="number" class="form-control" id="add-order" name="order" required 
+                                   placeholder="e.g., 1, 2, 3" min="1">
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Determines the sequence of classes
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" id="add-is_final" name="is_final" value="true">
+                                <label class="form-check-label fw-semibold" for="add-is_final">
+                                    Final Class Level
+                                </label>
+                            </div>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Mark as terminal class (PSLE, Form 4, Form 6)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-class-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Save Class Level</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Class Level Modal -->
+<div class="modal fade" id="editClassLevelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit Class Level
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="edit-class-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit-id" name="id">
+                <div class="modal-body">
+                    <div id="edit-form-general-error" class="alert alert-danger alert-general-error" style="display: none;"></div>
+                    
+                    <div class="mb-3">
+                        <label for="edit-educational_level" class="form-label required-field">Educational Level</label>
+                        <select class="form-select" id="edit-educational_level" name="educational_level" required>
+                            <option value="">Select educational level...</option>
+                            {% for level in educational_levels %}
+                            <option value="{{ level.pk }}">{{ level.name }} ({{ level.get_level_type_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit-name" class="form-label required-field">Class Name</label>
+                            <input type="text" class="form-control" id="edit-name" name="name" required 
+                                   placeholder="e.g., Form 1, Std 3">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="edit-code" class="form-label required-field">Class Code</label>
+                            <input type="text" class="form-control" id="edit-code" name="code" required 
+                                   placeholder="e.g., F1, STD3">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit-order" class="form-label required-field">Order</label>
+                            <input type="number" class="form-control" id="edit-order" name="order" required 
+                                   placeholder="e.g., 1, 2, 3" min="1">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" id="edit-is_final" name="is_final" value="true">
+                                <label class="form-check-label fw-semibold" for="edit-is_final">
+                                    Final Class Level
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="update-class-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Update Class Level</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteClassLevelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the class level <strong id="delete-class-name"></strong>?</p>
+                <p class="text-danger mt-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This action cannot be undone. This class will be removed from all associated streams and enrollments.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-class-btn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span class="btn-text">Delete Class</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let currentEditId = null;
+let deleteClassId = null;
+let deleteClassName = '';
+let csrfToken = '';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#classLevelsTable').length && $.fn.DataTable) {
+        const table = $('#classLevelsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Class Levels List'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Class Levels List',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Class Levels List'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[0, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search classes...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ classes",
+                infoEmpty: "Showing 0 to 0 of 0 classes",
+                infoFiltered: "(filtered from _MAX_ total classes)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // ERROR HANDLING HELPER FUNCTIONS
+    // ============================================
+    
+    function clearValidationErrors(formElement) {
+        $(formElement).find('.is-invalid').removeClass('is-invalid');
+        $(formElement).find('.invalid-feedback').remove();
+        $(formElement).find('.alert-general-error').hide().empty();
+    }
+    
+    function displayValidationErrors(formElement, errors) {
+        clearValidationErrors(formElement);
+        
+        // Handle non-field errors (__all__)
+        if (errors.__all__ && errors.__all__.length > 0) {
+            const generalErrorDiv = $(formElement).find('.alert-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${errors.__all__.join('<br>')}`).show();
+        }
+        
+        // Handle field-specific errors
+        $.each(errors, function(fieldName, fieldErrors) {
+            if (fieldName === '__all__') return;
+            
+            const field = $(formElement).find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                field.addClass('is-invalid');
+                
+                let errorText = '';
+                if (Array.isArray(fieldErrors)) {
+                    errorText = fieldErrors.join('<br>');
+                } else if (typeof fieldErrors === 'string') {
+                    errorText = fieldErrors;
+                } else {
+                    errorText = 'Invalid value';
+                }
+                
+                const errorHtml = `<div class="invalid-feedback">${errorText}</div>`;
+                field.next('.invalid-feedback').remove();
+                field.after(errorHtml);
+            }
+        });
+    }
+
+    function handleAjaxError(xhr, formElement, defaultMessage) {
+        try {
+            const response = JSON.parse(xhr.responseText);
+            
+            if (response.errors) {
+                displayValidationErrors(formElement, response.errors);
+                
+                if (response.message) {
+                    showNotification(response.message, 'error');
+                } else {
+                    showNotification('Please correct the errors in the form.', 'error');
+                }
+            } 
+            else if (response.message) {
+                showNotification(response.message, 'error');
+                
+                if (formElement) {
+                    const generalErrorDiv = $(formElement).find('.alert-general-error');
+                    generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${response.message}`).show();
+                }
+            }
+            else {
+                showNotification(defaultMessage || 'An error occurred. Please try again.', 'error');
+            }
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            showNotification(defaultMessage || 'An error occurred. Please try again.', 'error');
+        }
+    }
+
+    // ============================================
+    // ADD CLASS FORM SUBMISSION
+    // ============================================
+
+    $('#add-class-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const saveBtn = $('#save-class-btn');
+        const spinner = saveBtn.find('.spinner-border');
+        const btnText = saveBtn.find('.btn-text');
+        
+        clearValidationErrors(form);
+        
+        saveBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = new FormData(form);
+        formData.append('action', 'create');
+        
+        // Handle checkbox value properly
+        if (!formData.get('is_final')) {
+            formData.set('is_final', 'false');
+        }
+        
+        $.ajax({
+            url: '{% url "management:class_level_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#addClassLevelModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        displayValidationErrors('#add-class-form', data.errors);
+                        
+                        if (data.message && data.message !== 'Validation error.') {
+                            showNotification(data.message, 'error');
+                        } else {
+                            showNotification('Please correct the errors in the form.', 'error');
+                        }
+                    } else {
+                        showNotification(data.message || 'Error saving class level', 'error');
+                    }
+                    
+                    saveBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Save Class Level');
+                }
+            },
+            error: function(xhr) {
+                handleAjaxError(xhr, '#add-class-form', 'An error occurred while saving. Please try again.');
+                
+                saveBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Save Class Level');
+            }
+        });
+    });
+
+    // ============================================
+    // EDIT CLASS FUNCTIONS
+    // ============================================
+
+    window.editClassLevel = function(classId) {
+        currentEditId = classId;
+        
+        // Show loading state
+        const editBtn = $(`#class-row-${classId} .btn-action.edit`);
+        const originalHtml = editBtn.html();
+        editBtn.html('<span class="spinner-border spinner-border-sm"></span>').prop('disabled', true);
+        
+        $.ajax({
+            url: `{% url 'management:get_class_level_details' 0 %}`.replace('0', classId),
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(data) {
+                editBtn.html(originalHtml).prop('disabled', false);
+                
+                $('#edit-id').val(data.id);
+                $('#edit-educational_level').val(data.educational_level_id);
+                $('#edit-name').val(data.name);
+                $('#edit-code').val(data.code);
+                $('#edit-order').val(data.order);
+                $('#edit-is_final').prop('checked', data.is_final);
+                
+                clearValidationErrors('#edit-class-form');
+                
+                const modal = new bootstrap.Modal(document.getElementById('editClassLevelModal'));
+                modal.show();
+            },
+            error: function() {
+                editBtn.html(originalHtml).prop('disabled', false);
+                showNotification('Failed to load class level details.', 'error');
+            }
+        });
+    };
+
+    // Edit Form Submission
+    $('#edit-class-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const updateBtn = $('#update-class-btn');
+        const spinner = updateBtn.find('.spinner-border');
+        const btnText = updateBtn.find('.btn-text');
+        
+        clearValidationErrors(form);
+        
+        updateBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Updating...');
+        
+        const formData = new FormData(form);
+        formData.append('action', 'update');
+        
+        // Handle checkbox value properly
+        if (!formData.get('is_final')) {
+            formData.set('is_final', 'false');
+        }
+        
+        $.ajax({
+            url: '{% url "management:class_level_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#editClassLevelModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        displayValidationErrors('#edit-class-form', data.errors);
+                        
+                        if (data.message && data.message !== 'Validation error.') {
+                            showNotification(data.message, 'error');
+                        } else {
+                            showNotification('Please correct the errors in the form.', 'error');
+                        }
+                    } else {
+                        showNotification(data.message || 'Error updating class level', 'error');
+                    }
+                    
+                    updateBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Update Class Level');
+                }
+            },
+            error: function(xhr) {
+                handleAjaxError(xhr, '#edit-class-form', 'An error occurred while updating. Please try again.');
+                
+                updateBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Update Class Level');
+            }
+        });
+    });
+
+    // ============================================
+    // DELETE CLASS FUNCTIONS
+    // ============================================
+
+    window.showDeleteModal = function(id, name) {
+        deleteClassId = id;
+        deleteClassName = name;
+        
+        document.getElementById('delete-class-name').textContent = name;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteClassLevelModal'));
+        modal.show();
+    };
+
+    $('#confirm-delete-class-btn').on('click', function() {
+        if (!deleteClassId) return;
+        
+        const deleteBtn = $(this);
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('id', deleteClassId);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        $.ajax({
+            url: '{% url "management:class_level_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteClassLevelModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    
+                    $(`#class-row-${deleteClassId}`).fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        if ($('#classLevelsTable tbody tr').length === 0) {
+                            setTimeout(function() {
+                                location.reload();
+                            }, 500);
+                        }
+                    });
+                } else {
+                    showNotification(data.message || 'Error deleting class level', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Class');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred while deleting.', 'error');
+                } catch (e) {
+                    showNotification('An error occurred while deleting. Please try again.', 'error');
+                }
+                
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Class');
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#addClassLevelModal').on('hidden.bs.modal', function() {
+        $('#add-class-form')[0].reset();
+        clearValidationErrors('#add-class-form');
+        $('#add-is_final').prop('checked', false);
+        const saveBtn = $('#save-class-btn');
+        saveBtn.prop('disabled', false);
+        saveBtn.find('.spinner-border').addClass('d-none');
+        saveBtn.find('.btn-text').text('Save Class Level');
+    });
+
+    $('#editClassLevelModal').on('hidden.bs.modal', function() {
+        clearValidationErrors('#edit-class-form');
+        const updateBtn = $('#update-class-btn');
+        updateBtn.prop('disabled', false);
+        updateBtn.find('.spinner-border').addClass('d-none');
+        updateBtn.find('.btn-text').text('Update Class Level');
+    });
+
+    $('#deleteClassLevelModal').on('hidden.bs.modal', function() {
+        deleteClassId = null;
+        deleteClassName = '';
+        const deleteBtn = $('#confirm-delete-class-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Class');
+    });
+
+    // ============================================
+    // LOADING OVERLAY
+    // ============================================
+
+    // Show loading overlay on form submissions (except AJAX forms)
+    document.querySelectorAll('form:not(#add-class-form):not(#edit-class-form)').forEach(form => {
+        form.addEventListener('submit', function() {
+            if (!this.classList.contains('no-loading')) {
+                document.getElementById('loadingOverlay').classList.add('show');
+            }
+        });
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

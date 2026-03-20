@@ -1,0 +1,43 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}Staff Roles — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Roles{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="form-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Role</h6>
+      <form method="post" action="{% url 'management:staff_role_create' %}" novalidate>
+        {% csrf_token %}
+        <div class="mb-3"><label class="form-label fw-semibold">Role Name *</label>{{ form.name }}</div>
+        <div class="mb-3"><label class="form-label fw-semibold">Portal Category *</label>{{ form.portal_category }}</div>
+        <div class="mb-3"><label class="form-label fw-semibold">Django Group</label>{{ form.group }}</div>
+        <div class="mb-3"><label class="form-label fw-semibold">Description</label>{{ form.description }}</div>
+        <button type="submit" class="btn btn-primary w-100">Save Role</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="dt-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-tags me-2 text-primary"></i>All Staff Roles</h6>
+      <div class="table-responsive">
+        <table id="rolesTable" class="table table-hover align-middle w-100">
+          <thead class="table-light"><tr><th>Role Name</th><th>Portal</th><th>Group</th><th>Active Staff</th></tr></thead>
+          <tbody>
+            {% for role in roles %}
+            <tr>
+              <td class="fw-semibold">{{ role.name }}</td>
+              <td><span class="badge bg-{% if role.portal_category == 'management' %}primary{% elif role.portal_category == 'academic' %}success{% elif role.portal_category == 'none' %}secondary{% else %}info{% endif %}">{{ role.get_portal_category_display }}</span></td>
+              <td><small class="text-muted">{{ role.group.name|default:"—" }}</small></td>
+              <td>{{ role.staff_count }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No roles configured. Run <code>python manage.py setup_school</code> to create defaults.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script>$(document).ready(function(){ $('#rolesTable').DataTable({paging:false,info:false}); });</script>{% endblock %}

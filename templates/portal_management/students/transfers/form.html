@@ -1,0 +1,1372 @@
+<!-- templates/portal_management/students/transfers/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STUDENT TRANSFER FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Student Info Card */
+    .student-info-card {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .student-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .student-details {
+        flex: 1;
+    }
+
+    .student-details h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .student-details .student-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+    }
+
+    .student-details .student-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .student-details .student-meta i {
+        color: var(--primary);
+    }
+
+    /* Enrollment Details Card */
+    .enrollment-details-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .enrollment-details-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px dashed var(--gray-300);
+    }
+
+    .enrollment-details-header i {
+        font-size: 1.2rem;
+        color: var(--primary);
+    }
+
+    .enrollment-details-header h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .enrollment-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .enrollment-detail-item {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .enrollment-detail-label {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .enrollment-detail-label i {
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+
+    .enrollment-detail-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .enrollment-detail-value small {
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: var(--gray-500);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Read-only fields */
+    .form-control[readonly], .form-select[readonly] {
+        background-color: var(--gray-50);
+        border-color: var(--gray-300);
+        color: var(--gray-700);
+    }
+
+    /* Checkbox Group */
+    .checkbox-group {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        padding: 0.5rem 0;
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+    }
+
+    .alert-warning {
+        background: var(--warning-light);
+        color: #856404;
+        border: 1px solid #ffeeba;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 42px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .student-info-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .student-details .student-meta {
+            justify-content: center;
+        }
+
+        .enrollment-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .checkbox-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-arrow-right-circle-fill me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if is_update %}
+                    Update transfer record for <strong>{{ transfer.student.full_name }}</strong>
+                {% else %}
+                    Record a student's transfer to another institution
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:student_transfer_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Transfers</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Student Info Card (for update view or pre-selected student) -->
+{% if pre_selected_student %}
+<div class="student-info-card">
+    <div class="student-avatar-large">
+        {{ pre_selected_student.full_name|first|upper }}{{ pre_selected_student.full_name|last|upper }}
+    </div>
+    <div class="student-details">
+        <h3>{{ pre_selected_student.full_name }}</h3>
+        <div class="student-meta">
+            <span>
+                <i class="bi bi-upc-scan"></i>
+                {{ pre_selected_student.registration_number }}
+            </span>
+            <span>
+                <i class="bi bi-diagram-3"></i>
+                {{ pre_selected_student.current_class }}
+            </span>
+            <span>
+                <i class="bi bi-grid"></i>
+                {{ pre_selected_student.current_stream }}
+            </span>
+            <span>
+                <i class="bi bi-calendar"></i>
+                {{ pre_selected_student.current_academic_year }}
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Current Enrollment Details Card (shown when student is selected on create) -->
+{% if not is_update %}
+<div id="enrollment-details-container" style="display: {% if pre_selected_student %}block{% else %}none{% endif %};">
+    <div class="enrollment-details-card">
+        <div class="enrollment-details-header">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            <h6>Current Enrollment Details</h6>
+        </div>
+        <div class="enrollment-details-grid">
+            <div class="enrollment-detail-item">
+                <div class="enrollment-detail-label">
+                    <i class="bi bi-diagram-3"></i>
+                    Class Level
+                </div>
+                <div class="enrollment-detail-value" id="display-current-class">
+                    {% if pre_selected_student %}{{ pre_selected_student.current_class }}{% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="enrollment-detail-item">
+                <div class="enrollment-detail-label">
+                    <i class="bi bi-grid"></i>
+                    Stream
+                </div>
+                <div class="enrollment-detail-value" id="display-current-stream">
+                    {% if pre_selected_student %}{{ pre_selected_student.current_stream }}{% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="enrollment-detail-item">
+                <div class="enrollment-detail-label">
+                    <i class="bi bi-calendar"></i>
+                    Academic Year
+                </div>
+                <div class="enrollment-detail-value" id="display-current-academic-year">
+                    {% if pre_selected_student %}{{ pre_selected_student.current_academic_year }}{% else %}—{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Transfer Details
+        </h5>
+        {% if transfer %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Transferred on: {{ transfer.transfer_date|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="transfer-form" method="POST" {% if is_update %}action="{% url 'management:student_transfer_update' transfer.pk %}"{% else %}action="{% url 'management:student_transfer_create' %}"{% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <!-- Student Selection (only in create mode without pre-selected) -->
+        {% if not pre_selected_student and not is_update %}
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <label for="{{ form.student.id_for_label }}" class="form-label required-field">
+                    {{ form.student.label }}
+                </label>
+                <select name="student" class="form-select select2-student" id="{{ form.student.id_for_label }}" required>
+                    <option value="">Select a student...</option>
+                    {% for student_option in eligible_students %}
+                    <option value="{{ student_option.id }}" 
+                            data-class="{{ student_option.current_class_name }}"
+                            data-stream="{{ student_option.current_stream }}"
+                            data-academic-year="{{ student_option.current_academic_year_name }}"
+                            {% if form.student.value == student_option.id %}selected{% endif %}>
+                        {{ student_option.full_name }} ({{ student_option.registration_number }}) - {{ student_option.current_class_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.student.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.student.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the student to transfer (only actively enrolled students without existing transfers are shown)
+                </small>
+            </div>
+        </div>
+        {% else %}
+            <!-- Hidden student field for edit or pre-selected create -->
+            <input type="hidden" name="student" value="{% if pre_selected_student %}{{ pre_selected_student.id }}{% else %}{{ transfer.student.pk }}{% endif %}">
+        {% endif %}
+        
+        <div class="row g-4">
+            <!-- Transfer Date -->
+            <div class="col-md-6">
+                <label for="{{ form.transfer_date.id_for_label }}" class="form-label required-field">
+                    {{ form.transfer_date.label }}
+                </label>
+                {{ form.transfer_date }}
+                {% if form.transfer_date.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.transfer_date.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-calendar"></i>
+                    Date the student officially left
+                </small>
+            </div>
+            
+            <!-- Reason -->
+            <div class="col-md-6">
+                <label for="{{ form.reason.id_for_label }}" class="form-label required-field">
+                    {{ form.reason.label }}
+                </label>
+                {{ form.reason }}
+                {% if form.reason.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.reason.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-question-circle"></i>
+                    Reason for transfer
+                </small>
+            </div>
+            
+            <!-- Destination School (Registered) -->
+            <div class="col-md-6">
+                <label for="{{ form.destination_school.id_for_label }}" class="form-label">
+                    {{ form.destination_school.label }}
+                </label>
+                <select name="destination_school" class="form-select select2-school" id="{{ form.destination_school.id_for_label }}">
+                    <option value="">Select a registered school...</option>
+                    {% for school in schools %}
+                    <option value="{{ school.id }}" {% if form.destination_school.value == school.id %}selected{% endif %}>
+                        {{ school.name }}{% if school.location %} ({{ school.location }}){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.destination_school.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.destination_school.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-building"></i>
+                    {{ form.destination_school.help_text }}
+                </small>
+            </div>
+            
+            <!-- Destination School Name (Free text) -->
+            <div class="col-md-6">
+                <label for="{{ form.destination_school_name.id_for_label }}" class="form-label">
+                    Or Enter School Name
+                </label>
+                {{ form.destination_school_name }}
+                {% if form.destination_school_name.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.destination_school_name.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-pencil"></i>
+                    If school is not in the registry
+                </small>
+            </div>
+            
+            <!-- Enrollment Information - Only shown on create, hidden on update -->
+            {% if not is_update %}
+            <!-- Read-only Current Class Display (Create Mode) -->
+            <div class="col-md-4">
+                <label class="form-label">Current Class</label>
+                {{ form.current_class }}
+                <small class="field-hint">
+                    <i class="bi bi-diagram-3"></i>
+                    Automatically populated from active enrollment
+                </small>
+            </div>
+            
+            <!-- Read-only Current Stream Display (Create Mode) -->
+            <div class="col-md-4">
+                <label class="form-label">Current Stream</label>
+                {{ form.current_stream }}
+                <small class="field-hint">
+                    <i class="bi bi-grid"></i>
+                    Automatically populated from active enrollment
+                </small>
+            </div>
+            
+            <!-- Read-only Current Academic Year Display (Create Mode) -->
+            <div class="col-md-4">
+                <label class="form-label">Current Academic Year</label>
+                {{ form.current_academic_year }}
+                <small class="field-hint">
+                    <i class="bi bi-calendar-check"></i>
+                    Automatically populated from active enrollment
+                </small>
+            </div>
+            {% endif %}
+            
+            <!-- Documents Issued -->
+            <div class="col-12">
+                <label class="form-label">Documents Issued</label>
+                <div class="checkbox-group">
+                    <div class="form-check">
+                        {{ form.transfer_letter_issued }}
+                        <label class="form-check-label" for="{{ form.transfer_letter_issued.id_for_label }}">
+                            Transfer Letter Issued
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        {{ form.transcript_issued }}
+                        <label class="form-check-label" for="{{ form.transcript_issued.id_for_label }}">
+                            Transcript Issued
+                        </label>
+                    </div>
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-file-text"></i>
+                    Check documents that were issued to the student
+                </small>
+            </div>
+            
+            <!-- Authorised By -->
+            <div class="col-md-6">
+                <label for="{{ form.authorised_by.id_for_label }}" class="form-label">
+                    {{ form.authorised_by.label }}
+                </label>
+                <select name="authorised_by" class="form-select select2-staff" id="{{ form.authorised_by.id_for_label }}">
+                    <option value="">Select staff member...</option>
+                    {% for staff in staff_members %}
+                    <option value="{{ staff.id }}" 
+                            data-fullname="{{ staff.get_full_name }}"
+                            data-email="{{ staff.user.email|default:'' }}"
+                            {% if form.authorised_by.value == staff.id %}selected{% endif %}
+                            {% if request.user.staff_profile and request.user.staff_profile.id == staff.id %}selected{% endif %}>
+                        {{ staff.get_full_name }} 
+                        {% if staff.user.email %}- {{ staff.user.email }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.authorised_by.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.authorised_by.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-person-badge"></i>
+                    Staff who authorised this transfer
+                </small>
+            </div>
+            
+            <!-- Remarks -->
+            <div class="col-12">
+                <label for="{{ form.remarks.id_for_label }}" class="form-label">
+                    {{ form.remarks.label }}
+                </label>
+                {{ form.remarks }}
+                {% if form.remarks.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.remarks.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-chat"></i>
+                    Additional notes about this transfer
+                </small>
+            </div>
+        </div>
+        
+        <!-- Hidden fields for last_class_level and last_academic_year (will be populated server-side) -->
+        {{ form.last_class_level }}
+        {{ form.last_academic_year }}
+        
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+        <div class="alert-general-error mt-4">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Form Actions -->
+        <div class="action-buttons">
+            <button type="submit" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if is_update %}Update{% else %}Save{% endif %} Transfer Record
+                </span>
+            </button>
+
+            <a href="{% if is_update %}{% url 'management:student_transfer_detail' transfer.pk %}{% else %}{% url 'management:student_transfer_list' %}{% endif %}" 
+               class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let isUpdate = {% if is_update %}true{% else %}false{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // DESTINATION SCHOOL TOGGLE LOGIC
+    // ============================================
+    const destinationSchool = $('#{{ form.destination_school.id_for_label }}');
+    const destinationSchoolName = $('#{{ form.destination_school_name.id_for_label }}');
+    
+    function toggleDestinationFields() {
+        if (destinationSchool.val()) {
+            destinationSchoolName.prop('disabled', true);
+            destinationSchoolName.val('');
+        } else {
+            destinationSchoolName.prop('disabled', false);
+        }
+    }
+    
+    destinationSchool.on('change', toggleDestinationFields);
+    toggleDestinationFields(); // Initial state
+
+    // ============================================
+    // INITIALIZE SELECT2 (without AJAX - using pre-loaded data)
+    // ============================================
+    
+    // Student Select2 (create mode without pre-selected)
+    {% if not pre_selected_student and not is_update %}
+    $('.select2-student').select2({
+        placeholder: 'Select a student...',
+        allowClear: true,
+        width: '100%',
+        templateResult: formatStudentResult,
+        templateSelection: formatStudentSelection
+    });
+    {% endif %}
+    
+    // Destination School Select2 (with pre-loaded data)
+    $('.select2-school').select2({
+        placeholder: 'Select a registered school...',
+        allowClear: true,
+        width: '100%',
+        templateResult: formatSchoolResult,
+        templateSelection: formatSchoolSelection
+    });
+    
+    // Staff Select2 (with pre-loaded data)
+    $('.select2-staff').select2({
+        placeholder: 'Select staff member...',
+        allowClear: true,
+        width: '100%',
+        templateResult: formatStaffResult,
+        templateSelection: formatStaffSelection
+    });
+    
+    // Reason Select2
+    $('#{{ form.reason.id_for_label }}').select2({
+        width: '100%',
+        placeholder: 'Select reason...',
+        allowClear: true
+    });
+
+    // Helper functions for Select2 formatting
+    function formatStudentResult(student) {
+        if (student.loading) {
+            return student.text;
+        }
+        
+        // Get the option element to access data attributes
+        const option = $(student.element);
+        const className = option.data('class') || '';
+        const streamName = option.data('stream') || '';
+        
+        var $container = $(
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-semibold">' + student.text.split(' - ')[0] + '</span>' +
+                '<small class="text-muted">' + className + (streamName ? ' | ' + streamName : '') + '</small>' +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatStudentSelection(student) {
+        return student.text.split(' - ')[0] || student.text;
+    }
+
+    function formatSchoolResult(school) {
+        if (school.loading) {
+            return school.text;
+        }
+        
+        const option = $(school.element);
+        const location = option.text().match(/\(([^)]+)\)/);
+        const locationText = location ? location[1] : '';
+        
+        var $container = $(
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-semibold">' + (school.text.split(' (')[0] || school.text) + '</span>' +
+                (locationText ? '<small class="text-muted">' + locationText + '</small>' : '') +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatSchoolSelection(school) {
+        return school.text.split(' (')[0] || school.text;
+    }
+
+    function formatStaffResult(staff) {
+        if (staff.loading) {
+            return staff.text;
+        }
+        
+        const option = $(staff.element);
+        const fullName = staff.text.split(' - ')[0];
+        const email = option.data('email') || '';
+        
+        var $container = $(
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-semibold">' + fullName + '</span>' +
+                (email ? '<small class="text-muted">' + email + '</small>' : '') +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatStaffSelection(staff) {
+        return staff.text.split(' - ')[0] || staff.text;
+    }
+
+    // ============================================
+    // STUDENT SELECT HANDLER (only for create mode)
+    // ============================================
+    {% if not is_update and not pre_selected_student %}
+    const studentSelect = $('.select2-student');
+    const enrollmentDetailsContainer = $('#enrollment-details-container');
+    const currentClassField = $('#{{ form.current_class.id_for_label }}');
+    const currentStreamField = $('#{{ form.current_stream.id_for_label }}');
+    const currentAcademicYearField = $('#{{ form.current_academic_year.id_for_label }}');
+    const displayClass = $('#display-current-class');
+    const displayStream = $('#display-current-stream');
+    const displayAcademicYear = $('#display-current-academic-year');
+    
+    function updateEnrollmentDisplay() {
+        const selectedOption = studentSelect.find('option:selected');
+        
+        if (selectedOption.val()) {
+            const className = selectedOption.data('class') || '—';
+            const streamName = selectedOption.data('stream') || 'Not assigned';
+            const academicYearName = selectedOption.data('academic-year') || '—';
+            
+            // Update display fields
+            currentClassField.val(className);
+            currentStreamField.val(streamName);
+            currentAcademicYearField.val(academicYearName);
+            
+            // Update display elements
+            displayClass.text(className);
+            displayStream.text(streamName);
+            displayAcademicYear.text(academicYearName);
+            
+            enrollmentDetailsContainer.show();
+        } else {
+            // Clear fields
+            currentClassField.val('');
+            currentStreamField.val('');
+            currentAcademicYearField.val('');
+            
+            displayClass.text('—');
+            displayStream.text('—');
+            displayAcademicYear.text('—');
+            
+            enrollmentDetailsContainer.hide();
+        }
+    }
+    
+    studentSelect.on('change', updateEnrollmentDisplay);
+    
+    // Trigger on page load if a student is pre-selected (for form validation errors)
+    if (studentSelect.val()) {
+        updateEnrollmentDisplay();
+    }
+    {% endif %}
+
+    // ============================================
+    // FORM SUBMIT
+    // ============================================
+    
+    $('#transfer-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Clear previous errors
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = '{% url "management:student_transfer_list" %}';
+                        }
+                    }, 1500);
+                } else {
+                    handleFormErrors(form, data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if is_update %}Update{% else %}Save{% endif %} Transfer Record');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors(form, response.errors);
+                        if (response.message) {
+                            showNotification(response.message, 'error');
+                        }
+                    } else if (response.message) {
+                        showNotification(response.message, 'error');
+                    } else {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if is_update %}Update{% else %}Save{% endif %} Transfer Record');
+            }
+        });
+    });
+
+    // ============================================
+    // FORM ERROR HANDLING
+    // ============================================
+    
+    function handleFormErrors(form, data) {
+        // Display general error
+        if (data.message) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${data.message}`).show();
+        }
+        
+        // Display field errors
+        if (data.errors) {
+            displayValidationErrors(form, data.errors);
+        }
+    }
+    
+    function displayValidationErrors(form, errors) {
+        $.each(errors, function(fieldName, fieldErrors) {
+            // Handle __all__ errors (non-field errors)
+            if (fieldName === '__all__') {
+                const generalErrorDiv = $('#form-general-error');
+                let errorHtml = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+                if (Array.isArray(fieldErrors)) {
+                    errorHtml += fieldErrors.join('<br>');
+                } else {
+                    errorHtml += fieldErrors;
+                }
+                generalErrorDiv.html(errorHtml).show();
+                return;
+            }
+            
+            const field = form.find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                field.addClass('is-invalid');
+                
+                let errorText = '';
+                if (Array.isArray(fieldErrors)) {
+                    errorText = fieldErrors.join('<br>');
+                } else if (typeof fieldErrors === 'string') {
+                    errorText = fieldErrors;
+                } else {
+                    errorText = 'Invalid value';
+                }
+                
+                // Remove any existing error message
+                field.next('.invalid-feedback').remove();
+                
+                // Check if it's a Select2 field
+                if (field.hasClass('select2-hidden-accessible')) {
+                    const select2Container = field.next('.select2-container');
+                    if (select2Container.length) {
+                        select2Container.after(`<div class="invalid-feedback d-block">${errorText}</div>`);
+                    } else {
+                        field.after(`<div class="invalid-feedback">${errorText}</div>`);
+                    }
+                } else {
+                    // Add new error message
+                    const errorHtml = `<div class="invalid-feedback">${errorText}</div>`;
+                    field.after(errorHtml);
+                }
+            }
+        });
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

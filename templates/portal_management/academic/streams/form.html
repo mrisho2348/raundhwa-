@@ -1,0 +1,1150 @@
+<!-- templates/portal_management/academic/streams/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STREAM CLASS FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--info);
+        font-size: 1.4rem;
+    }
+
+    /* Stream Preview Card */
+    .stream-preview-card {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+        text-align: center;
+    }
+
+    .stream-preview-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 1rem;
+    }
+
+    .stream-preview-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .stream-preview-details {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-top: 0.5rem;
+    }
+
+    .stream-preview-details span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stream-preview-details i {
+        color: var(--primary);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+    }
+
+    .alert-warning {
+        background: var(--warning-light);
+        color: #856404;
+        border: 1px solid #ffeeba;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-info {
+        background: var(--info-light);
+        color: var(--info);
+        border: 1px solid #bee5eb;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 42px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .stream-preview-details {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if is_update %}
+                    Update stream class details for <strong>{{ stream.name }}</strong>
+                {% else %}
+                    Create a new class stream
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:stream_class_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Streams</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stream Preview Card (Live Preview) -->
+<div class="stream-preview-card" id="stream-preview-card">
+    <div class="stream-preview-icon">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+    </div>
+    <div class="stream-preview-name" id="preview-stream-name">
+        {% if stream %}
+            {{ stream.name }}
+        {% else %}
+            New Stream
+        {% endif %}
+    </div>
+    <div class="stream-preview-details">
+        <span id="preview-class-level">
+            <i class="bi bi-diagram-3"></i>
+            {% if stream %}
+                {{ stream.class_level.name }}
+            {% else %}
+                Select Class Level
+            {% endif %}
+        </span>
+        <span id="preview-stream-letter">
+            <i class="bi bi-type"></i>
+            {% if stream %}
+                {{ stream.stream_letter }}
+            {% else %}
+                Letter
+            {% endif %}
+        </span>
+        <span id="preview-capacity">
+            <i class="bi bi-people"></i>
+            {% if stream %}
+                Capacity: {{ stream.capacity }}
+            {% else %}
+                Capacity: --
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Stream Details
+        </h5>
+        {% if stream %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Created: {{ stream.created_at|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="stream-form" method="POST" 
+          {% if is_update %}
+          action="{% url 'management:stream_class_update' stream.pk %}"
+          {% else %}
+          action="{% url 'management:stream_class_create' %}"
+          {% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <div class="row g-4">
+            <!-- Class Level Selection -->
+            <div class="col-md-6">
+                <label for="{{ form.class_level.id_for_label }}" class="form-label required-field">
+                    {{ form.class_level.label }}
+                </label>
+                <select name="class_level" id="{{ form.class_level.id_for_label }}" class="form-select select2-class-level" required>
+                    <option value="">Select class level...</option>
+                    {% for class_level in class_levels %}
+                    <option value="{{ class_level.id }}" 
+                            data-level-name="{{ class_level.educational_level.name }}"
+                            {% if form.class_level.value == class_level.id %}selected{% endif %}>
+                        {{ class_level.name }} - {{ class_level.educational_level.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.class_level.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.class_level.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-diagram-3"></i>
+                    {{ form.class_level.help_text }}
+                </small>
+            </div>
+            
+            <!-- Stream Letter - Select Field -->
+            <div class="col-md-6">
+                <label for="{{ form.stream_letter.id_for_label }}" class="form-label required-field">
+                    {{ form.stream_letter.label }}
+                </label>
+                <select name="stream_letter" id="{{ form.stream_letter.id_for_label }}" class="form-select select2-stream-letter" required>
+                    <option value="">Select letter...</option>
+                    {% for value, label in form.stream_letter.field.choices %}
+                        {% if value %}
+                        <option value="{{ value }}" {% if form.stream_letter.value == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if form.stream_letter.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.stream_letter.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-type"></i>
+                    {{ form.stream_letter.help_text }}
+                </small>
+            </div>
+            
+            <!-- Capacity -->
+            <div class="col-md-12">
+                <label for="{{ form.capacity.id_for_label }}" class="form-label">
+                    {{ form.capacity.label }}
+                </label>
+                {{ form.capacity }}
+                {% if form.capacity.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.capacity.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-people"></i>
+                    {{ form.capacity.help_text }}
+                </small>
+            </div>
+        </div>
+        
+        <!-- Hidden field for name (will be populated by JavaScript) -->
+        <input type="hidden" name="name" id="id_name" value="">
+        
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+        <div class="alert-general-error mt-4">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Form Actions -->
+        <div class="action-buttons">
+            <button type="submit" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if is_update %}Update{% else %}Create{% endif %} Stream
+                </span>
+            </button>
+
+            <a href="{% if is_update %}{% url 'management:stream_class_detail' stream.pk %}{% else %}{% url 'management:stream_class_list' %}{% endif %}" 
+               class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let isUpdate = {% if is_update %}true{% else %}false{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2
+    // ============================================
+    
+    // Class Level Select2
+    $('#{{ form.class_level.id_for_label }}').select2({
+        placeholder: 'Select class level...',
+        allowClear: true,
+        width: '100%',
+        templateResult: formatClassLevelResult,
+        templateSelection: formatClassLevelSelection
+    });
+    
+    // Stream Letter Select2
+    $('#{{ form.stream_letter.id_for_label }}').select2({
+        placeholder: 'Select stream letter...',
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Helper functions for Select2 formatting
+    function formatClassLevelResult(classLevel) {
+        if (classLevel.loading) {
+            return classLevel.text;
+        }
+        
+        const option = $(classLevel.element);
+        const levelName = option.data('level-name') || '';
+        
+        var $container = $(
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-semibold">' + (classLevel.text.split(' -')[0] || classLevel.text) + '</span>' +
+                (levelName ? '<small class="text-muted">' + levelName + '</small>' : '') +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatClassLevelSelection(classLevel) {
+        return classLevel.text.split(' -')[0] || classLevel.text;
+    }
+
+    // ============================================
+    // DOM Elements
+    // ============================================
+    
+    const classLevelSelect = $('#{{ form.class_level.id_for_label }}');
+    const streamLetterSelect = $('#{{ form.stream_letter.id_for_label }}');
+    const capacityInput = $('#{{ form.capacity.id_for_label }}');
+    const hiddenNameInput = $('#id_name');
+    
+    const previewStreamName = $('#preview-stream-name');
+    const previewClassLevel = $('#preview-class-level');
+    const previewStreamLetter = $('#preview-stream-letter');
+    const previewCapacity = $('#preview-capacity');
+    
+    // Function to get selected class name
+    function getSelectedClassName() {
+        const selectedOption = classLevelSelect.find('option:selected');
+        if (selectedOption.val()) {
+            const fullText = selectedOption.text();
+            const className = fullText.split(' -')[0] || '';
+            return className.trim();
+        }
+        return '';
+    }
+    
+    // Function to get selected stream letter
+    function getSelectedStreamLetter() {
+        const selectedOption = streamLetterSelect.find('option:selected');
+        if (selectedOption.val()) {
+            return selectedOption.val().trim();
+        }
+        return '';
+    }
+    
+    // Function to generate stream name from class and letter
+    function generateStreamName(className, streamLetter) {
+        if (className && streamLetter) {
+            return `${className}${streamLetter}`;
+        } else if (className) {
+            return className;
+        } else if (streamLetter) {
+            return streamLetter;
+        }
+        return '';
+    }
+    
+    // Function to update ALL preview elements and hidden name field
+    function updateAllPreviewElements() {
+        // Update class level preview
+        const className = getSelectedClassName();
+        previewClassLevel.html(`<i class="bi bi-diagram-3"></i> ${className || 'Select Class Level'}`);
+        
+        // Update stream letter preview
+        const streamLetter = getSelectedStreamLetter();
+        previewStreamLetter.html(`<i class="bi bi-type"></i> ${streamLetter || 'Letter'}`);
+        
+        // Update capacity preview
+        const capacity = capacityInput.val() || '--';
+        previewCapacity.html(`<i class="bi bi-people"></i> Capacity: ${capacity}`);
+        
+        // Generate stream name
+        const generatedName = generateStreamName(className, streamLetter);
+        const displayName = generatedName || 'New Stream';
+        
+        // Update preview name
+        previewStreamName.text(displayName);
+        
+        // Update hidden input field with generated name
+        if (generatedName) {
+            hiddenNameInput.val(generatedName);
+        } else {
+            hiddenNameInput.val('');
+        }
+        
+        // Log for debugging
+        console.log('Preview updated:', {
+            className: className,
+            streamLetter: streamLetter,
+            generatedName: generatedName,
+            displayName: displayName
+        });
+    }
+    
+    // Debounced update function
+    let updateTimeout;
+    
+    function debouncedUpdate() {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(function() {
+            updateAllPreviewElements();
+        }, 100);
+    }
+    
+    // Handle class level change
+    classLevelSelect.on('change', function() {
+        console.log('Class level changed');
+        debouncedUpdate();
+    });
+    
+    // Handle stream letter change
+    streamLetterSelect.on('change', function() {
+        console.log('Stream letter changed');
+        debouncedUpdate();
+    });
+    
+    // Handle capacity input
+    capacityInput.on('input', function() {
+        updateAllPreviewElements();
+    });
+    
+    // Handle capacity validation
+    capacityInput.on('change', function() {
+        let value = parseInt($(this).val());
+        if (isNaN(value)) {
+            $(this).val(1);
+        } else if (value < 1) {
+            $(this).val(1);
+            showNotification('Capacity must be at least 1 student.', 'warning');
+        } else if (value > 200) {
+            $(this).val(200);
+            showNotification('Capacity cannot exceed 200 students.', 'warning');
+        }
+        updateAllPreviewElements();
+    });
+    
+    // Initialize preview on page load
+    function initializePreview() {
+        console.log('Initializing preview');
+        
+        // For edit mode, we need to get the class name and stream letter from the existing stream
+        if (isUpdate && window.streamData) {
+            // If we have existing stream data, use it to populate the preview
+            const className = window.streamData.class_name || '';
+            const streamLetter = window.streamData.stream_letter || '';
+            const capacity = window.streamData.capacity || '';
+            
+            if (className) {
+                // Find and select the class level option
+                const classOption = classLevelSelect.find(`option:contains("${className}")`);
+                if (classOption.length) {
+                    classLevelSelect.val(classOption.val()).trigger('change');
+                }
+            }
+            
+            if (streamLetter) {
+                streamLetterSelect.val(streamLetter).trigger('change');
+            }
+            
+            if (capacity) {
+                capacityInput.val(capacity);
+            }
+        }
+        
+        updateAllPreviewElements();
+    }
+    
+    // If in update mode, pass stream data from the template
+    {% if is_update and stream %}
+    window.streamData = {
+        class_name: "{{ stream.class_level.name|escapejs }}",
+        stream_letter: "{{ stream.stream_letter|escapejs }}",
+        capacity: {{ stream.capacity }}
+    };
+    {% endif %}
+    
+    initializePreview();
+
+    // ============================================
+    // FORM SUBMIT
+    // ============================================
+    
+    $('#stream-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate required fields
+        if (!classLevelSelect.val()) {
+            showNotification('Please select a class level.', 'error');
+            classLevelSelect.next('.select2-container').addClass('is-invalid');
+            return;
+        }
+        
+        if (!streamLetterSelect.val()) {
+            showNotification('Please select a stream letter.', 'error');
+            streamLetterSelect.next('.select2-container').addClass('is-invalid');
+            return;
+        }
+        
+        // Ensure name is generated
+        const generatedName = hiddenNameInput.val().trim();
+        if (!generatedName) {
+            showNotification('Could not generate stream name. Please select class level and stream letter.', 'error');
+            return;
+        }
+        
+        // Clear previous errors
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = '{% url "management:stream_class_list" %}';
+                        }
+                    }, 1500);
+                } else {
+                    handleFormErrors(form, data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if is_update %}Update{% else %}Create{% endif %} Stream');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors(form, response.errors);
+                        if (response.message) {
+                            showNotification(response.message, 'error');
+                        }
+                    } else if (response.message) {
+                        showNotification(response.message, 'error');
+                    } else {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if is_update %}Update{% else %}Create{% endif %} Stream');
+            }
+        });
+    });
+
+    // ============================================
+    // FORM ERROR HANDLING
+    // ============================================
+    
+    function handleFormErrors(form, data) {
+        // Display general error
+        if (data.message) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${data.message}`).show();
+        }
+        
+        // Display field errors
+        if (data.errors) {
+            displayValidationErrors(form, data.errors);
+        }
+    }
+    
+    function displayValidationErrors(form, errors) {
+        $.each(errors, function(fieldName, fieldErrors) {
+            // Handle __all__ errors (non-field errors)
+            if (fieldName === '__all__') {
+                const generalErrorDiv = $('#form-general-error');
+                let errorHtml = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+                if (Array.isArray(fieldErrors)) {
+                    errorHtml += fieldErrors.join('<br>');
+                } else {
+                    errorHtml += fieldErrors;
+                }
+                generalErrorDiv.html(errorHtml).show();
+                return;
+            }
+            
+            const field = form.find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                field.addClass('is-invalid');
+                
+                let errorText = '';
+                if (Array.isArray(fieldErrors)) {
+                    errorText = fieldErrors.join('<br>');
+                } else if (typeof fieldErrors === 'string') {
+                    errorText = fieldErrors;
+                } else {
+                    errorText = 'Invalid value';
+                }
+                
+                // Remove any existing error message
+                field.next('.invalid-feedback').remove();
+                
+                // Check if it's a Select2 field
+                if (field.hasClass('select2-hidden-accessible')) {
+                    const select2Container = field.next('.select2-container');
+                    if (select2Container.length) {
+                        select2Container.after(`<div class="invalid-feedback d-block">${errorText}</div>`);
+                    } else {
+                        field.after(`<div class="invalid-feedback">${errorText}</div>`);
+                    }
+                } else {
+                    // Add new error message
+                    const errorHtml = `<div class="invalid-feedback">${errorText}</div>`;
+                    field.after(errorHtml);
+                }
+            }
+        });
+    }
+    
+    // Clear Select2 error styling on change
+    classLevelSelect.on('change', function() {
+        $(this).next('.select2-container').removeClass('is-invalid');
+    });
+    
+    streamLetterSelect.on('change', function() {
+        $(this).next('.select2-container').removeClass('is-invalid');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

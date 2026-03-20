@@ -1,0 +1,463 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Students — {{ level.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Students in {{ level.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reuse the same styles from level_subjects.html with additions */
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 2px solid white;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .student-avatar-placeholder {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        border: 2px solid white;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .student-name {
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+
+    .registration-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge i {
+        font-size: 0.7rem;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.suspended {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.withdrawn {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .status-badge.transferred {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .status-badge.completed {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .btn-view {
+        background: var(--info-light);
+        color: var(--info);
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-view:hover {
+        background: var(--info);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .action-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .table tbody td {
+            display: block;
+            text-align: right;
+            padding: 0.75rem;
+        }
+
+        .table tbody td::before {
+            content: attr(data-label);
+            float: left;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+
+        .action-group {
+            justify-content: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-people-fill me-2"></i>
+                Students in {{ level.name }}
+            </h1>
+            <p class="mb-0">{{ level.code }} | {{ level.get_level_type_display }}</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-people me-2"></i>
+                Total Students: {{ students|length }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Students List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-table"></i>
+            All Students
+        </h5>
+        <div>
+            <a href="{% url 'management:educational_level_list' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Levels</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Reg No</th>
+                    <th>Student</th>
+                    <th>Gender</th>
+                    <th>Class</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td data-label="Reg No">
+                        <span class="registration-code">{{ student.registration_number|default:"—" }}</span>
+                    </td>
+                    <td data-label="Student">
+                        <div class="d-flex align-items-center gap-2">
+                            {% if student.profile_picture %}
+                                <img src="{{ student.profile_picture.url }}" 
+                                     class="student-avatar" 
+                                     alt="{{ student.full_name }}">
+                            {% else %}
+                                <div class="student-avatar-placeholder">
+                                    {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="student-name">{{ student.full_name }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Gender">
+                        {% if student.gender == 'male' %}
+                            <i class="bi bi-gender-male text-primary me-1"></i>
+                        {% elif student.gender == 'female' %}
+                            <i class="bi bi-gender-female text-danger me-1"></i>
+                        {% endif %}
+                        {{ student.get_gender_display|default:"—" }}
+                    </td>
+                    <td data-label="Class">
+                        {% with enrollment=student.enrollments.last %}
+                            {% if enrollment %}
+                                {{ enrollment.class_level.name }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td data-label="Status">
+                        <span class="status-badge {{ student.status }}">
+                            <i class="bi bi-circle-fill"></i>
+                            {{ student.get_status_display }}
+                        </span>
+                    </td>
+                    <td data-label="Actions">
+                        <div class="action-group">
+                            <a href="{% url 'management:student_detail' student.pk %}"
+                               class="btn-view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5 class="mb-2">No Students Found</h5>
+                            <p class="text-muted mb-3">No students are currently enrolled in this educational level.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1272 @@
+<!-- templates/portal_management/academic/schools/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ school.name }} — School Details — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}School Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM SCHOOL DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* School Header Card */
+    .school-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .school-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .school-icon-large {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-2xl);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .school-info {
+        flex: 1;
+    }
+
+    .school-info h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .school-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-top: 0.5rem;
+    }
+
+    .school-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .school-meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .registration-badge {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-family: 'Courier New', monospace;
+        border: 1px solid var(--gray-200);
+    }
+
+    .level-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.histories::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.transfers::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.students::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.histories { background: var(--success-light); color: var(--success); }
+    .stat-icon.transfers { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.students { background: var(--info-light); color: var(--info); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Detail Grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .info-card-header i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 0.75rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .info-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .info-value .badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+    }
+
+    /* History Cards */
+    .history-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .history-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .history-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .history-header .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 800px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.95rem;
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+    }
+
+    .year-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+    }
+
+    .transfer-badge {
+        background: var(--warning-light);
+        color: #856404;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-warning {
+        background: var(--warning);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Delete Modal */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .school-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .school-meta {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .history-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-warning, .btn-danger, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-building me-2"></i>
+                School Details
+            </h1>
+            <p class="mb-0">View complete information for {{ school.name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:school_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Schools</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- School Header Card -->
+<div class="school-header-card d-flex align-items-start gap-4">
+    <div class="school-icon-large">
+        <i class="bi bi-building"></i>
+    </div>
+    <div class="school-info">
+        <h2>{{ school.name }}</h2>
+        <div class="school-meta">
+            {% if school.location %}
+            <div class="school-meta-item">
+                <i class="bi bi-geo-alt"></i>
+                <span>{{ school.location }}</span>
+            </div>
+            {% endif %}
+            {% if school.educational_level %}
+            <div class="school-meta-item">
+                <i class="bi bi-bar-chart"></i>
+                <span>{{ school.educational_level.name }}</span>
+            </div>
+            {% endif %}
+            <div class="school-meta-item">
+                <i class="bi bi-clock-history"></i>
+                <span>Added {{ school.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="ms-auto">
+        {% if school.registration_number %}
+        <span class="registration-badge">
+            <i class="bi bi-upc-scan me-2"></i>
+            {{ school.registration_number }}
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card histories">
+        <div class="stat-icon histories">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-value">{{ total_histories }}</div>
+        <div class="stat-label">Student Histories</div>
+    </div>
+    
+    <div class="stat-card transfers">
+        <div class="stat-icon transfers">
+            <i class="bi bi-arrow-right-circle"></i>
+        </div>
+        <div class="stat-value">{{ total_transfers }}</div>
+        <div class="stat-label">Incoming Transfers</div>
+    </div>
+    
+    <div class="stat-card students">
+        <div class="stat-icon students">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ total_histories|add:total_transfers }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+</div>
+
+<!-- Detail Grid -->
+<div class="detail-grid">
+    <!-- Basic Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-info-circle"></i>
+            <h3>Basic Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">School Name</span>
+                <span class="info-value">{{ school.name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Location</span>
+                <span class="info-value">
+                    {% if school.location %}
+                    {{ school.location }}
+                    {% else %}
+                    <span class="text-muted">Not specified</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Registration Number</span>
+                <span class="info-value">
+                    {% if school.registration_number %}
+                    <span class="registration-badge">{{ school.registration_number }}</span>
+                    {% else %}
+                    <span class="text-muted">Not specified</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Educational Level Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-bar-chart"></i>
+            <h3>Educational Level</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Level</span>
+                <span class="info-value">
+                    {% if school.educational_level %}
+                    <span class="level-badge">{{ school.educational_level.name }}</span>
+                    {% else %}
+                    <span class="text-muted">Not specified</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Level Type</span>
+                <span class="info-value">
+                    {% if school.educational_level %}
+                    {{ school.educational_level.get_level_type_display }}
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Level Code</span>
+                <span class="info-value">
+                    {% if school.educational_level %}
+                    <span class="badge bg-secondary">{{ school.educational_level.code }}</span>
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Education History Card -->
+<div class="history-card">
+    <div class="history-header">
+        <h5>
+            <i class="bi bi-clock-history"></i>
+            Student Education History
+        </h5>
+        <span class="badge bg-success">{{ total_histories }} Record{{ total_histories|pluralize }}</span>
+    </div>
+
+    {% if student_histories %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration #</th>
+                    <th>Class Completed</th>
+                    <th>Year</th>
+                    <th>Combination</th>
+                    <th>Transfer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for history in student_histories %}
+                <tr>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ history.student.first_name|first|upper }}{{ history.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ history.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ history.student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                            {{ history.class_completed }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if history.completion_year %}
+                        <span class="year-badge">{{ history.completion_year }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if history.combination %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2">
+                            {{ history.combination.code }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if history.is_transfer %}
+                        <span class="transfer-badge">
+                            <i class="bi bi-arrow-right-circle me-1"></i>
+                            Transfer
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                            New Student
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if total_histories > 20 %}
+    <div class="text-center mt-3">
+        <small class="text-muted">Showing last 20 records. Total: {{ total_histories }} records.</small>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <h5 class="mb-2">No Education History</h5>
+        <p class="text-muted mb-0">No students have recorded education history from this school.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Incoming Transfers Card -->
+<div class="history-card">
+    <div class="history-header">
+        <h5>
+            <i class="bi bi-arrow-right-circle"></i>
+            Incoming Transfers
+        </h5>
+        <span class="badge bg-warning">{{ total_transfers }} Transfer{{ total_transfers|pluralize }}</span>
+    </div>
+
+    {% if incoming_transfers %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration #</th>
+                    <th>Transfer Date</th>
+                    <th>Reason</th>
+                    <th>Last Class</th>
+                    <th>Academic Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in incoming_transfers %}
+                <tr>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ transfer.student.first_name|first|upper }}{{ transfer.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ transfer.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ transfer.student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold">{{ transfer.transfer_date|date:"M d, Y" }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                            {{ transfer.get_reason_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if transfer.last_class_level %}
+                        {{ transfer.last_class_level.name }}
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if transfer.last_academic_year %}
+                        <span class="year-badge">{{ transfer.last_academic_year.name }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if total_transfers > 20 %}
+    <div class="text-center mt-3">
+        <small class="text-muted">Showing last 20 records. Total: {{ total_transfers }} records.</small>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-arrow-right-circle"></i>
+        </div>
+        <h5 class="mb-2">No Incoming Transfers</h5>
+        <p class="text-muted mb-0">No students have transferred from this school.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'management:school_update' school.pk %}" class="btn-warning">
+        <i class="bi bi-pencil"></i>
+        Edit School
+    </a>
+    
+    <button type="button" class="btn-danger" onclick="showDeleteModal()" 
+            {% if total_histories > 0 or total_transfers > 0 %}disabled{% endif %}>
+        <i class="bi bi-trash"></i>
+        Delete School
+    </button>
+    
+    <a href="{% url 'management:school_list' %}" class="btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+    </a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteSchoolModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-school-form" method="POST" action="{% url 'management:school_delete' school.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete school <strong>{{ school.name }}</strong>?</p>
+                    
+                    {% if total_histories > 0 or total_transfers > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Cannot Delete:</strong> This school has associated records:
+                        <ul class="mt-2 mb-0">
+                            {% if total_histories > 0 %}
+                            <li>{{ total_histories }} student education histor{{ total_histories|pluralize:"y,ies" }}</li>
+                            {% endif %}
+                            {% if total_transfers > 0 %}
+                            <li>{{ total_transfers }} incoming transfer record{{ total_transfers|pluralize }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All school data will be permanently removed.
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {% if total_histories == 0 and total_transfers == 0 %}
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Delete Permanently</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let schoolId = {{ school.pk }};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // DELETE MODAL HANDLING
+    // ============================================
+    
+    window.showDeleteModal = function() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteSchoolModal'));
+        modal.show();
+    };
+
+    $('#delete-school-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteSchoolModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = '{% url "management:school_list" %}';
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error deleting school', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Permanently');
+                }
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Permanently');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLER
+    // ============================================
+
+    $('#deleteSchoolModal').on('hidden.bs.modal', function() {
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Permanently');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1597 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Educational Levels — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Educational Levels Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM EDUCATIONAL LEVELS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header Section */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.success::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.warning::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.info::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.primary::before { background: linear-gradient(90deg, var(--primary), var(--info)); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.success { background: var(--success-light); color: var(--success); }
+    .stat-icon.warning { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.info { background: var(--info-light); color: var(--info); }
+    .stat-icon.primary { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.more:hover {
+        background: var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles - Enhanced for responsiveness */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 1000px; /* Ensures horizontal scroll on small screens */
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Level Badges */
+    .level-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .level-badge.nursery {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .level-badge.primary {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .level-badge.o-level {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .level-badge.a-level {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .level-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    /* Count Badges */
+    .count-badge {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .count-badge i {
+        color: var(--primary);
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* List Group in Modal */
+    .list-group-flush {
+        border-radius: 0;
+    }
+
+    .list-group-item {
+        padding: 1rem 1.25rem;
+        border: none;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-group-item:hover {
+        background: var(--gray-50);
+        transform: translateX(5px);
+    }
+
+    .list-group-item i {
+        font-size: 1.2rem;
+    }
+
+    .list-group-item small {
+        font-size: 0.8rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    .dt-button.buttons-excel:hover {
+        border-color: var(--success) !important;
+        color: var(--success) !important;
+    }
+
+    .dt-button.buttons-pdf:hover {
+        border-color: var(--danger) !important;
+        color: var(--danger) !important;
+    }
+
+    .dt-button.buttons-print:hover {
+        border-color: var(--info) !important;
+        color: var(--info) !important;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            border-radius: var(--radius-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-layers-fill me-2"></i>
+                Educational Levels
+            </h1>
+            <p class="mb-0">Manage educational levels, class structures, and subjects</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Total Levels: {{ levels|length }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card success">
+        <div class="stat-icon success">
+            <i class="bi bi-emoji-smile"></i>
+        </div>
+        <div class="stat-value">{{ nursery_count|default:"0" }}</div>
+        <div class="stat-label">Nursery Levels</div>
+    </div>
+    
+    <div class="stat-card primary">
+        <div class="stat-icon primary">
+            <i class="bi bi-book"></i>
+        </div>
+        <div class="stat-value">{{ primary_count|default:"0" }}</div>
+        <div class="stat-label">Primary Levels</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-icon warning">
+            <i class="bi bi-bar-chart"></i>
+        </div>
+        <div class="stat-value">{{ olevel_count|default:"0" }}</div>
+        <div class="stat-label">O-Level Levels</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-icon info">
+            <i class="bi bi-graph-up"></i>
+        </div>
+        <div class="stat-value">{{ alevel_count|default:"0" }}</div>
+        <div class="stat-label">A-Level Levels</div>
+    </div>
+</div>
+
+<!-- Educational Levels List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            All Educational Levels
+        </h5>
+        <button type="button" class="btn-add" data-bs-toggle="modal" data-bs-target="#addEducationLevelModal">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New Level</span>
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table id="levelsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Type</th>
+                    <th>Classes</th>
+                    <th>Subjects</th>
+                    <th>Students</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for level in levels %}
+                <tr id="level-row-{{ level.pk }}">
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-semibold">{{ level.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="level-code">{{ level.code }}</span>
+                    </td>
+                    <td>
+                        <span class="level-badge 
+                            {% if level.level_type == 'NURSERY' %}nursery
+                            {% elif level.level_type == 'PRIMARY' %}primary
+                            {% elif level.level_type == 'O_LEVEL' %}o-level
+                            {% elif level.level_type == 'A_LEVEL' %}a-level
+                            {% endif %}">
+                            <i class="bi bi-tag"></i>
+                            {{ level.get_level_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="count-badge">
+                            <i class="bi bi-diagram-3"></i>
+                            {{ level.class_count }} Classes
+                        </span>
+                    </td>
+                    <td>
+                        <span class="count-badge">
+                            <i class="bi bi-journal-bookmark-fill"></i>
+                            {{ level.subject_count }} Subjects
+                        </span>
+                    </td>
+                    <td>
+                        <span class="count-badge">
+                            <i class="bi bi-people"></i>
+                            {{ level.student_count }} Students
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Quick Actions Button -->
+                            <button type="button" 
+                                    class="btn-action more" 
+                                    title="More Actions"
+                                    onclick="showLevelActions({{ level.pk }}, '{{ level.name|escapejs }}', {{ level.class_count }}, {{ level.subject_count }}, {{ level.student_count }})">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            
+                            <!-- Edit Button -->
+                            <button type="button"
+                                    class="btn-action edit"
+                                    title="Edit Level"
+                                    onclick="editLevel({{ level.pk }}, '{{ level.code|escapejs }}', '{{ level.name|escapejs }}', '{{ level.description|escapejs }}', '{{ level.level_type|escapejs }}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete Level"
+                                    onclick="showDeleteModal({{ level.pk }}, '{{ level.name|escapejs }}')"
+                                    {% if level.class_count > 0 or level.subject_count > 0 or level.student_count > 0 %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-layers"></i>
+                            </div>
+                            <h5 class="mb-2">No Educational Levels Found</h5>
+                            <p class="text-muted mb-3">Get started by adding your first educational level.</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEducationLevelModal">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Add First Level
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Actions Modal -->
+<div class="modal fade" id="levelActionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-lightning-charge me-2"></i>
+                    Quick Actions - <span id="modalLevelName"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action d-flex align-items-center" id="viewSubjectsLink">
+                        <i class="bi bi-journal-bookmark-fill text-info me-3 fs-5"></i>
+                        <div>
+                            <strong>View Subjects</strong>
+                            <small class="d-block text-muted">Manage subjects in this level</small>
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action d-flex align-items-center" id="viewClassesLink">
+                        <i class="bi bi-diagram-3 text-success me-3 fs-5"></i>
+                        <div>
+                            <strong>View Classes</strong>
+                            <small class="d-block text-muted">Manage classes and streams</small>
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action d-flex align-items-center" id="viewStudentsLink">
+                        <i class="bi bi-people text-warning me-3 fs-5"></i>
+                        <div>
+                            <strong>View Students</strong>
+                            <small class="d-block text-muted">See all students in this level</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Education Level Modal -->
+<div class="modal fade" id="addEducationLevelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add New Educational Level
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="add-form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="code" class="form-label required-field">Code</label>
+                        <input type="text" class="form-control" id="code" name="code" required 
+                               placeholder="e.g., PRIMARY, SECONDARY, UNIVERSITY">
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Unique identifier for the education level
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label required-field">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="e.g., Primary Education, Secondary Education">
+                    </div>
+                    <div class="mb-3">
+                        <label for="level_type" class="form-label required-field">Level Type</label>
+                        <select class="form-select" id="level_type" name="level_type" required>
+                            <option value="">Select level type</option>
+                            <option value="NURSERY">Nursery</option>
+                            <option value="PRIMARY">Primary</option>
+                            <option value="O_LEVEL">O-Level</option>
+                            <option value="A_LEVEL">A-Level</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                 rows="3" placeholder="Optional description of the education level"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Save Level</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Education Level Modal -->
+<div class="modal fade" id="editEducationLevelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit Educational Level
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="edit-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit-id" name="id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-code" class="form-label required-field">Code</label>
+                        <input type="text" class="form-control" id="edit-code" name="code" required>
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Unique identifier for the education level
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-name" class="form-label required-field">Name</label>
+                        <input type="text" class="form-control" id="edit-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-level_type" class="form-label required-field">Level Type</label>
+                        <select class="form-select" id="edit-level_type" name="level_type" required>
+                            <option value="">Select level type</option>
+                            <option value="NURSERY">Nursery</option>
+                            <option value="PRIMARY">Primary</option>
+                            <option value="O_LEVEL">O-Level</option>
+                            <option value="A_LEVEL">A-Level</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit-description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="update-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Update Level</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteEducationLevelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the education level <strong id="delete-level-name"></strong>?</p>
+                <p class="text-danger mt-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This action cannot be undone. All associated data will be permanently removed.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span class="btn-text">Delete Level</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let currentLevelId = null;
+let currentLevelName = '';
+let currentEditId = null;
+let deleteLevelId = null;
+let deleteLevelName = '';
+let csrfToken = '';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#levelsTable').length && $.fn.DataTable) {
+        const table = $('#levelsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Educational Levels'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Educational Levels',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Educational Levels'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[0, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: -1 },
+                { className: 'text-center', targets: [3,4,5] }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search levels...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ levels",
+                infoEmpty: "Showing 0 to 0 of 0 levels",
+                infoFiltered: "(filtered from _MAX_ total levels)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'f' && !e.target.matches('input, textarea, select')) {
+            e.preventDefault();
+            $('.dataTables_filter input').focus();
+        }
+    });
+
+    // ============================================
+    // INITIALIZE TOOLTIPS
+    // ============================================
+    
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // ============================================
+    // FORM VALIDATION HELPER FUNCTIONS
+    // ============================================
+    
+    // Clear all validation errors from a form
+    function clearValidationErrors(formElement) {
+        $(formElement).find('.is-invalid').removeClass('is-invalid');
+        $(formElement).find('.invalid-feedback').remove();
+    }
+    
+    // Display validation errors on form fields
+    function displayValidationErrors(formElement, errors) {
+        // Clear any existing errors first
+        clearValidationErrors(formElement);
+        
+        // Loop through each field with errors
+        $.each(errors, function(fieldName, fieldErrors) {
+            const field = $(formElement).find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                // Add invalid class to the field
+                field.addClass('is-invalid');
+                
+                // Create and insert error message
+                const errorHtml = `<div class="invalid-feedback">${fieldErrors.join('<br>')}</div>`;
+                
+                // Remove any existing error message and append new one
+                field.next('.invalid-feedback').remove();
+                field.after(errorHtml);
+            } else {
+                // If field not found, show in general notification
+                showNotification(`${fieldName}: ${fieldErrors.join(', ')}`, 'error');
+            }
+        });
+    }
+
+    // ============================================
+    // FORM SUBMISSION HANDLERS
+    // ============================================
+
+    // Add Form Submission
+    $('#add-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const saveBtn = $('#save-btn');
+        const spinner = saveBtn.find('.spinner-border');
+        const btnText = saveBtn.find('.btn-text');
+        
+        // Clear previous validation errors
+        clearValidationErrors(this);
+        
+        // Show loading state
+        saveBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = new FormData(this);
+        formData.append('action', 'create');
+        
+        $.ajax({
+            url: '{% url "management:admin_educational_levels_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#addEducationLevelModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    // Handle validation errors
+                    if (data.errors) {
+                        displayValidationErrors('#add-form', data.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(data.message || 'Error saving level', 'error');
+                    }
+                    // Reset button
+                    saveBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Save Level');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                
+                // Try to parse error response
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors('#add-form', response.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(response.message || 'An error occurred while saving. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred while saving. Please try again.', 'error');
+                }
+                
+                // Reset button
+                saveBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Save Level');
+            }
+        });
+    });
+
+    // Edit Form Submission
+    $('#edit-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const updateBtn = $('#update-btn');
+        const spinner = updateBtn.find('.spinner-border');
+        const btnText = updateBtn.find('.btn-text');
+        
+        // Clear previous validation errors
+        clearValidationErrors(this);
+        
+        // Show loading state
+        updateBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Updating...');
+        
+        const formData = new FormData(this);
+        formData.append('action', 'update');
+        
+        $.ajax({
+            url: '{% url "management:admin_educational_levels_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#editEducationLevelModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    // Handle validation errors
+                    if (data.errors) {
+                        displayValidationErrors('#edit-form', data.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(data.message || 'Error updating level', 'error');
+                    }
+                    // Reset button
+                    updateBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Update Level');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                
+                // Try to parse error response
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors('#edit-form', response.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(response.message || 'An error occurred while updating. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred while updating. Please try again.', 'error');
+                }
+                
+                // Reset button
+                updateBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Update Level');
+            }
+        });
+    });
+
+    // Delete Confirmation
+    $('#confirm-delete-btn').on('click', function() {
+        if (!deleteLevelId) return;
+        
+        const deleteBtn = $(this);
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        // Show loading state
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('id', deleteLevelId);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        $.ajax({
+            url: '{% url "management:admin_educational_levels_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteEducationLevelModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    
+                    // Remove the row from table
+                    $(`#level-row-${deleteLevelId}`).remove();
+                    
+                    // Update statistics if needed
+                    updateStatistics();
+                    
+                    // Check if table is empty
+                    if ($('#levelsTable tbody tr').length === 0) {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    }
+                } else {
+                    showNotification(data.message || 'Error deleting level', 'error');
+                    // Reset button
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Level');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                
+                // Try to parse error response
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred while deleting. Please try again.', 'error');
+                } catch (e) {
+                    showNotification('An error occurred while deleting. Please try again.', 'error');
+                }
+                
+                // Reset button
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Level');
+            }
+        });
+    });
+
+    // ============================================
+    // UPDATE STATISTICS FUNCTION
+    // ============================================
+    
+    function updateStatistics() {
+        // This function can be enhanced to update statistics via AJAX
+        // For now, we'll just reload the page after delete
+        // You could implement an AJAX call to get updated counts
+    }
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    // Reset add form when modal is closed
+    $('#addEducationLevelModal').on('hidden.bs.modal', function() {
+        $('#add-form')[0].reset();
+        clearValidationErrors('#add-form');
+        const saveBtn = $('#save-btn');
+        saveBtn.prop('disabled', false);
+        saveBtn.find('.spinner-border').addClass('d-none');
+        saveBtn.find('.btn-text').text('Save Level');
+    });
+
+    // Reset edit form when modal is closed
+    $('#editEducationLevelModal').on('hidden.bs.modal', function() {
+        clearValidationErrors('#edit-form');
+        const updateBtn = $('#update-btn');
+        updateBtn.prop('disabled', false);
+        updateBtn.find('.spinner-border').addClass('d-none');
+        updateBtn.find('.btn-text').text('Update Level');
+    });
+
+    // Reset delete modal when closed
+    $('#deleteEducationLevelModal').on('hidden.bs.modal', function() {
+        deleteLevelId = null;
+        deleteLevelName = '';
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Level');
+    });
+
+    // ============================================
+    // LOADING OVERLAY
+    // ============================================
+
+    // Show loading overlay on form submissions (except AJAX forms)
+    document.querySelectorAll('form:not(#add-form):not(#edit-form)').forEach(form => {
+        form.addEventListener('submit', function() {
+            if (!this.classList.contains('no-loading')) {
+                document.getElementById('loadingOverlay').classList.add('show');
+            }
+        });
+    });
+});
+
+// ============================================
+// QUICK ACTIONS MODAL
+// ============================================
+
+function showLevelActions(levelId, levelName, classCount, subjectCount, studentCount) {
+    currentLevelId = levelId;
+    currentLevelName = levelName;
+    
+    // Update modal title
+    document.getElementById('modalLevelName').textContent = levelName;
+    
+    // Update modal links with level ID using URL names
+    const subjectsUrl = "{% url 'management:level_subjects' 0 %}".replace('0', levelId);
+    const classesUrl = "{% url 'management:level_classes' 0 %}".replace('0', levelId);
+    const studentsUrl = "{% url 'management:level_students' 0 %}".replace('0', levelId);
+    
+    document.getElementById('viewSubjectsLink').href = subjectsUrl;
+    document.getElementById('viewClassesLink').href = classesUrl;
+    document.getElementById('viewStudentsLink').href = studentsUrl;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('levelActionsModal'));
+    modal.show();
+}
+
+// ============================================
+// EDIT LEVEL FUNCTIONS
+// ============================================
+
+function editLevel(id, code, name, description, levelType) {
+    currentEditId = id;
+    
+    $('#edit-id').val(id);
+    $('#edit-code').val(code);
+    $('#edit-name').val(name);
+    $('#edit-description').val(description || '');
+    $('#edit-level_type').val(levelType);
+    
+    const modal = new bootstrap.Modal(document.getElementById('editEducationLevelModal'));
+    modal.show();
+}
+
+// ============================================
+// DELETE LEVEL FUNCTIONS
+// ============================================
+
+function showDeleteModal(id, name) {
+    deleteLevelId = id;
+    deleteLevelName = name;
+    
+    document.getElementById('delete-level-name').textContent = name;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteEducationLevelModal'));
+    modal.show();
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

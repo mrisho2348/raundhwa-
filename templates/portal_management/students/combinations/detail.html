@@ -1,0 +1,1190 @@
+<!-- templates/portal_management/students/combinations/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Combination Assignment Details — {{ assignment.student.full_name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Combination Assignment Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM COMBINATION ASSIGNMENT DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Student Header Card */
+    .student-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .student-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .student-info {
+        flex: 1;
+    }
+
+    .student-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .student-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+    }
+
+    .student-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .student-meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.inactive {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    /* Detail Grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .info-card-header i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 0.75rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .info-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .info-value .badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+    }
+
+    /* Combination Badge */
+    .combination-badge-large {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: var(--radius-full);
+        font-size: 1.1rem;
+        font-weight: 700;
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .combination-badge-large i {
+        font-size: 1.2rem;
+    }
+
+    /* Subjects List */
+    .subjects-list {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .subject-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .subject-item:last-child {
+        border-bottom: none;
+    }
+
+    .subject-role {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+    }
+
+    .subject-role.core {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .subject-role.subsidiary {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    /* History Card */
+    .history-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .history-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .history-header h5 i {
+        color: var(--info);
+        font-size: 1.4rem;
+    }
+
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .history-item {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        transition: var(--transition);
+        border-left: 3px solid var(--warning);
+    }
+
+    .history-item:hover {
+        background: var(--gray-100);
+        transform: translateX(5px);
+    }
+
+    .history-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+
+    .history-combination {
+        font-weight: 600;
+        color: var(--gray-800);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .history-date {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+    }
+
+    .history-status {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-full);
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .history-status.inactive {
+        background: var(--gray-200);
+        color: var(--gray-600);
+    }
+
+    /* Remarks Card */
+    .remarks-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .remarks-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .remarks-header i {
+        font-size: 1.2rem;
+        color: var(--primary);
+    }
+
+    .remarks-header h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .remarks-content {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        color: var(--gray-700);
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-warning {
+        background: var(--warning);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Delete Modal */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .detail-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .student-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .student-meta {
+            justify-content: center;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-warning, .btn-danger, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .history-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        .history-item-header {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Combination Assignment Details
+            </h1>
+            <p class="mb-0">View complete assignment information for {{ assignment.student.full_name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:student_combination_assignment_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Assignments</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Student Header Card -->
+<div class="student-header-card">
+    <div class="student-avatar-large">
+        {{ assignment.student.first_name|first|upper }}{{ assignment.student.last_name|first|upper }}
+    </div>
+    <div class="student-info">
+        <h2>{{ assignment.student.full_name }}</h2>
+        <div class="student-meta">
+            <div class="student-meta-item">
+                <i class="bi bi-upc-scan"></i>
+                <span>{{ assignment.student.registration_number }}</span>
+            </div>
+            <div class="student-meta-item">
+                <i class="bi bi-gender-{% if assignment.student.gender == 'male' %}male{% else %}female{% endif %}"></i>
+                <span>{{ assignment.student.get_gender_display|default:"Not specified" }}</span>
+            </div>
+            <div class="student-meta-item">
+                <i class="bi bi-calendar"></i>
+                <span>Age: {{ assignment.student.age|default:"N/A" }}</span>
+            </div>
+            <div class="student-meta-item">
+                <span class="status-badge {{ assignment.student.status }}">
+                    {{ assignment.student.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Grid -->
+<div class="detail-grid">
+    <!-- Assignment Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-info-circle"></i>
+            <h3>Assignment Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Assignment Date</span>
+                <span class="info-value">
+                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ assignment.assigned_date|date:"F d, Y" }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="info-value">
+                    {% if assignment.is_active %}
+                        <span class="status-badge active">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="status-badge inactive">
+                            <i class="bi bi-clock-history"></i>
+                            Inactive
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Record Created</span>
+                <span class="info-value">{{ assignment.created_at|date:"F d, Y H:i" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Last Updated</span>
+                <span class="info-value">{{ assignment.updated_at|date:"F d, Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combination Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+            <h3>Combination Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Combination Code</span>
+                <span class="info-value">
+                    <span class="combination-badge-large">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        {{ assignment.combination.code }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Educational Level</span>
+                <span class="info-value">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                        <i class="bi bi-building me-1"></i>
+                        {{ assignment.combination.educational_level.name }}
+                    </span>
+                </span>
+            </div>
+            {% if assignment.combination.combination_subjects.exists %}
+            <div class="info-row">
+                <span class="info-label">Subjects</span>
+                <span class="info-value">
+                    <div class="subjects-list">
+                        {% for cs in assignment.combination.combination_subjects.all %}
+                        <div class="subject-item">
+                            <span class="subject-role {{ cs.role|lower }}">
+                                {{ cs.get_role_display }}
+                            </span>
+                            <span>{{ cs.subject.name }}</span>
+                            <span class="text-muted small">({{ cs.subject.code }})</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Enrollment Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            <h3>Enrollment Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Class Level</span>
+                <span class="info-value">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                        <i class="bi bi-diagram-3 me-1"></i>
+                        {{ assignment.enrollment.class_level.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Academic Year</span>
+                <span class="info-value">
+                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ assignment.enrollment.academic_year.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Enrollment Date</span>
+                <span class="info-value">{{ assignment.enrollment.enrollment_date|date:"F d, Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Enrollment Status</span>
+                <span class="info-value">
+                    <span class="status-badge {{ assignment.enrollment.status }}">
+                        {{ assignment.enrollment.get_status_display }}
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remarks Card -->
+{% if assignment.remarks %}
+<div class="remarks-card">
+    <div class="remarks-header">
+        <i class="bi bi-chat-dots"></i>
+        <h4>Remarks</h4>
+    </div>
+    <div class="remarks-content">
+        {{ assignment.remarks|linebreaks }}
+    </div>
+</div>
+{% endif %}
+
+<!-- Other Assignments History Card -->
+{% if other_assignments %}
+<div class="history-card">
+    <div class="history-header">
+        <h5>
+            <i class="bi bi-clock-history"></i>
+            Assignment History
+        </h5>
+        <span class="badge bg-info">{{ other_assignments|length }} Previous Assignment{{ other_assignments|pluralize }}</span>
+    </div>
+
+    <div class="history-list">
+        {% for other in other_assignments %}
+        <div class="history-item">
+            <div class="history-item-header">
+                <span class="history-combination">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                    {{ other.combination.code }}
+                </span>
+                <span class="history-date">
+                    <i class="bi bi-calendar me-1"></i>
+                    {{ other.assigned_date|date:"M d, Y" }}
+                </span>
+                <span class="history-status {% if not other.is_active %}inactive{% endif %}">
+                    {% if other.is_active %}
+                        <i class="bi bi-check-circle-fill"></i> Active
+                    {% else %}
+                        <i class="bi bi-clock-history"></i> Inactive
+                    {% endif %}
+                </span>
+            </div>
+            {% if other.remarks %}
+            <div class="mt-2 small text-muted">
+                <i class="bi bi-chat"></i> {{ other.remarks|truncatechars:100 }}
+            </div>
+            {% endif %}
+            <div class="mt-2">
+                <a href="{% url 'management:student_combination_assignment_detail' other.pk %}" 
+                   class="text-decoration-none small">
+                    <i class="bi bi-eye"></i> View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if other_assignments|length == 5 %}
+    <div class="text-center mt-3">
+        <small class="text-muted">Showing last 5 assignments</small>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'management:student_combination_assignment_update' assignment.pk %}" class="btn-warning">
+        <i class="bi bi-pencil"></i>
+        Edit Assignment
+    </a>
+    
+    <a href="{% url 'management:student_detail' assignment.student.pk %}" class="btn-primary">
+        <i class="bi bi-person"></i>
+        View Student Profile
+    </a>
+    
+    <button type="button" class="btn-danger" onclick="showDeleteModal()">
+        <i class="bi bi-trash"></i>
+        Delete Assignment
+    </button>
+    
+    <a href="{% url 'management:student_combination_assignment_list' %}" class="btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+    </a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteAssignmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-assignment-form" method="POST" action="{% url 'management:student_combination_assignment_delete' assignment.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this combination assignment?</p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Assignment Details:</strong><br>
+                        Student: <strong>{{ assignment.student.full_name }}</strong><br>
+                        Combination: <strong>{{ assignment.combination.code }}</strong><br>
+                        Status: <strong>{% if assignment.is_active %}Active{% else %}Inactive{% endif %}</strong><br>
+                        Date: <strong>{{ assignment.assigned_date|date:"M d, Y" }}</strong>
+                    </div>
+                    
+                    {% if assignment.is_active %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This is an active assignment. Deleting it will remove the student's current combination.
+                        The student will need a new assignment to continue their studies.
+                    </div>
+                    {% endif %}
+                    
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        This action is permanent and cannot be reversed.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Delete Permanently</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let assignmentId = {{ assignment.pk }};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // DELETE MODAL HANDLING
+    // ============================================
+    
+    window.showDeleteModal = function() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteAssignmentModal'));
+        modal.show();
+    };
+
+    $('#delete-assignment-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteAssignmentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = '{% url "management:student_combination_assignment_list" %}';
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error deleting assignment', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Permanently');
+                }
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Permanently');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch(e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLER
+    // ============================================
+
+    $('#deleteAssignmentModal').on('hidden.bs.modal', function() {
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Permanently');
+    });
+    
+    // ============================================
+    // ANIMATION EFFECTS
+    // ============================================
+    
+    // Add fade-in animation to cards
+    $('.info-card, .remarks-card, .history-card').each(function(index) {
+        $(this).css('animation-delay', `${index * 0.1}s`);
+    });
+    
+    // Add hover effect to subject items
+    $('.subject-item').hover(
+        function() {
+            $(this).css('transform', 'translateX(5px)');
+        },
+        function() {
+            $(this).css('transform', 'translateX(0)');
+        }
+    );
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

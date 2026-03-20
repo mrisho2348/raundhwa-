@@ -1,0 +1,1094 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ student.full_name }} — Student Details — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Student Details: {{ student.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Variables */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --danger-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+        
+        --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+        --card-shadow-hover: 0 30px 50px -20px rgba(0,0,0,0.25);
+        --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    /* Student Header Card - Enhanced Premium */
+    .student-header-card {
+        background: var(--primary-gradient);
+        border-radius: 30px;
+        padding: 2.5rem;
+        color: white;
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    .student-header-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    .student-header-card::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotateReverse 35s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes rotateReverse {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(-360deg); }
+    }
+    
+    .student-avatar-large {
+        width: 140px;
+        height: 140px;
+        border-radius: 30px;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        border: 4px solid rgba(255,255,255,0.5);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        transition: var(--transition-smooth);
+    }
+    
+    .student-avatar-large:hover {
+        transform: scale(1.05) rotate(5deg);
+        border-color: white;
+    }
+    
+    .student-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Premium Badge */
+    .premium-badge {
+        padding: 0.6rem 1.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-badge:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-2px);
+    }
+    
+    .premium-badge i {
+        font-size: 1.1rem;
+    }
+    
+    /* Premium Cards - Now with flexible heights */
+    .premium-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.8rem;
+        height: auto;
+        min-height: 200px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .premium-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: transparent;
+    }
+    
+    .premium-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-card:hover::before {
+        opacity: 1;
+    }
+    
+    .premium-card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        letter-spacing: -0.02em;
+    }
+    
+    .premium-card-title i {
+        color: #667eea;
+        font-size: 1.4rem;
+        background: linear-gradient(135deg, #667eea20, #764ba220);
+        padding: 0.5rem;
+        border-radius: 12px;
+    }
+    
+    /* Premium Info Rows */
+    .premium-info-row {
+        display: flex;
+        padding: 0.75rem;
+        border-radius: 16px;
+        transition: var(--transition-smooth);
+        border: 1px solid transparent;
+        margin-bottom: 0.25rem;
+    }
+    
+    .premium-info-row:hover {
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        border-color: #e2e8f0;
+        transform: translateX(5px);
+    }
+    
+    .premium-info-label {
+        width: 120px;
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .premium-info-value {
+        flex: 1;
+        color: #0f172a;
+        font-weight: 500;
+        font-size: 1rem;
+        position: relative;
+    }
+    
+    /* Premium Timeline */
+    .premium-timeline {
+        position: relative;
+        padding-left: 2.5rem;
+        flex: 1;
+    }
+    
+    .premium-timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #667eea, #764ba2, #667eea);
+        border-radius: 2px;
+        box-shadow: 0 0 10px rgba(102,126,234,0.5);
+    }
+    
+    .premium-timeline-item {
+        position: relative;
+        padding-bottom: 2rem;
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-timeline-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .premium-timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2.5rem;
+        top: 0;
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #667eea;
+        z-index: 1;
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-timeline-item:hover::before {
+        background: #667eea;
+        transform: scale(1.2);
+        box-shadow: 0 0 20px #667eea;
+    }
+    
+    .premium-timeline-item::after {
+        content: '';
+        position: absolute;
+        left: -2rem;
+        top: 0.35rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        z-index: 2;
+    }
+    
+    /* Premium Quick Actions */
+    .premium-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .premium-action-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 14px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition-smooth);
+        text-decoration: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    
+    .premium-action-btn:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(102,126,234,0.3);
+    }
+    
+    .premium-action-btn i {
+        font-size: 1.2rem;
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-action-btn:hover i {
+        transform: scale(1.2);
+    }
+    
+    /* Premium Table */
+    .premium-table-container {
+        background: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+        flex: 1;
+    }
+    
+    .premium-table {
+        margin-bottom: 0;
+    }
+    
+    .premium-table thead th {
+        border-bottom: 2px solid #f1f5f9;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.75rem;
+        background: none;
+    }
+    
+    .premium-table tbody tr {
+        transition: var(--transition-smooth);
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .premium-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .premium-table tbody tr:hover {
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .premium-table tbody td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        color: #334155;
+        font-weight: 500;
+    }
+    
+    /* Premium Parent Card */
+    .premium-parent-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.25rem;
+        border: 1px solid #f1f5f9;
+        transition: var(--transition-smooth);
+        margin-bottom: 1rem;
+    }
+    
+    .premium-parent-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 15px 30px rgba(102,126,234,0.15);
+        transform: translateY(-3px);
+    }
+    
+    .premium-parent-initials {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+    }
+    
+    /* Premium Stats Grid */
+    .premium-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .premium-stat-card {
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        border-radius: 20px;
+        padding: 1.25rem;
+        text-align: center;
+        border: 1px solid #f1f5f9;
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-stat-card:hover {
+        transform: translateY(-5px);
+        border-color: #667eea;
+        box-shadow: 0 15px 30px rgba(102,126,234,0.1);
+    }
+    
+    .premium-stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+    }
+    
+    .premium-stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Empty States */
+    .premium-empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        border-radius: 24px;
+        border: 2px dashed #e2e8f0;
+        transition: var(--transition-smooth);
+    }
+    
+    .premium-empty-state:hover {
+        border-color: #667eea;
+        background: white;
+    }
+    
+    .premium-empty-state i {
+        font-size: 4rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+    
+    /* Modal Enhancements */
+    .premium-modal .modal-content {
+        border-radius: 30px;
+        border: none;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+    
+    .premium-modal .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 0;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .premium-modal .modal-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+    
+    .premium-modal .modal-body {
+        padding: 2.5rem;
+    }
+    
+    .premium-modal .modal-footer {
+        padding: 1.5rem 2.5rem;
+        border-top: 1px solid #f1f5f9;
+        background: #f8fafc;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .student-header-card {
+            padding: 1.5rem;
+        }
+        
+        .student-avatar-large {
+            width: 100px;
+            height: 100px;
+            font-size: 3rem;
+        }
+        
+        .premium-info-row {
+            flex-direction: column;
+            padding: 0.5rem;
+        }
+        
+        .premium-info-label {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+        
+        .premium-actions {
+            flex-direction: column;
+        }
+        
+        .premium-action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .premium-stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Glassmorphism Effects */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    /* Shimmer Effect */
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    .shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        background-size: 1000px 100%;
+        animation: shimmer 3s infinite;
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Premium Quick Actions -->
+    <div class="premium-actions">
+        <a href="{% url 'management:student_list' %}" class="premium-action-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to List</span>
+        </a>
+        <a href="{% url 'management:student_update' student.pk %}" class="premium-action-btn">
+            <i class="bi bi-pencil-square"></i>
+            <span>Edit Details</span>
+        </a>
+        <a href="{% url 'management:student_enroll' student.pk %}" class="premium-action-btn">
+            <i class="bi bi-building"></i>
+            <span>Enroll in Class</span>
+        </a>
+        <a href="{% url 'management:student_parent_management' student.pk %}" class="premium-action-btn">
+            <i class="bi bi-person-plus"></i>
+            <span>Add Parent</span>
+        </a>
+        <button type="button" class="premium-action-btn" data-bs-toggle="modal" data-bs-target="#suspensionModal" {% if student.status != 'active' %}disabled{% endif %}>
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Suspend</span>
+        </button>
+        <button type="button" class="premium-action-btn" data-bs-toggle="modal" data-bs-target="#transferModal" {% if student.status != 'active' %}disabled{% endif %}>
+            <i class="bi bi-arrow-right-circle"></i>
+            <span>Transfer Out</span>
+        </button>
+    </div>
+
+    <!-- Premium Student Header Card -->
+    <div class="student-header-card">
+        <div class="row align-items-center g-4">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="student-avatar-large position-relative">
+                        {% if student.profile_picture %}
+                            <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}">
+                        {% else %}
+                            <i class="bi bi-person-circle"></i>
+                        {% endif %}
+                        <div class="position-absolute bottom-0 end-0 mb-2 me-2">
+                            <span class="badge bg-success p-2 rounded-circle">
+                                <i class="bi bi-check-lg"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="display-6 fw-bold mb-3">{{ student.full_name }}</h1>
+                        <div class="d-flex flex-wrap gap-3 mb-3">
+                            <span class="premium-badge {{ student.status }}">
+                                <i class="bi bi-{% if student.status == 'active' %}check-circle-fill{% elif student.status == 'suspended' %}exclamation-triangle-fill{% elif student.status == 'withdrawn' %}dash-circle-fill{% elif student.status == 'transferred' %}arrow-right-circle-fill{% else %}question-circle-fill{% endif %}"></i>
+                                {{ student.get_status_display }}
+                            </span>
+                            <span class="premium-badge">
+                                <i class="bi bi-qr-code"></i>
+                                {{ student.registration_number }}
+                            </span>
+                            {% if student.examination_number %}
+                            <span class="premium-badge">
+                                <i class="bi bi-file-text"></i>
+                                NECTA: {{ student.examination_number }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-4 text-white-50">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>Admitted: {{ student.admission_date|date:"d M Y" }}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Updated: {{ student.updated_at|date:"d M Y H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="premium-stats-grid">
+                    {% if stream %}
+                    <div class="premium-stat-card">
+                        <div class="premium-stat-value">{{ stream.name }}</div>
+                        <div class="premium-stat-label">Current Stream</div>
+                    </div>
+                    {% endif %}
+                    <div class="premium-stat-card">
+                        <div class="premium-stat-value">{{ student.age|default:"—" }}</div>
+                        <div class="premium-stat-label">Age (Years)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+        <!-- Left Column - Personal Information -->
+        <div class="col-lg-4">
+            <div class="premium-card mb-4">
+                <div class="premium-card-title">
+                    <i class="bi bi-person-badge"></i>
+                    Personal Information
+                </div>
+                
+                <div class="flex-grow-1">
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Full Name</span>
+                        <span class="premium-info-value">{{ student.full_name }}</span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Gender</span>
+                        <span class="premium-info-value">{{ student.get_gender_display|default:"Not specified" }}</span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Date of Birth</span>
+                        <span class="premium-info-value">
+                            {% if student.date_of_birth %}
+                                {{ student.date_of_birth|date:"d M Y" }}
+                                <span class="badge bg-primary-subtle text-primary ms-2">{{ student.age }} yrs</span>
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Address</span>
+                        <span class="premium-info-value">{{ student.address|default:"Not specified" }}</span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">National ID</span>
+                        <span class="premium-info-value">
+                            {% if student.national_id %}
+                                <span class="font-monospace">{{ student.national_id }}</span>
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Disability</span>
+                        <span class="premium-info-value">{{ student.physical_disability|default:"None" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Parents/Guardians Card -->
+            <div class="premium-card mb-4">
+                <div class="premium-card-title">
+                    <i class="bi bi-people"></i>
+                    Parents/Guardians
+                    <a href="{% url 'management:student_parent_management' student.pk %}" class="btn btn-sm btn-primary ms-auto rounded-pill">
+                        <i class="bi bi-plus"></i> Add
+                    </a>
+                </div>
+                
+                <div class="flex-grow-1">
+                    {% if parents %}
+                        {% for parent in parents %}
+                            <div class="premium-parent-card">
+                                <div class="d-flex gap-3">
+                                    <div class="premium-parent-initials">
+                                        {{ parent.full_name|make_list|first|upper }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="fw-bold mb-1">{{ parent.full_name }}</h6>
+                                            <span class="badge bg-primary-subtle text-primary">{{ parent.get_relationship_display }}</span>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <i class="bi bi-telephone text-primary small"></i>
+                                                <small>{{ parent.phone_number }}</small>
+                                            </div>
+                                            {% if parent.email %}
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi bi-envelope text-primary small"></i>
+                                                <small>{{ parent.email }}</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-2 d-flex gap-2">
+                                            {% if parent.studentparent.is_primary_contact %}
+                                                <span class="badge bg-success">Primary Contact</span>
+                                            {% endif %}
+                                            {% if parent.studentparent.is_fee_responsible %}
+                                                <span class="badge bg-info">Fee Responsible</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="premium-empty-state">
+                            <i class="bi bi-people"></i>
+                            <h6 class="mt-3">No Parents Recorded</h6>
+                            <p class="text-muted small">Add parent/guardian information</p>
+                            <a href="{% url 'management:student_parent_management' student.pk %}" class="btn btn-primary btn-sm rounded-pill mt-2">
+                                <i class="bi bi-plus"></i> Add Parent
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Login Information Card -->
+            {% if student.user %}
+            <div class="premium-card">
+                <div class="premium-card-title">
+                    <i class="bi bi-person-lock"></i>
+                    Portal Access
+                </div>
+                
+                <div class="flex-grow-1">
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Username</span>
+                        <span class="premium-info-value">
+                            <span class="font-monospace">{{ student.user.username }}</span>
+                        </span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Status</span>
+                        <span class="premium-info-value">
+                            {% if student.user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="premium-info-row">
+                        <span class="premium-info-label">Last Login</span>
+                        <span class="premium-info-value">{{ student.user.last_login|date:"d M Y H:i"|default:"Never" }}</span>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-outline-warning w-100 rounded-pill" onclick="resetPassword({{ student.user.id }})">
+                            <i class="bi bi-arrow-repeat"></i> Reset Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Column - Enrollment & Activity -->
+        <div class="col-lg-8">
+            <!-- Current Enrollment Card -->
+            {% if active_enrollment %}
+            <div class="premium-card mb-4">
+                <div class="premium-card-title">
+                    <i class="bi bi-building"></i>
+                    Current Enrollment
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="premium-stat-card">
+                            <div class="premium-stat-value">{{ active_enrollment.class_level.name }}</div>
+                            <div class="premium-stat-label">Class Level</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="premium-stat-card">
+                            <div class="premium-stat-value">{{ active_enrollment.academic_year.name }}</div>
+                            <div class="premium-stat-label">Academic Year</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="premium-stat-card">
+                            {% if stream %}
+                                <div class="premium-stat-value">{{ stream.name }}</div>
+                                <div class="premium-stat-label">Stream</div>
+                            {% elif active_enrollment.combination %}
+                                <div class="premium-stat-value">{{ active_enrollment.combination.code }}</div>
+                                <div class="premium-stat-label">Combination</div>
+                            {% else %}
+                                <div class="premium-stat-value">—</div>
+                                <div class="premium-stat-label">Not Assigned</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if active_enrollment.combination %}
+                <div class="mt-3 p-3 bg-light rounded-3">
+                    <span class="fw-semibold">Combination:</span> 
+                    <span class="text-primary">{{ active_enrollment.combination.name }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Enrollment History Table -->
+            <div class="premium-card mb-4">
+                <div class="premium-card-title">
+                    <i class="bi bi-clock-history"></i>
+                    Enrollment History
+                </div>
+                
+                {% if enrollments %}
+                    <div class="premium-table-container">
+                        <div class="table-responsive">
+                            <table class="premium-table table">
+                                <thead>
+                                    <tr>
+                                        <th>Academic Year</th>
+                                        <th>Class Level</th>
+                                        <th>Combination</th>
+                                        <th>Status</th>
+                                        <th>Enrollment Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrollments %}
+                                    <tr>
+                                        <td><span class="fw-semibold">{{ enrollment.academic_year.name }}</span></td>
+                                        <td>{{ enrollment.class_level.name }}</td>
+                                        <td>{{ enrollment.combination.code|default:"—" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if enrollment.status == 'active' %}success{% elif enrollment.status == 'completed' %}info{% elif enrollment.status == 'promoted' %}primary{% elif enrollment.status == 'repeated' %}warning{% else %}secondary{% endif %} rounded-pill">
+                                                {{ enrollment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ enrollment.enrollment_date|date:"d M Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="premium-empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <h6 class="mt-3">No Enrollment Records</h6>
+                        <p class="text-muted small">Student has not been enrolled yet</p>
+                        <a href="{% url 'management:student_enroll' student.pk %}" class="btn btn-primary btn-sm rounded-pill mt-2">
+                            <i class="bi bi-plus"></i> Enroll Student
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Activity Timeline -->
+            <div class="premium-card">
+                <div class="premium-card-title">
+                    <i class="bi bi-activity"></i>
+                    Recent Activity
+                </div>
+                
+                <div class="premium-timeline">
+                    {% for log in audit_logs %}
+                        <div class="premium-timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge bg-light text-dark mb-2">{{ log.timestamp|date:"d M Y H:i" }}</span>
+                                    <h6 class="fw-semibold mb-1">
+                                        {% if log.action == 'CREATE' %}
+                                            <i class="bi bi-plus-circle-fill text-success me-2"></i>
+                                        {% elif log.action == 'UPDATE' %}
+                                            <i class="bi bi-pencil-fill text-primary me-2"></i>
+                                        {% elif log.action == 'DELETE' %}
+                                            <i class="bi bi-trash-fill text-danger me-2"></i>
+                                        {% else %}
+                                            <i class="bi bi-info-circle-fill text-info me-2"></i>
+                                        {% endif %}
+                                        {{ log.get_action_display }}
+                                    </h6>
+                                    <p class="text-muted small mb-0">
+                                        {{ log.object_repr }}
+                                        {% if log.user %}
+                                            <br><span class="text-primary">by {{ log.user.get_full_name|default:log.user.username }}</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="premium-empty-state">
+                            <i class="bi bi-clock"></i>
+                            <h6 class="mt-3">No Recent Activity</h6>
+                            <p class="text-muted small">No activity has been recorded yet</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Password reset function with premium feedback
+function resetPassword(userId) {
+    if (confirm('Are you sure you want to reset this student\'s password? The new password will be their registration number.')) {
+        // Show loading state
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Resetting...';
+        btn.disabled = true;
+        
+        fetch(`/management/student/reset-password/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success toast
+                showToast('Password reset successfully', 'success');
+            } else {
+                showToast('Error resetting password: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showToast('Error resetting password', 'danger');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+}
+
+// Premium toast notification
+function showToast(message, type = 'info') {
+    const toastContainer = document.createElement('div');
+    toastContainer.style.position = 'fixed';
+    toastContainer.style.top = '20px';
+    toastContainer.style.right = '20px';
+    toastContainer.style.zIndex = '9999';
+    
+    const toast = document.createElement('div');
+    toast.className = `toast show align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    document.body.appendChild(toastContainer);
+    
+    setTimeout(() => {
+        toastContainer.remove();
+    }, 5000);
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Add shimmer effect to loading elements
+    const shimmerElements = document.querySelectorAll('.shimmer');
+    shimmerElements.forEach(el => {
+        el.classList.add('shimmer');
+    });
+    
+    // Smooth scroll to sections
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+    
+    // Animate stats on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('pulse-animation');
+                setTimeout(() => {
+                    entry.target.classList.remove('pulse-animation');
+                }, 1000);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.premium-stat-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+
+// Auto-hide alerts with fade effect
+setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        alert.style.transition = 'opacity 0.5s';
+        alert.style.opacity = '0';
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 500);
+    });
+}, 5000);
+</script>
+{% endblock %}

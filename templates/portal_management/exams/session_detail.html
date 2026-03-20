@@ -1,0 +1,71 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}{{ session.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Exam Session Detail{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="form-card">
+      <h6 class="fw-semibold mb-3">Session Info</h6>
+      <dl class="row small mb-0">
+        <dt class="col-5 text-muted">Name</dt><dd class="col-7 fw-semibold">{{ session.name }}</dd>
+        <dt class="col-5 text-muted">Type</dt><dd class="col-7">{{ session.exam_type }}</dd>
+        <dt class="col-5 text-muted">Class</dt><dd class="col-7">{{ session.class_level }}</dd>
+        <dt class="col-5 text-muted">Term</dt><dd class="col-7">{{ session.term }}</dd>
+        <dt class="col-5 text-muted">Year</dt><dd class="col-7">{{ session.academic_year }}</dd>
+        <dt class="col-5 text-muted">Date</dt><dd class="col-7">{{ session.exam_date|date:"d M Y" }}</dd>
+        <dt class="col-5 text-muted">Status</dt>
+        <dd class="col-7"><span class="badge bg-{% if session.status == 'published' %}success{% elif session.status == 'verified' %}info{% elif session.status == 'submitted' %}warning text-dark{% else %}secondary{% endif %}">{{ session.get_status_display }}</span></dd>
+        <dt class="col-5 text-muted">Results</dt><dd class="col-7">{{ results_count }}</dd>
+        <dt class="col-5 text-muted">Metrics</dt><dd class="col-7">{{ metrics_count }}</dd>
+      </dl>
+      <div class="mt-3 d-grid gap-2">
+        <a href="{% url 'management:exam_session_update' session.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil me-1"></i>Edit Session</a>
+        <form method="post" action="{% url 'results:calculate' session.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-success w-100" onclick="return confirm('Recalculate all results for this session?')">
+            <i class="bi bi-calculator me-1"></i>Calculate Results
+          </button>
+        </form>
+        <a href="{% url 'results:export_session' session.pk %}" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="dt-card mb-4">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-clipboard me-2 text-primary"></i>Exam Papers ({{ papers|length }})</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light"><tr><th>Subject</th><th>Paper No</th><th>Max Marks</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for paper in papers %}
+            <tr>
+              <td>{{ paper.subject }}</td><td>{{ paper.paper_number }}</td>
+              <td>{{ paper.max_marks }}</td><td>{{ paper.exam_date|date:"d M Y"|default:"—" }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No papers added.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="dt-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-trophy me-2 text-warning"></i>Top Positions</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light"><tr><th>Position</th><th>Student</th><th>Stream Pos</th></tr></thead>
+          <tbody>
+            {% for pos in positions %}
+            <tr>
+              <td><span class="badge bg-warning text-dark">{{ pos.class_position }}</span></td>
+              <td>{{ pos.student.full_name }}</td>
+              <td>{{ pos.stream_position|default:"—" }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="3" class="text-center text-muted py-3">No positions calculated yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

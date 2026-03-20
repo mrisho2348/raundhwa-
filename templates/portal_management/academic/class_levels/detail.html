@@ -1,0 +1,939 @@
+<!-- templates/portal_management/academic/class_levels/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Class Level Details — {{ class_level.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Class Level Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM CLASS LEVEL DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Class Header Card */
+    .class-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .class-icon-large {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-2xl);
+        background: linear-gradient(135deg, var(--primary), var(--info));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .class-info {
+        flex: 1;
+    }
+
+    .class-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .class-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-top: 0.5rem;
+    }
+
+    .class-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .class-meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .final-badge {
+        background: var(--warning-light);
+        color: #856404;
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stat-card.streams::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.students::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.capacity::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.subjects::before { background: linear-gradient(90deg, var(--primary), #1a73e8); }
+    .stat-card.teachers::before { background: linear-gradient(90deg, var(--danger), #dc3545); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.streams { background: var(--info-light); color: var(--info); }
+    .stat-icon.students { background: var(--success-light); color: var(--success); }
+    .stat-icon.capacity { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.subjects { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.teachers { background: var(--danger-light); color: var(--danger); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Navigation Cards */
+    .nav-cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .nav-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        text-decoration: none;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .nav-card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .nav-card-content {
+        flex: 1;
+    }
+
+    .nav-card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .nav-card-subtitle {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+    }
+
+    /* Section Cards */
+    .section-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .section-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 600px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Stream Badge */
+    .stream-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    /* Capacity Bar */
+    .capacity-bar {
+        width: 100px;
+        height: 6px;
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        margin-top: 0.25rem;
+    }
+
+    .capacity-fill {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.3s ease;
+    }
+
+    .capacity-fill.low { background: var(--success); }
+    .capacity-fill.medium { background: var(--warning); }
+    .capacity-fill.high { background: var(--danger); }
+
+    /* Student Avatar */
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .class-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .class-meta {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .nav-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-diagram-3 me-2"></i>
+                Class Level Details
+            </h1>
+            <p class="mb-0">View complete information for {{ class_level.name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:class_level_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Class Levels</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Class Header Card -->
+<div class="class-header-card">
+    <div class="class-icon-large">
+        <i class="bi bi-diagram-3"></i>
+    </div>
+    <div class="class-info">
+        <h2>{{ class_level.name }}</h2>
+        <div class="class-meta">
+            <div class="class-meta-item">
+                <i class="bi bi-building"></i>
+                <span>{{ class_level.educational_level.name }}</span>
+            </div>
+            <div class="class-meta-item">
+                <i class="bi bi-sort-numeric-down"></i>
+                <span>Order: {{ class_level.order }}</span>
+            </div>
+            <div class="class-meta-item">
+                <i class="bi bi-code"></i>
+                <span>Code: {{ class_level.code }}</span>
+            </div>
+            {% if class_level.is_final %}
+            <div class="class-meta-item">
+                <span class="final-badge">
+                    <i class="bi bi-star-fill"></i>
+                    Final Class
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card streams">
+        <div class="stat-icon streams">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+        </div>
+        <div class="stat-value">{{ total_streams }}</div>
+        <div class="stat-label">Streams</div>
+    </div>
+    
+    <div class="stat-card students">
+        <div class="stat-icon students">
+            <i class="bi bi-person-check"></i>
+        </div>
+        <div class="stat-value">{{ total_enrolled }}</div>
+        <div class="stat-label">Enrolled Students</div>
+    </div>
+    
+    <div class="stat-card capacity">
+        <div class="stat-icon capacity">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ total_capacity }}</div>
+        <div class="stat-label">Total Capacity</div>
+    </div>
+    
+    <div class="stat-card subjects">
+        <div class="stat-icon subjects">
+            <i class="bi bi-book"></i>
+        </div>
+        <div class="stat-value">{{ total_subjects }}</div>
+        <div class="stat-label">Subjects</div>
+    </div>
+    
+    <div class="stat-card teachers">
+        <div class="stat-icon teachers">
+            <i class="bi bi-person-badge"></i>
+        </div>
+        <div class="stat-value">{{ total_teachers }}</div>
+        <div class="stat-label">Teachers</div>
+    </div>
+</div>
+
+<!-- Navigation Cards -->
+{% if previous_class or next_class %}
+<div class="nav-cards">
+    {% if previous_class %}
+    <a href="{% url 'management:class_level_detail' previous_class.pk %}" class="nav-card">
+        <div class="nav-card-icon">
+            <i class="bi bi-arrow-left"></i>
+        </div>
+        <div class="nav-card-content">
+            <div class="nav-card-title">Previous Class</div>
+            <div class="nav-card-subtitle">{{ previous_class.name }}</div>
+        </div>
+    </a>
+    {% endif %}
+    
+    {% if next_class %}
+    <a href="{% url 'management:class_level_detail' next_class.pk %}" class="nav-card">
+        <div class="nav-card-content" style="text-align: right;">
+            <div class="nav-card-title">Next Class</div>
+            <div class="nav-card-subtitle">{{ next_class.name }}</div>
+        </div>
+        <div class="nav-card-icon">
+            <i class="bi bi-arrow-right"></i>
+        </div>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Streams Section -->
+<div class="section-card">
+    <div class="section-header">
+        <h5>
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+            Streams in {{ class_level.name }}
+        </h5>
+        <a href="{% url 'management:stream_class_create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            Add Stream
+        </a>
+    </div>
+
+    {% if streams %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Stream Name</th>
+                    <th>Stream Letter</th>
+                    <th>Capacity</th>
+                    <th>Enrolled</th>
+                    <th>Utilization</th>
+                    <th>Actions</th>
+                </thead>
+            <tbody>
+                {% for stream in streams %}
+                <tr>
+                    <td>
+                        <div class="stream-badge">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            {{ stream.name }}
+                        </div>
+                    </td>
+                    <td><span class="fw-semibold">{{ stream.stream_letter }}</span></td>
+                    <td>{{ stream.capacity }}</td>
+                    <td>{{ stream.student_count }}</td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="small">
+                                {% widthratio stream.student_count stream.capacity 100 %}%
+                            </span>
+                            <div class="capacity-bar">
+                                <div class="capacity-fill 
+                                    {% if stream.student_count <= stream.capacity|divisibleby:0.3 %}low
+                                    {% elif stream.student_count <= stream.capacity|divisibleby:0.7 %}medium
+                                    {% else %}high{% endif %}"
+                                    style="width: {% widthratio stream.student_count stream.capacity 100 %}%">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'management:stream_class_detail' stream.pk %}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+        </div>
+        <h6 class="text-muted mb-2">No Streams Created</h6>
+        <p class="text-muted small">Create streams to organize students into groups.</p>
+        <a href="{% url 'management:stream_class_create' %}" class="btn btn-sm btn-primary mt-2">
+            <i class="bi bi-plus-lg"></i>
+            Create First Stream
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Students Section -->
+<div class="section-card">
+    <div class="section-header">
+        <h5>
+            <i class="bi bi-people-fill"></i>
+            Students Enrolled in {{ class_level.name }}
+        </h5>
+        <span class="badge bg-primary px-3 py-2">
+            <i class="bi bi-person-check me-1"></i>
+            {{ total_enrolled }} Student{{ total_enrolled|pluralize }}
+        </span>
+    </div>
+
+    {% if enrollments %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration Number</th>
+                    <th>Stream</th>
+                    <th>Enrollment Date</th>
+                </thead>
+            <tbody>
+                {% for enrollment in enrollments %}
+                <tr>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ enrollment.student.first_name|first|upper }}{{ enrollment.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ enrollment.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code class="student-reg">{{ enrollment.student.registration_number }}</code></td>
+                    <td>
+                        {% if enrollment.stream_assignment %}
+                            <span class="stream-badge">
+                                {{ enrollment.stream_assignment.stream_class.name }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">Not assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ enrollment.enrollment_date|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if total_enrolled > 20 %}
+    <div class="text-center mt-3">
+        <small class="text-muted">Showing first 20 students out of {{ total_enrolled }} total</small>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <h6 class="text-muted mb-2">No Students Enrolled</h6>
+        <p class="text-muted small">Students will appear here once they are enrolled in this class level.</p>
+        <a href="{% url 'management:student_enrollment_create' %}" class="btn btn-sm btn-primary mt-2">
+            <i class="bi bi-person-plus"></i>
+            Enroll Students
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Subjects Section -->
+<div class="section-card">
+    <div class="section-header">
+        <h5>
+            <i class="bi bi-book"></i>
+            Subjects Offered
+        </h5>
+        <span class="badge bg-info px-3 py-2">
+            <i class="bi bi-book me-1"></i>
+            {{ total_subjects }} Subject{{ total_subjects|pluralize }}
+        </span>
+    </div>
+
+    {% if subjects %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Subject Code</th>
+                    <th>Type</th>
+                    <th>Teachers Assigned</th>
+                </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr>
+                    <td><strong>{{ subject.name }}</strong></td>
+                    <td><code>{{ subject.code }}</code></td>
+                    <td>
+                        {% if subject.is_compulsory %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning">Compulsory</span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary">Elective</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ subject.teacher_count }} Teacher{{ subject.teacher_count|pluralize }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-book"></i>
+        </div>
+        <h6 class="text-muted mb-2">No Subjects Configured</h6>
+        <p class="text-muted small">Subjects will appear here once they are configured for this educational level.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Teachers Section -->
+<div class="section-card">
+    <div class="section-header">
+        <h5>
+            <i class="bi bi-person-badge"></i>
+            Teachers Assigned
+        </h5>
+        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2">
+            <i class="bi bi-person-badge me-1"></i>
+            {{ total_teachers }} Teacher{{ total_teachers|pluralize }}
+        </span>
+    </div>
+
+    {% if teachers %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Teacher Name</th>
+                    <th>Subject</th>
+                    <th>Periods/Week</th>
+                 </thead>
+            <tbody>
+                {% for assignment in teachers %}
+                <tr>
+                    <td>{{ assignment.staff.get_full_name }}</td>
+                    <td>{{ assignment.subject.name }}</td>
+                    <td>{{ assignment.periods_per_week }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if total_teachers > 20 %}
+    <div class="text-center mt-3">
+        <small class="text-muted">Showing first 20 teachers out of {{ total_teachers }} total</small>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-person-badge"></i>
+        </div>
+        <h6 class="text-muted mb-2">No Teachers Assigned</h6>
+        <p class="text-muted small">Teachers will appear here once they are assigned to teach in this class level.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'management:stream_class_create' %}" class="btn-primary">
+        <i class="bi bi-plus-lg"></i>
+        Add Stream
+    </a>
+    
+    <a href="{% url 'management:student_enrollment_create' %}?class_level={{ class_level.pk }}" class="btn-primary">
+        <i class="bi bi-person-plus"></i>
+        Enroll Students
+    </a>
+    
+    <a href="{% url 'management:class_level_list' %}" class="btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+    </a>
+</div>
+{% endblock %}

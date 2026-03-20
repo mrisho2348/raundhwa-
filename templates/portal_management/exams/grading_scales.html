@@ -1,0 +1,78 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}Grading Scales — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Grading & Division Scales{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="form-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Grade Band</h6>
+      <form method="post" action="{% url 'management:grading_scale_create' %}" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label fw-semibold">Education Level *</label>{{ grading_form.education_level }}</div>
+          <div class="col-6"><label class="form-label fw-semibold">Grade *</label>{{ grading_form.grade }}</div>
+          <div class="col-3"><label class="form-label fw-semibold">Min Mark</label>{{ grading_form.min_mark }}</div>
+          <div class="col-3"><label class="form-label fw-semibold">Max Mark</label>{{ grading_form.max_mark }}</div>
+          <div class="col-6"><label class="form-label fw-semibold">Points</label>{{ grading_form.points }}</div>
+          <div class="col-6"><label class="form-label fw-semibold">Description</label>{{ grading_form.description }}</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mt-3">Save Grade Band</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="form-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2 text-success"></i>Add Division Band</h6>
+      <form method="post" action="{% url 'management:division_scale_create' %}" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label fw-semibold">Education Level *</label>{{ division_form.education_level }}</div>
+          <div class="col-6"><label class="form-label fw-semibold">Division *</label>{{ division_form.division }}</div>
+          <div class="col-3"><label class="form-label fw-semibold">Min Points</label>{{ division_form.min_points }}</div>
+          <div class="col-3"><label class="form-label fw-semibold">Max Points</label>{{ division_form.max_points }}</div>
+          <div class="col-12"><label class="form-label fw-semibold">Description</label>{{ division_form.description }}</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100 mt-3">Save Division Band</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="dt-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>Grading Scales</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light"><tr><th>Level</th><th>Grade</th><th>Min</th><th>Max</th><th>Points</th></tr></thead>
+          <tbody>
+            {% for gs in grading_scales %}
+            <tr>
+              <td><span class="badge bg-secondary-subtle text-secondary border">{{ gs.education_level.code }}</span></td>
+              <td><span class="badge bg-primary">{{ gs.grade }}</span></td>
+              <td>{{ gs.min_mark }}</td><td>{{ gs.max_mark }}</td><td>{{ gs.points }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">No grades configured.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="dt-card">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-trophy me-2 text-warning"></i>Division Scales</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light"><tr><th>Level</th><th>Division</th><th>Min Pts</th><th>Max Pts</th></tr></thead>
+          <tbody>
+            {% for ds in division_scales %}
+            <tr>
+              <td><span class="badge bg-secondary-subtle text-secondary border">{{ ds.education_level.code }}</span></td>
+              <td><span class="badge bg-warning text-dark">Div {{ ds.division }}</span></td>
+              <td>{{ ds.min_points }}</td><td>{{ ds.max_points }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No divisions configured.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

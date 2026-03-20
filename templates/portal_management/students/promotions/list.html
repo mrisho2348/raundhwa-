@@ -1,0 +1,1195 @@
+<!-- templates/portal_management/students/promotions/list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Student Promotions — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Student Promotions{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM PROMOTION MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.promoted { background: var(--success-light); color: var(--success); }
+    .stat-icon.pending { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-bulk {
+        background: var(--success);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-bulk:hover {
+        background: #0b5e2c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(15,123,58,0.3);
+        color: white;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 800px;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--gray-50);
+    }
+
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 200px;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: monospace;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.promoted {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.pending {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .status-badge.not-eligible {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Checkbox Styles */
+    .select-all-checkbox, .student-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-success {
+        background: linear-gradient(135deg, #0f7b3a 0%, #0b5e2c 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles in Modal */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    .select2-results__option {
+        padding: 0.5rem 1rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-arrow-up-circle-fill me-2"></i>
+                Student Promotions
+            </h1>
+            <p class="mb-0">Promote students to the next class level</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="from_class" class="filter-label">From Class Level</label>
+                <select name="from_class" id="from_class" class="filter-select select2-filter">
+                    <option value="">Select Class Level</option>
+                    {% for class in class_levels %}
+                    <option value="{{ class.pk }}" {% if selected_from_class == class.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="academic_year" class="filter-label">Academic Year</label>
+                <select name="academic_year" id="academic_year" class="filter-select select2-filter">
+                    <option value="">Select Academic Year</option>
+                    {% for year in academic_years %}
+                    <option value="{{ year.pk }}" {% if selected_academic_year == year.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ year.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="to_class" class="filter-label">To Class Level (Optional)</label>
+                <select name="to_class" id="to_class" class="filter-select select2-filter">
+                    <option value="">Auto-detect Next Class</option>
+                    {% for class in class_levels %}
+                    <option value="{{ class.pk }}" {% if selected_to_class == class.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1" id="apply-filters">
+                    <i class="bi bi-funnel"></i>
+                    <span>Load Students</span>
+                </button>
+                <a href="{% url 'management:promotion_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if from_class and academic_year %}
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ total_enrolled }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon promoted">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-value">{{ promoted_count }}</div>
+        <div class="stat-label">Already Promoted</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon pending">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-value">{{ pending_count }}</div>
+        <div class="stat-label">Pending Promotion</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-graph-up"></i>
+        </div>
+        <div class="stat-value">{{ promotion_percentage|floatformat:1 }}%</div>
+        <div class="stat-label">Promotion Rate</div>
+    </div>
+</div>
+
+<!-- Promotion Info Card -->
+<div class="filter-card">
+    <div class="row">
+        <div class="col-md-6">
+            <strong>From:</strong> {{ from_class.name }} ({{ academic_year.name }})
+        </div>
+        <div class="col-md-6">
+            <strong>To:</strong> 
+            {% if to_class %}
+                {{ to_class.name }} ({{ next_academic_year.name|default:"Next Academic Year" }})
+            {% else %}
+                <span class="text-warning">No next class level found</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Promotion Form -->
+<form id="promotion-form" method="POST" action="{% url 'management:promotion_process' %}">
+    {% csrf_token %}
+    <input type="hidden" name="to_class" value="{{ to_class.pk|default:'' }}">
+    <input type="hidden" name="to_academic_year" value="{{ next_academic_year.pk|default:'' }}">
+    
+    <!-- Eligible Students Card -->
+    <div class="main-card">
+        <div class="card-header">
+            <h5>
+                <i class="bi bi-check-circle"></i>
+                Students Eligible for Promotion
+            </h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn-bulk" onclick="openBulkModal()">
+                    <i class="bi bi-people-fill"></i>
+                    Promote All
+                </button>
+                <button type="submit" class="btn-filter" name="action" value="selected">
+                    <i class="bi bi-arrow-right-circle"></i>
+                    Promote Selected
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="50">
+                            <input type="checkbox" id="select-all" class="select-all-checkbox">
+                        </th>
+                        <th>Student</th>
+                        <th>Registration #</th>
+                        <th>Current Class</th>
+                        <th>Enrollment Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in eligible_students %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="enrollments" value="{{ enrollment.pk }}" 
+                                   class="student-checkbox">
+                        </td>
+                        <td>
+                            <div class="student-info">
+                                <div class="student-avatar">
+                                    {{ enrollment.student.first_name|first|upper }}{{ enrollment.student.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="student-name">{{ enrollment.student.full_name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="student-reg">{{ enrollment.student.registration_number }}</span></td>
+                        <td>{{ enrollment.class_level.name }}</td>
+                        <td>{{ enrollment.enrollment_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="status-badge pending">
+                                <i class="bi bi-clock"></i> Pending
+                            </span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn-action" 
+                                    onclick="promoteSingle({{ enrollment.pk }})"
+                                    style="background: var(--success); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md);">
+                                <i class="bi bi-arrow-up-circle"></i> Promote
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-arrow-up-circle"></i>
+                                </div>
+                                <h5 class="text-muted">No students eligible for promotion</h5>
+                                <p class="text-muted">All students in this class have been promoted.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Already Promoted Students Card -->
+    {% if promoted_students %}
+    <div class="main-card">
+        <div class="card-header">
+            <h5>
+                <i class="bi bi-check-circle-fill"></i>
+                Already Promoted Students
+            </h5>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Registration #</th>
+                        <th>Promoted To</th>
+                        <th>Promotion Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in promoted_students %}
+                    <tr>
+                        <td>
+                            <div class="student-info">
+                                <div class="student-avatar">
+                                    {{ enrollment.student.first_name|first|upper }}{{ enrollment.student.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="student-name">{{ enrollment.student.full_name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="student-reg">{{ enrollment.student.registration_number }}</span></td>
+                        <td>{{ enrollment.remarks|truncatechars:50|default:"Next class level" }}</td>
+                        <td>{{ enrollment.updated_at|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="status-badge promoted">
+                                <i class="bi bi-check-circle"></i> Promoted
+                            </span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn-action" 
+                                    onclick="revertPromotion({{ enrollment.pk }})"
+                                    style="background: var(--danger); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md);">
+                                <i class="bi bi-arrow-counterclockwise"></i> Revert
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</form>
+{% endif %}
+
+<!-- Bulk Promotion Modal -->
+<div class="modal fade" id="bulkPromoteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-people-fill me-2"></i>
+                    Bulk Promotion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="bulk-promote-form" method="POST" action="{% url 'management:promotion_bulk' %}">
+                {% csrf_token %}
+                <input type="hidden" name="from_class" value="{{ from_class.pk|default:'' }}">
+                <input type="hidden" name="from_academic_year" value="{{ academic_year.pk|default:'' }}">
+                <input type="hidden" name="to_class" value="{{ to_class.pk|default:'' }}">
+                <input type="hidden" name="to_academic_year" value="{{ next_academic_year.pk|default:'' }}">
+                
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Bulk Promotion: {{ from_class.name }} → {{ to_class.name|default:"Next Class" }}</strong><br>
+                        You are about to promote <strong>{{ pending_count }}</strong> student(s) from {{ academic_year.name }} to the next class level.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Promotion Options</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="preserve_stream" name="preserve_stream" value="true" checked>
+                            <label class="form-check-label" for="preserve_stream">
+                                Preserve stream assignments (if available in target class)
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" id="preserve_combination" name="preserve_combination" value="true" checked>
+                            <label class="form-check-label" for="preserve_combination">
+                                Preserve subject combination (for A-Level)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulk_remarks" class="form-label">Remarks (Optional)</label>
+                        <textarea class="form-control" id="bulk_remarks" name="remarks" rows="3" 
+                                  placeholder="Add any notes about this bulk promotion..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="confirm-bulk-promote-btn">
+                        <span class="spinner-border spinner-border-sm d-none"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        Promote All Students
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Single Promotion Modal -->
+<div class="modal fade" id="singlePromoteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-up-circle-fill me-2"></i>
+                    Promote Student
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="single-promote-form" method="POST" action="{% url 'management:promotion_process' %}">
+                {% csrf_token %}
+                <input type="hidden" name="to_class" value="{{ to_class.pk|default:'' }}">
+                <input type="hidden" name="to_academic_year" value="{{ next_academic_year.pk|default:'' }}">
+                <input type="hidden" name="enrollments" id="single-enrollment-id">
+                
+                <div class="modal-body">
+                    <p>Promote <strong id="single-student-name"></strong> to the next class level?</p>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="single_preserve_stream" name="preserve_stream" value="true" checked>
+                            <label class="form-check-label" for="single_preserve_stream">
+                                Preserve stream assignment
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" id="single_preserve_combination" name="preserve_combination" value="true" checked>
+                            <label class="form-check-label" for="single_preserve_combination">
+                                Preserve subject combination
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="single_remarks" class="form-label">Remarks (Optional)</label>
+                        <textarea class="form-control" id="single_remarks" name="remarks" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="confirm-single-promote-btn">
+                        <span class="spinner-border spinner-border-sm d-none"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        Promote Student
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR FILTERS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function() {
+            return $(this).data('placeholder') || 'Select option';
+        }
+    });
+
+    // ============================================
+    // SELECT ALL CHECKBOX
+    // ============================================
+    $('#select-all').on('change', function() {
+        $('.student-checkbox').prop('checked', $(this).prop('checked'));
+    });
+
+    // ============================================
+    // FILTER FORM SUBMIT - ONLY ON BUTTON CLICK
+    // ============================================
+    $('#apply-filters').on('click', function(e) {
+        e.preventDefault();
+        $('#loadingOverlay').addClass('show');
+        const form = $('#filter-form');
+        window.location.href = `${window.location.pathname}?${form.serialize()}`;
+    });
+});
+
+// ============================================
+// PROMOTION FUNCTIONS
+// ============================================
+
+function promoteSingle(enrollmentId) {
+    const studentName = $(`input[name="enrollments"][value="${enrollmentId}"]`)
+        .closest('tr')
+        .find('.student-name')
+        .text();
+    
+    $('#single-enrollment-id').val(enrollmentId);
+    $('#single-student-name').text(studentName);
+    
+    const modal = new bootstrap.Modal(document.getElementById('singlePromoteModal'));
+    modal.show();
+}
+
+function openBulkModal() {
+    const modal = new bootstrap.Modal(document.getElementById('bulkPromoteModal'));
+    modal.show();
+}
+
+function revertPromotion(enrollmentId) {
+    if (confirm('Are you sure you want to revert this promotion? This will delete the next year\'s enrollment and mark this enrollment as active again.')) {
+        $('#loadingOverlay').addClass('show');
+        
+        $.ajax({
+            url: `/management/students/promotions/${enrollmentId}/revert/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(data) {
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                $('#loadingOverlay').removeClass('show');
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'Error reverting promotion', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    }
+}
+
+// ============================================
+// FORM SUBMISSIONS
+// ============================================
+
+$('#promotion-form, #single-promote-form, #bulk-promote-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const submitBtn = form.find('button[type="submit"]');
+    const spinner = submitBtn.find('.spinner-border');
+    
+    // Show loading
+    $('#loadingOverlay').addClass('show');
+    submitBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#loadingOverlay').removeClass('show');
+            
+            // Close modals if open
+            $('#singlePromoteModal, #bulkPromoteModal').modal('hide');
+            
+            showNotification(data.message, 'success');
+            
+            setTimeout(function() {
+                location.reload();
+            }, 1500);
+        },
+        error: function(xhr) {
+            $('#loadingOverlay').removeClass('show');
+            submitBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'An error occurred', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

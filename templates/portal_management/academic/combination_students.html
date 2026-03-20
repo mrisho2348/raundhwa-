@@ -1,0 +1,1742 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Students in {{ combination.code }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Students in {{ combination.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM COMBINATION STUDENTS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.core::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.subsidiary::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.core { background: var(--success-light); color: var(--success); }
+    .stat-icon.subsidiary { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Combination Info Card */
+    .combination-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .combination-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .combination-code-badge {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 1.1rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Bulk Actions Bar */
+    .bulk-actions-bar {
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-sm);
+        animation: slideDown 0.3s ease-out;
+        background-color: var(--gray-50);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .student-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action.history:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 1000px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Student Badges */
+    .student-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .student-reg {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-200);
+    }
+
+    .class-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .stream-badge {
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .academic-year-badge {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    .date-badge {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header.bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* History Timeline */
+    .history-timeline {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 2rem;
+        padding-bottom: 1.5rem;
+        border-left: 2px solid var(--gray-300);
+    }
+
+    .timeline-item:last-child {
+        border-left-color: transparent;
+        padding-bottom: 0;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary);
+    }
+
+    .timeline-item.active::before {
+        background: var(--success);
+        box-shadow: 0 0 0 3px var(--success-light);
+    }
+
+    .timeline-item.inactive::before {
+        background: var(--gray-400);
+    }
+
+    .timeline-date {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .timeline-content {
+        background: var(--gray-50);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .timeline-content strong {
+        color: var(--gray-800);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .combination-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            border-radius: var(--radius-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-people-fill me-2"></i>
+                Students in {{ combination.code }}
+            </h1>
+            <p class="mb-0">{{ combination.educational_level.name }} | {{ combination.educational_level.get_level_type_display }}</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-people me-2"></i>
+                Total Students: {{ student_count }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon total">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ student_count }}</div>
+        <div class="stat-label">Enrolled Students</div>
+    </div>
+    
+    <div class="stat-card core">
+        <div class="stat-icon core">
+            <i class="bi bi-star-fill"></i>
+        </div>
+        <div class="stat-value">{{ combination.combination_subjects.count }}</div>
+        <div class="stat-label">Total Subjects</div>
+    </div>
+    
+    <div class="stat-card subsidiary">
+        <div class="stat-icon subsidiary">
+            <i class="bi bi-calendar"></i>
+        </div>
+        <div class="stat-value">{{ combination.created_at|date:"Y" }}</div>
+        <div class="stat-label">Created</div>
+    </div>
+</div>
+
+<!-- Combination Info Card -->
+<div class="combination-info-card">
+    <div class="combination-info-grid">
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-journal-code"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Combination Code</div>
+                <div class="info-value">
+                    <span class="combination-code-badge">{{ combination.code }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Educational Level</div>
+                <div class="info-value">{{ combination.educational_level.name }}</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Subjects</div>
+                <div class="info-value">{{ combination.combination_subjects.count }} subjects</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-calendar"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Created</div>
+                <div class="info-value">{{ combination.created_at|date:"M d, Y" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Students List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-people"></i>
+            Students in This Combination
+            {% if student_count == 0 %}
+            <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2" style="font-size: 0.8rem;">
+                <i class="bi bi-info-circle me-1"></i>
+                No students assigned yet
+            </span>
+            {% endif %}
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:combination_list' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Combinations</span>
+            </a>
+            <button class="btn-add" data-bs-toggle="modal" data-bs-target="#assignStudentModal">
+                <i class="bi bi-plus-lg"></i>
+                <span>Assign Student</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bulk Operations Toolbar -->
+    <div class="bulk-actions-bar p-3" id="bulkActionsBar" style="display: none;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold fs-5" id="selectedCount">0</span>
+                <span class="text-muted">students selected</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-danger" id="bulkRemoveBtn" data-bs-toggle="modal" data-bs-target="#bulkRemoveModal">
+                    <i class="bi bi-trash me-2"></i>
+                    Remove Selected
+                </button>
+                <button type="button" class="btn btn-secondary" id="clearSelectionBtn">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="studentsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th width="40">
+                        <input class="form-check-input" type="checkbox" id="selectAllStudents">
+                    </th>
+                    <th>Student</th>
+                    <th>Registration #</th>
+                    <th>Class</th>
+                    <th>Stream</th>
+                    <th>Academic Year</th>
+                    <th>Assigned Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr id="student-row-{{ student.assignment_id }}">
+                    <td>
+                        <input class="form-check-input student-checkbox" 
+                               type="checkbox" 
+                               value="{{ student.assignment_id }}"
+                               data-student-name="{{ student.full_name }}">
+                    </td>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ student.full_name }}</div>
+                                {% if student.middle_name %}
+                                <small class="text-muted">{{ student.middle_name }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="class-badge">
+                            <i class="bi bi-diagram-3"></i>
+                            {{ student.current_class }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if student.stream %}
+                        <span class="stream-badge">
+                            <i class="bi bi-grid"></i>
+                            {{ student.stream }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="academic-year-badge">
+                            <i class="bi bi-calendar"></i>
+                            {{ student.academic_year }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="date-badge">
+                            <i class="bi bi-calendar-check"></i>
+                            {{ student.assigned_date|date:"M d, Y" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button type="button"
+                                    class="btn-action history"
+                                    title="View History"
+                                    onclick="viewHistory({{ student.assignment_id }}, '{{ student.full_name|escapejs }}')">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
+                            <a href="{% url 'management:student_detail' student.pk %}" 
+                               class="btn-action view" 
+                               title="View Student Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Remove from Combination"
+                                    onclick="showRemoveModal({{ student.assignment_id }}, '{{ student.full_name|escapejs }}')">
+                                <i class="bi bi-person-x"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>              
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Assign Student Modal -->
+<div class="modal fade" id="assignStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Assign Student to {{ combination.code }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignStudentForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div id="assign-form-general-error" class="alert alert-danger alert-general-error" style="display: none;"></div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="student-select" class="form-label required-field">Select Student</label>
+                            <select class="form-select" id="student-select" name="student_id" required>
+                                <option value="">Choose student...</option>
+                                {% for student in students_without_combination %}
+                                <option value="{{ student.id }}">{{ student.full_name }} ({{ student.registration_number }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Only A-Level students without a combination are shown
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="enrollment-select" class="form-label required-field">Select Enrollment</label>
+                            <select class="form-select" id="enrollment-select" name="enrollment_id" required disabled>
+                                <option value="">First select a student</option>
+                            </select>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Current active enrollment for the student
+                            </small>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="remarks" class="form-label">Remarks (Optional)</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2" placeholder="Any notes about this assignment..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="combination_id" value="{{ combination.id }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="assignStudentBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Assign Student</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Assignment History - <span id="historyStudentName"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="historyLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading history...</p>
+                </div>
+                <div id="historyContent" style="display: none;">
+                    <div class="history-timeline" id="historyTimeline">
+                        <!-- Timeline items will be loaded here -->
+                    </div>
+                </div>
+                <div id="historyEmpty" style="display: none;" class="text-center py-4">
+                    <div class="empty-icon" style="width: 60px; height: 60px; font-size: 2rem;">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h6 class="mt-3">No History Found</h6>
+                    <p class="text-muted">This student has no combination assignment history.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Single Remove Confirmation Modal -->
+<div class="modal fade" id="removeStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Removal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="removeStudentForm" method="POST" action="{% url 'management:student_combination_remove' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="removeStudentName"></strong> from {{ combination.code }}?</p>
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This student will no longer be associated with this combination.
+                    </p>
+                    <input type="hidden" name="assignment_id" id="removeAssignmentId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirmRemoveBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Remove Student</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Remove Confirmation Modal -->
+<div class="modal fade" id="bulkRemoveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Bulk Removal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulkRemoveForm" method="POST" action="{% url 'management:student_combination_bulk_remove' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="bulkRemoveCount">0</strong> selected student(s) from {{ combination.code }}?</p>
+                    <div id="bulkRemoveList" class="mt-3 p-3 bg-light rounded" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Selected students will be listed here -->
+                    </div>
+                    <input type="hidden" name="assignment_ids" id="bulkRemoveAssignmentIds">
+                    <input type="hidden" name="combination_id" value="{{ combination.id }}">
+                    <p class="text-danger mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirmBulkRemoveBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Remove Selected</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let selectedAssignments = new Set();
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#studentsTable').length && $.fn.DataTable) {
+        const table = $('#studentsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: '{{ combination.code }} - Students List'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: '{{ combination.code }} - Students List',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: '{{ combination.code }} - Students List'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[1, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: [0, -1] }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search students...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ students",
+                infoEmpty: "Showing 0 to 0 of 0 students",
+                infoFiltered: "(filtered from _MAX_ total students)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // BULK OPERATIONS - SELECTION HANDLING
+    // ============================================
+
+    function updateSelectionUI() {
+        const count = selectedAssignments.size;
+        $('#selectedCount').text(count);
+        
+        if (count > 0) {
+            $('#bulkActionsBar').slideDown();
+            $('#selectAllStudents').prop('checked', count === $('.student-checkbox').length);
+        } else {
+            $('#bulkActionsBar').slideUp();
+            $('#selectAllStudents').prop('checked', false);
+        }
+        
+        $('#bulkRemoveAssignmentIds').val(Array.from(selectedAssignments).join(','));
+    }
+
+    $(document).on('change', '.student-checkbox', function() {
+        const assignmentId = $(this).val();
+        
+        if ($(this).is(':checked')) {
+            selectedAssignments.add(assignmentId);
+        } else {
+            selectedAssignments.delete(assignmentId);
+        }
+        
+        updateSelectionUI();
+    });
+
+    $('#selectAllStudents').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        
+        $('.student-checkbox').each(function() {
+            $(this).prop('checked', isChecked).trigger('change');
+        });
+    });
+
+    $('#clearSelectionBtn').on('click', function() {
+        $('.student-checkbox').prop('checked', false).trigger('change');
+        selectedAssignments.clear();
+        updateSelectionUI();
+    });
+
+    // ============================================
+    // STUDENT SELECTION FOR ASSIGNMENT
+    // ============================================
+
+    $('#student-select').on('change', function() {
+        const studentId = $(this).val();
+        const enrollmentSelect = $('#enrollment-select');
+        
+        if (!studentId) {
+            enrollmentSelect.prop('disabled', true).html('<option value="">First select a student</option>');
+            return;
+        }
+        
+        enrollmentSelect.prop('disabled', true).html('<option value="">Loading enrollments...</option>');
+        
+        $.ajax({
+            url: '{% url "management:get_a_level_enrollments" %}',
+            method: 'GET',
+            data: { student_id: studentId },
+            success: function(data) {
+                let options = '<option value="">Select enrollment...</option>';
+                data.enrollments.forEach(function(enrollment) {
+                    options += `<option value="${enrollment.id}">${enrollment.text}</option>`;
+                });
+                
+                enrollmentSelect.prop('disabled', false).html(options);
+            },
+            error: function() {
+                enrollmentSelect.html('<option value="">Error loading enrollments</option>');
+                showNotification('Failed to load enrollments', 'error');
+            }
+        });
+    });
+
+    // ============================================
+    // ASSIGN STUDENT FORM SUBMISSION
+    // ============================================
+
+    $('#assignStudentForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const assignBtn = $('#assignStudentBtn');
+        const spinner = assignBtn.find('.spinner-border');
+        const btnText = assignBtn.find('.btn-text');
+        
+        assignBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Assigning...');
+        
+        $.ajax({
+            url: '{% url "management:student_combination_assign" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                student_id: $('#student-select').val(),
+                enrollment_id: $('#enrollment-select').val(),
+                combination_id: '{{ combination.id }}',
+                remarks: $('#remarks').val(),
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function(data) {
+                if (data.success) {
+                    $('#assignStudentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error assigning student', 'error');
+                    assignBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Assign Student');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                assignBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Assign Student');
+            }
+        });
+    });
+
+    // ============================================
+    // VIEW HISTORY FUNCTION
+    // ============================================
+
+    window.viewHistory = function(assignmentId, studentName) {
+        $('#historyStudentName').text(studentName);
+        $('#historyLoading').show();
+        $('#historyContent').hide();
+        $('#historyEmpty').hide();
+        
+        const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+        modal.show();
+        
+        $.ajax({
+            url: '{% url "management:get_combination_history" %}',
+            method: 'GET',
+            data: { enrollment_id: assignmentId },
+            success: function(data) {
+                $('#historyLoading').hide();
+                
+                if (data.assignments && data.assignments.length > 0) {
+                    let timelineHtml = '';
+                    data.assignments.forEach(function(assignment) {
+                        const statusClass = assignment.is_active ? 'active' : 'inactive';
+                        timelineHtml += `
+                            <div class="timeline-item ${statusClass}">
+                                <div class="timeline-date">${assignment.assigned_date}</div>
+                                <div class="timeline-content">
+                                    <strong>${assignment.combination_code}</strong>
+                                    <span class="badge bg-${assignment.is_active ? 'success' : 'secondary'} ms-2">
+                                        ${assignment.is_active ? 'Active' : 'Inactive'}
+                                    </span>
+                                    ${assignment.remarks ? `<p class="mt-2 mb-0 text-muted">${assignment.remarks}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $('#historyTimeline').html(timelineHtml);
+                    $('#historyContent').show();
+                } else {
+                    $('#historyEmpty').show();
+                }
+            },
+            error: function() {
+                $('#historyLoading').hide();
+                $('#historyContent').html('<div class="alert alert-danger">Failed to load history</div>').show();
+            }
+        });
+    };
+
+    // ============================================
+    // REMOVE STUDENT FUNCTIONS
+    // ============================================
+
+    window.showRemoveModal = function(assignmentId, studentName) {
+        $('#removeAssignmentId').val(assignmentId);
+        $('#removeStudentName').text(studentName);
+        
+        const modal = new bootstrap.Modal(document.getElementById('removeStudentModal'));
+        modal.show();
+    };
+
+    $('#removeStudentForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const removeBtn = $('#confirmRemoveBtn');
+        const spinner = removeBtn.find('.spinner-border');
+        const btnText = removeBtn.find('.btn-text');
+        
+        removeBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Removing...');
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#removeStudentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error removing student', 'error');
+                    removeBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Remove Student');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                removeBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Remove Student');
+            }
+        });
+    });
+
+    // ============================================
+    // BULK REMOVE MODAL
+    // ============================================
+
+    $('#bulkRemoveModal').on('show.bs.modal', function() {
+        const count = selectedAssignments.size;
+        $('#bulkRemoveCount').text(count);
+        
+        let listHtml = '<ul class="list-unstyled mb-0">';
+        $('.student-checkbox:checked').each(function() {
+            const name = $(this).data('student-name');
+            listHtml += `<li><i class="bi bi-person-x text-danger me-2"></i>${name}</li>`;
+        });
+        listHtml += '</ul>';
+        
+        $('#bulkRemoveList').html(listHtml);
+    });
+
+    $('#bulkRemoveForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const removeBtn = $('#confirmBulkRemoveBtn');
+        const spinner = removeBtn.find('.spinner-border');
+        const btnText = removeBtn.find('.btn-text');
+        
+        removeBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Removing...');
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#bulkRemoveModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error removing students', 'error');
+                    removeBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Remove Selected');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                removeBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Remove Selected');
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#assignStudentModal').on('hidden.bs.modal', function() {
+        $('#assignStudentForm')[0].reset();
+        $('#enrollment-select').prop('disabled', true).html('<option value="">First select a student</option>');
+        const assignBtn = $('#assignStudentBtn');
+        assignBtn.prop('disabled', false);
+        assignBtn.find('.spinner-border').addClass('d-none');
+        assignBtn.find('.btn-text').text('Assign Student');
+    });
+
+    $('#removeStudentModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirmRemoveBtn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove Student');
+    });
+
+    $('#bulkRemoveModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirmBulkRemoveBtn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove Selected');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

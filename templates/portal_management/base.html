@@ -1,0 +1,433 @@
+{% extends 'shared/base.html' %}
+
+{% block portal_primary %}#1a73e8{% endblock %}
+{% block portal_sidebar_bg %}#0f172a{% endblock %}
+
+{% block sidebar_menu %}
+<div class="sidebar-nav-wrapper">
+
+    <!-- ── Dashboard ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-speedometer2"></i>
+            <span class="section-label">Dashboard</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:dashboard' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-house-door"></i>
+                <span class="link-text">Overview</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Student Management ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-people-fill"></i>
+            <span class="section-label">Student Management</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:student_list' %}"
+               class="nav-link {% if 'student' in request.resolver_match.url_name and not 'enrollment' in request.resolver_match.url_name and not 'education_history' in request.resolver_match.url_name and not 'transfer' in request.resolver_match.url_name and not 'withdrawal' in request.resolver_match.url_name and not 'suspension' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-people"></i>
+                <span class="link-text">All Students</span>
+                <span class="nav-counter">{{ student_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:student_enrollment_list' %}"
+               class="nav-link {% if 'enrollment' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-plus-fill"></i>
+                <span class="link-text">Enroll Student</span>
+                <span class="nav-badge info-badge">Active</span>
+            </a>
+            <a href="{% url 'management:student_education_history_list' %}"
+               class="nav-link {% if 'education_history' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-journal-bookmark-fill"></i>
+                <span class="link-text">Education History</span>
+            </a>
+            <a href="{% url 'management:student_transfer_list' %}"
+               class="nav-link {% if 'transfer' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-arrow-right-circle-fill"></i>
+                <span class="link-text">Transfers</span>
+            </a>
+            <a href="{% url 'management:student_withdrawal_list' %}"
+               class="nav-link {% if 'withdrawal' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="link-text">Withdrawals</span>
+            </a>
+            <a href="{% url 'management:suspension_list' %}"
+               class="nav-link {% if 'suspension' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span class="link-text">Suspensions</span>
+            </a>
+            <a href="{% url 'management:parent_list' %}"
+               class="nav-link {% if 'parent' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-lines-fill"></i>
+                <span class="link-text">Parents/Guardians</span>
+                <span class="nav-counter">{{ parent_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:promotion_list' %}"
+               class="nav-link {% if 'promotion' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-lines-fill"></i>
+                <span class="link-text">Promotions</span>
+                <span class="nav-counter">{{ promotion_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:student_combination_assignment_list' %}"
+               class="nav-link {% if 'comb' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-lines-fill"></i>
+                <span class="link-text">Assign Comb</span>
+                <span class="nav-counter">{{ parent_count|default:0 }}</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Staff Management ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-person-badge-fill"></i>
+            <span class="section-label">Staff Management</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:staff_list' %}"
+               class="nav-link {% if 'staff' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">All Staff</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:staff_create' %}"
+               class="nav-link {% if 'staff_create' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-plus-fill"></i>
+                <span class="link-text">Add Staff</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Academic Structure ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-building-fill"></i>
+            <span class="section-label">Academic Structure</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:educational_level_list' %}"
+               class="nav-link {% if 'educational_level' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-layers"></i>
+                <span class="link-text">Educational Levels</span>
+            </a>
+            <a href="{% url 'management:academic_year_list' %}"
+               class="nav-link {% if 'academic_year' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-calendar3"></i>
+                <span class="link-text">Academic Years</span>
+                <span class="nav-badge active-badge">Active</span>
+            </a>
+            <a href="{% url 'management:class_level_list' %}"
+               class="nav-link {% if 'class_level' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-diagram-3"></i>
+                <span class="link-text">Class Levels</span>
+            </a>
+            <a href="{% url 'management:stream_class_list' %}"
+               class="nav-link {% if 'stream_class' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span class="link-text">Stream Classes</span>
+            </a>
+            <a href="{% url 'management:school_list' %}"
+               class="nav-link {% if 'school' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-building"></i>
+                <span class="link-text">Schools Registry</span>
+            </a>
+            <a href="{% url 'management:subject_list' %}"
+               class="nav-link {% if 'subject' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-book"></i>
+                <span class="link-text">Subjects</span>
+            </a>
+            <a href="{% url 'management:combination_list' %}"
+               class="nav-link {% if 'combination' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span class="link-text">Combinations</span>
+            </a>
+            <a href="{% url 'management:department_list' %}"
+               class="nav-link {% if 'department' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-diagram-3"></i>
+                <span class="link-text">Departments</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Examinations ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-clipboard-check-fill"></i>
+            <span class="section-label">Examinations</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:exam_session_list' %}"
+               class="nav-link {% if 'exam_session' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clipboard-check"></i>
+                <span class="link-text">Exam Sessions</span>
+                <span class="nav-badge success-badge">New</span>
+            </a>
+            <a href="{% url 'management:grading_scale_list' %}"
+               class="nav-link {% if 'grading_scale' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-bar-chart-steps"></i>
+                <span class="link-text">Grading Scales</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Reports & Audit ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-file-text-fill"></i>
+            <span class="section-label">Reports & Audit</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:audit_log' %}"
+               class="nav-link {% if 'audit_log' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-journal-text"></i>
+                <span class="link-text">Audit Log</span>
+            </a>
+            <a href="{% url 'management:online_users' %}"
+               class="nav-link {% if 'online_users' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-wifi"></i>
+                <span class="link-text">Online Users</span>
+            </a>
+        </div>
+    </div>
+
+</div><!-- /.sidebar-nav-wrapper -->
+
+<style>
+    /* ── Nav Sections ── */
+    .sidebar-nav-wrapper {
+        padding: 0.5rem 0 1rem;
+    }
+
+    .nav-section {
+        margin-bottom: 0.1rem;
+    }
+
+    .nav-section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 1rem;
+        color: rgba(255,255,255,0.65);
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        border-radius: 10px;
+        margin: 0.15rem 0.6rem;
+        user-select: none;
+        transition: background 0.2s ease, color 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .nav-section-header:hover {
+        background: rgba(255,255,255,0.08);
+        color: #fff;
+    }
+
+    .nav-section-header > i:first-child {
+        font-size: 1rem;
+        min-width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .nav-section-header .section-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .section-toggle {
+        font-size: 0.75rem;
+        transition: transform 0.3s ease;
+        opacity: 0.6;
+        flex-shrink: 0;
+    }
+
+    /* Collapsed section: chevron points right */
+    .nav-section:not(.active) .section-toggle {
+        transform: rotate(-90deg);
+    }
+
+    /* Expanded section: chevron points down */
+    .nav-section.active .section-toggle {
+        transform: rotate(0deg);
+    }
+
+    /* Section content show/hide */
+    .nav-section-content {
+        display: none;
+        overflow: hidden;
+    }
+
+    .nav-section.active .nav-section-content {
+        display: block;
+        animation: slideDown 0.25s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Nav Links ── */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.55rem 1rem 0.55rem 2.6rem;
+        color: rgba(255,255,255,0.65);
+        text-decoration: none;
+        border-radius: 10px;
+        margin: 0.1rem 0.6rem;
+        font-size: 0.875rem;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .nav-link i {
+        font-size: 1rem;
+        min-width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .nav-link .link-text {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .nav-link:hover {
+        background: rgba(255,255,255,0.08);
+        color: #fff;
+        transform: translateX(4px);
+    }
+
+    .nav-link.active {
+        background: linear-gradient(90deg, rgba(26,115,232,0.25), rgba(26,115,232,0.08));
+        color: #5b9cf6;
+        border-left: 3px solid #1a73e8;
+    }
+
+    .nav-link.active i {
+        color: #5b9cf6;
+    }
+
+    /* ── Badges & Counters ── */
+    .nav-badge {
+        font-size: 0.68rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.15);
+        color: rgba(255,255,255,0.9);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .nav-badge.active-badge  { background: #2ecc71; color: #fff; }
+    .nav-badge.success-badge { background: #27ae60; color: #fff; }
+    .nav-badge.info-badge    { background: #3498db; color: #fff; }
+    .nav-badge.warning-badge { background: #f39c12; color: #212529; }
+
+    .nav-counter {
+        background: rgba(255,255,255,0.18);
+        color: rgba(255,255,255,0.9);
+        font-size: 0.68rem;
+        padding: 0.12rem 0.4rem;
+        border-radius: 20px;
+        min-width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Desktop collapsed overrides ── */
+    /* (base.html handles width; here we hide text elements) */
+    #sidebar.collapsed .nav-section-content {
+        display: block !important; /* keep links visible as icon rows */
+    }
+
+    #sidebar.collapsed .nav-section-header {
+        justify-content: center;
+        padding: 0.6rem 0;
+        margin: 0.15rem 0.25rem;
+    }
+
+    #sidebar.collapsed .nav-link {
+        justify-content: center;
+        padding: 0.6rem 0;
+        margin: 0.1rem 0.25rem;
+    }
+
+    /* ── Mobile overrides: undo collapsed styles ── */
+    @media (max-width: 992px) {
+        #sidebar.collapsed .nav-section-header {
+            justify-content: flex-start;
+            padding: 0.7rem 1rem;
+            margin: 0.15rem 0.6rem;
+        }
+
+        #sidebar.collapsed .nav-link {
+            justify-content: flex-start;
+            padding: 0.55rem 1rem 0.55rem 2.6rem;
+            margin: 0.1rem 0.6rem;
+        }
+
+        .nav-link {
+            min-height: 42px; /* Larger tap targets on touch */
+        }
+
+        .nav-section-header {
+            min-height: 44px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sections = document.querySelectorAll('.nav-section');
+
+    sections.forEach(function (section, index) {
+        const header  = section.querySelector('.nav-section-header');
+        const hasActive = section.querySelector('.nav-link.active') !== null;
+        const savedState = localStorage.getItem('nav_section_' + index);
+
+        /* Open if: has active link OR was previously saved as open */
+        if (hasActive || savedState === 'active') {
+            section.classList.add('active');
+        }
+
+        if (header) {
+            header.addEventListener('click', function () {
+                section.classList.toggle('active');
+                localStorage.setItem(
+                    'nav_section_' + index,
+                    section.classList.contains('active') ? 'active' : 'inactive'
+                );
+            });
+        }
+    });
+
+    /* Ensure the section with the active link is open on first load */
+    const activeLink = document.querySelector('.nav-link.active');
+    if (activeLink) {
+        const parentSection = activeLink.closest('.nav-section');
+        if (parentSection) parentSection.classList.add('active');
+    }
+});
+</script>
+{% endblock %}

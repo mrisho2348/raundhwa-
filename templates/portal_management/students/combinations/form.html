@@ -1,0 +1,1290 @@
+<!-- templates/portal_management/students/combinations/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM COMBINATION ASSIGNMENT FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--info);
+        font-size: 1.4rem;
+    }
+
+    /* Student Info Card */
+    .student-info-card {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .student-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .student-details {
+        flex: 1;
+    }
+
+    .student-details h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .student-details .student-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+    }
+
+    .student-details .student-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .student-details .student-meta i {
+        color: var(--primary);
+    }
+
+    /* Enrollment Details Card */
+    .enrollment-details-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .enrollment-details-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px dashed var(--gray-300);
+    }
+
+    .enrollment-details-header i {
+        font-size: 1.2rem;
+        color: var(--primary);
+    }
+
+    .enrollment-details-header h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .enrollment-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .enrollment-detail-item {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .enrollment-detail-label {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .enrollment-detail-label i {
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+
+    .enrollment-detail-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    /* Warning Card */
+    .warning-card {
+        background: var(--warning-light);
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #ffeeba;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .warning-card i {
+        font-size: 1.2rem;
+        color: #856404;
+    }
+
+    .warning-card span {
+        flex: 1;
+        color: #856404;
+        font-size: 0.9rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Checkbox Group */
+    .checkbox-group {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        padding: 0.5rem 0;
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 42px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .student-info-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .student-details .student-meta {
+            justify-content: center;
+        }
+
+        .enrollment-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .checkbox-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if is_update %}
+                    Update combination assignment for <strong>{{ assignment.student.full_name }}</strong>
+                {% else %}
+                    Assign a subject combination to an A-Level student
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:student_combination_assignment_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Assignments</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Student Info Card (for update view or pre-selected student) -->
+{% if pre_selected_student %}
+<div class="student-info-card">
+    <div class="student-avatar-large">
+        {{ pre_selected_student.full_name|first|upper }}{{ pre_selected_student.full_name|last|upper }}
+    </div>
+    <div class="student-details">
+        <h3>{{ pre_selected_student.full_name }}</h3>
+        <div class="student-meta">
+            <span>
+                <i class="bi bi-upc-scan"></i>
+                {{ pre_selected_student.registration_number }}
+            </span>
+        </div>
+    </div>
+</div>
+{% elif student %}
+<div class="student-info-card">
+    <div class="student-avatar-large">
+        {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+    </div>
+    <div class="student-details">
+        <h3>{{ student.full_name }}</h3>
+        <div class="student-meta">
+            <span>
+                <i class="bi bi-upc-scan"></i>
+                {{ student.registration_number }}
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Assignment Details
+        </h5>
+        {% if assignment %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Created: {{ assignment.created_at|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="combination-form" method="POST" 
+          {% if is_update %}
+          action="{% url 'management:student_combination_assignment_update' assignment.pk %}"
+          {% else %}
+          action="{% url 'management:student_combination_assignment_create' %}"
+          {% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <!-- Student Selection (only in create mode without pre-selected) -->
+        {% if not pre_selected_student and not student and not is_update %}
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <label for="{{ form.student.id_for_label }}" class="form-label required-field">
+                    {{ form.student.label }}
+                </label>
+                {{ form.student }}
+                {% if form.student.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.student.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the A-Level student to assign a combination
+                </small>
+            </div>
+        </div>
+        {% else %}
+            <!-- Hidden student field for edit or pre-selected create -->
+            <input type="hidden" name="student" value="{% if pre_selected_student %}{{ pre_selected_student.id }}{% else %}{{ student.pk }}{% endif %}">
+        {% endif %}
+        
+        <div class="row g-4">
+            <!-- Enrollment Selection -->
+            <div class="col-md-12">
+                <label for="{{ form.enrollment.id_for_label }}" class="form-label required-field">
+                    {{ form.enrollment.label }}
+                </label>
+                {{ form.enrollment }}
+                {% if form.enrollment.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.enrollment.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-journal-bookmark"></i>
+                    Select the enrollment for this student (only A-Level active enrollments are shown)
+                </small>
+            </div>
+            
+            <!-- Combination Selection -->
+            <div class="col-md-6">
+                <label for="{{ form.combination.id_for_label }}" class="form-label required-field">
+                    {{ form.combination.label }}
+                </label>
+                {{ form.combination }}
+                {% if form.combination.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.combination.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                    {{ form.combination.help_text }}
+                </small>
+            </div>
+            
+            <!-- Assigned Date -->
+            <div class="col-md-6">
+                <label for="{{ form.assigned_date.id_for_label }}" class="form-label">
+                    {{ form.assigned_date.label }}
+                </label>
+                {{ form.assigned_date }}
+                {% if form.assigned_date.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.assigned_date.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-calendar"></i>
+                    {{ form.assigned_date.help_text }}
+                </small>
+            </div>
+            
+            <!-- Active Status -->
+            <div class="col-12">
+                <label class="form-label">Assignment Status</label>
+                <div class="checkbox-group">
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            Active Assignment
+                        </label>
+                    </div>
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    {{ form.is_active.help_text }}
+                </small>
+            </div>
+            
+            <!-- Remarks -->
+            <div class="col-12">
+                <label for="{{ form.remarks.id_for_label }}" class="form-label">
+                    {{ form.remarks.label }}
+                </label>
+                {{ form.remarks }}
+                {% if form.remarks.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.remarks.errors.0 }}
+                </div>
+                {% endif %}
+                <small class="field-hint">
+                    <i class="bi bi-chat"></i>
+                    {{ form.remarks.help_text }}
+                </small>
+            </div>
+        </div>
+        
+        <!-- Warning: Active Assignment Already Exists -->
+        <div id="active-assignment-warning" class="warning-card" style="display: none;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>
+                <strong>Note:</strong> This student already has an active combination assignment. 
+                Saving this as active will automatically deactivate the previous assignment.
+            </span>
+        </div>
+        
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+        <div class="alert-general-error mt-4">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Form Actions -->
+        <div class="action-buttons">
+            <button type="submit" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if is_update %}Update{% else %}Assign{% endif %} Combination
+                </span>
+            </button>
+
+            <a href="{% if is_update %}{% url 'management:student_combination_assignment_detail' assignment.pk %}{% else %}{% url 'management:student_combination_assignment_list' %}{% endif %}" 
+               class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Combination Info Card -->
+<div class="form-card mt-4">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-info-circle"></i>
+            About Subject Combinations
+        </h5>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-info bg-opacity-10 p-3 rounded-3">
+                    <i class="bi bi-grid-3x3-gap-fill text-info fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1">What are Combinations?</h6>
+                    <p class="small text-muted mb-0">Subject combinations define the set of subjects an A-Level student takes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                    <i class="bi bi-star-fill text-success fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1">Active Assignments</h6>
+                    <p class="small text-muted mb-0">Only one combination can be active per student at a time.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                    <i class="bi bi-clock-history text-warning fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1">History Tracking</h6>
+                    <p class="small text-muted mb-0">All combination changes are tracked in the student's history.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let isUpdate = {% if is_update %}true{% else %}false{% endif %};
+let currentStudentId = {% if pre_selected_student %}{{ pre_selected_student.id }}{% elif student %}{{ student.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2
+    // ============================================
+    
+    // Student Select2 (create mode without pre-selected)
+    {% if not pre_selected_student and not student and not is_update %}
+    $('#{{ form.student.id_for_label }}').select2({
+        placeholder: 'Search for a student...',
+        allowClear: true,
+        width: '100%',
+        minimumInputLength: 2,
+        templateResult: formatStudentResult,
+        templateSelection: formatStudentSelection
+    });
+    {% endif %}
+    
+    // Enrollment Select2
+    $('#{{ form.enrollment.id_for_label }}').select2({
+        placeholder: 'Select enrollment...',
+        allowClear: true,
+        width: '100%'
+    });
+    
+    // Combination Select2
+    $('#{{ form.combination.id_for_label }}').select2({
+        placeholder: 'Select combination...',
+        allowClear: true,
+        width: '100%',
+        templateResult: formatCombinationResult,
+        templateSelection: formatCombinationSelection
+    });
+
+    // Helper functions for Select2 formatting
+    function formatStudentResult(student) {
+        if (student.loading) {
+            return student.text;
+        }
+        
+        var $container = $(
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-semibold">' + student.text.split(' (')[0] + '</span>' +
+                '<small class="text-muted">' + (student.text.match(/\(([^)]+)\)/)?.[1] || '') + '</small>' +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatStudentSelection(student) {
+        return student.text.split(' (')[0] || student.text;
+    }
+
+    function formatCombinationResult(combination) {
+        if (combination.loading) {
+            return combination.text;
+        }
+        
+        var $container = $(
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-semibold">' + combination.text + '</span>' +
+                '<small class="text-muted">A-Level Combination</small>' +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatCombinationSelection(combination) {
+        return combination.text;
+    }
+
+    // ============================================
+    // FETCH ENROLLMENTS WHEN STUDENT CHANGES
+    // ============================================
+    
+    {% if not pre_selected_student and not student and not is_update %}
+    const studentSelect = $('#{{ form.student.id_for_label }}');
+    const enrollmentSelect = $('#{{ form.enrollment.id_for_label }}');
+    const activeAssignmentWarning = $('#active-assignment-warning');
+    
+    studentSelect.on('change', function() {
+        const studentId = $(this).val();
+        
+        if (studentId) {
+            // Show loading state
+            enrollmentSelect.prop('disabled', true);
+            enrollmentSelect.empty().append('<option value="">Loading enrollments...</option>').trigger('change');
+            
+            // Fetch enrollments for this student
+            $.ajax({
+                url: '{% url "management:api_student_enrollments" %}',
+                method: 'GET',
+                data: { student_id: studentId },
+                success: function(data) {
+                    enrollmentSelect.empty();
+                    enrollmentSelect.append('<option value="">Select enrollment...</option>');
+                    
+                    if (data.enrollments && data.enrollments.length > 0) {
+                        $.each(data.enrollments, function(index, enrollment) {
+                            let optionText = `${enrollment.class_level} - ${enrollment.academic_year}`;
+                            if (enrollment.has_active_assignment) {
+                                optionText += ` (Active: ${enrollment.active_assignment})`;
+                            }
+                            enrollmentSelect.append(`<option value="${enrollment.id}">${optionText}</option>`);
+                        });
+                        
+                        // Show warning if student has active assignments
+                        if (data.has_active_assignments) {
+                            activeAssignmentWarning.show();
+                        } else {
+                            activeAssignmentWarning.hide();
+                        }
+                    } else {
+                        enrollmentSelect.append('<option value="">No active A-Level enrollments found</option>');
+                    }
+                    
+                    enrollmentSelect.prop('disabled', false);
+                    enrollmentSelect.trigger('change');
+                },
+                error: function() {
+                    enrollmentSelect.empty();
+                    enrollmentSelect.append('<option value="">Error loading enrollments</option>');
+                    enrollmentSelect.prop('disabled', false);
+                    showNotification('Error loading student enrollments', 'error');
+                }
+            });
+        } else {
+            enrollmentSelect.empty();
+            enrollmentSelect.append('<option value="">Select student first...</option>');
+            activeAssignmentWarning.hide();
+        }
+    });
+    {% endif %}
+    
+    // Check for existing active assignment when enrollment is selected
+    enrollmentSelect.on('change', function() {
+        const enrollmentId = $(this).val();
+        if (enrollmentId && window.enrollmentHasActiveAssignment) {
+            // This would be populated from the AJAX response
+            // For now, we rely on the warning from the student selection
+        }
+    });
+
+    // ============================================
+    // FORM SUBMIT
+    // ============================================
+    
+    $('#combination-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate required fields
+        const student = $('#{{ form.student.id_for_label }}').val();
+        const enrollment = $('#{{ form.enrollment.id_for_label }}').val();
+        const combination = $('#{{ form.combination.id_for_label }}').val();
+        
+        if (!student && !isUpdate && !currentStudentId) {
+            showNotification('Please select a student.', 'error');
+            $('#{{ form.student.id_for_label }}').next('.select2-container').addClass('is-invalid');
+            return;
+        }
+        
+        if (!enrollment) {
+            showNotification('Please select an enrollment.', 'error');
+            $('#{{ form.enrollment.id_for_label }}').next('.select2-container').addClass('is-invalid');
+            return;
+        }
+        
+        if (!combination) {
+            showNotification('Please select a combination.', 'error');
+            $('#{{ form.combination.id_for_label }}').next('.select2-container').addClass('is-invalid');
+            return;
+        }
+        
+        // Clear previous errors
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = '{% url "management:student_combination_assignment_list" %}';
+                        }
+                    }, 1500);
+                } else {
+                    handleFormErrors(form, data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if is_update %}Update{% else %}Assign{% endif %} Combination');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors(form, response.errors);
+                        if (response.message) {
+                            showNotification(response.message, 'error');
+                        }
+                    } else if (response.message) {
+                        showNotification(response.message, 'error');
+                    } else {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if is_update %}Update{% else %}Assign{% endif %} Combination');
+            }
+        });
+    });
+
+    // ============================================
+    // FORM ERROR HANDLING
+    // ============================================
+    
+    function handleFormErrors(form, data) {
+        // Display general error
+        if (data.message) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${data.message}`).show();
+        }
+        
+        // Display field errors
+        if (data.errors) {
+            displayValidationErrors(form, data.errors);
+        }
+        
+        // Show warnings if any
+        if (data.warnings) {
+            activeAssignmentWarning.show();
+            activeAssignmentWarning.find('span').html(`<strong>Note:</strong> ${data.warnings[0]}`);
+        }
+    }
+    
+    function displayValidationErrors(form, errors) {
+        $.each(errors, function(fieldName, fieldErrors) {
+            // Handle __all__ errors (non-field errors)
+            if (fieldName === '__all__') {
+                const generalErrorDiv = $('#form-general-error');
+                let errorHtml = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+                if (Array.isArray(fieldErrors)) {
+                    errorHtml += fieldErrors.join('<br>');
+                } else {
+                    errorHtml += fieldErrors;
+                }
+                generalErrorDiv.html(errorHtml).show();
+                return;
+            }
+            
+            const field = form.find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                field.addClass('is-invalid');
+                
+                let errorText = '';
+                if (Array.isArray(fieldErrors)) {
+                    errorText = fieldErrors.join('<br>');
+                } else if (typeof fieldErrors === 'string') {
+                    errorText = fieldErrors;
+                } else {
+                    errorText = 'Invalid value';
+                }
+                
+                // Remove any existing error message
+                field.next('.invalid-feedback').remove();
+                
+                // Check if it's a Select2 field
+                if (field.hasClass('select2-hidden-accessible')) {
+                    const select2Container = field.next('.select2-container');
+                    if (select2Container.length) {
+                        select2Container.after(`<div class="invalid-feedback d-block">${errorText}</div>`);
+                    } else {
+                        field.after(`<div class="invalid-feedback">${errorText}</div>`);
+                    }
+                } else {
+                    // Add new error message
+                    const errorHtml = `<div class="invalid-feedback">${errorText}</div>`;
+                    field.after(errorHtml);
+                }
+            }
+        });
+    }
+    
+    // Clear Select2 error styling on change
+    $('#{{ form.student.id_for_label }}').on('change', function() {
+        $(this).next('.select2-container').removeClass('is-invalid');
+    });
+    
+    $('#{{ form.enrollment.id_for_label }}').on('change', function() {
+        $(this).next('.select2-container').removeClass('is-invalid');
+    });
+    
+    $('#{{ form.combination.id_for_label }}').on('change', function() {
+        $(this).next('.select2-container').removeClass('is-invalid');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

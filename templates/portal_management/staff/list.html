@@ -1,0 +1,91 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}Staff — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff{% endblock %}
+
+{% block content %}
+<div class="dt-card">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-person-badge me-2 text-primary"></i>All Staff</h6>
+    <div class="d-flex gap-2">
+      <a href="{% url 'management:staff_role_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-tags me-1"></i>Manage Roles
+      </a>
+      <a href="{% url 'management:staff_create' %}" class="btn btn-sm btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Add Staff
+      </a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table id="staffTable" class="table table-hover align-middle w-100">
+      <thead class="table-light">
+        <tr>
+          <th>Employee ID</th>
+          <th>Full Name</th>
+          <th>Phone</th>
+          <th>Employment Type</th>
+          <th>Active Roles</th>
+          <th>System Access</th>
+          <th width="100">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in staff_list %}
+        <tr>
+          <td><code>{{ s.employee_id|default:"—" }}</code></td>
+          <td>{{ s.get_full_name }}</td>
+          <td>{{ s.phone_number|default:"—" }}</td>
+          <td>
+            <span class="badge bg-{% if s.employment_type == 'permanent' %}success{% elif s.employment_type == 'contract' %}warning text-dark{% else %}secondary{% endif %}">
+              {{ s.get_employment_type_display }}
+            </span>
+          </td>
+          <td>
+            {% for ra in s.role_assignments.all %}
+              {% if ra.is_active %}
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">{{ ra.role.name }}</span>
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td>
+            {% if s.user %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">
+                <i class="bi bi-check-circle me-1"></i>{{ s.user.username }}
+              </span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border">No Login</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'management:staff_detail' s.pk %}" class="btn btn-sm btn-outline-primary" title="View">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'management:staff_update' s.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No staff found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    $('#staffTable').DataTable({
+        buttons: [
+            { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel', className: 'btn btn-sm btn-outline-success' },
+            { extend: 'print', text: '<i class="bi bi-printer me-1"></i>Print', className: 'btn btn-sm btn-outline-secondary' },
+        ],
+        dom: "<'row mb-2'<'col-md-6'B><'col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+        columnDefs: [{ orderable: false, targets: -1 }],
+    });
+});
+</script>
+{% endblock %}

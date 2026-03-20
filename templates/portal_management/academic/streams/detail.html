@@ -1,0 +1,1227 @@
+<!-- templates/portal_management/academic/streams/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Stream Details — {{ stream.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Stream Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STREAM CLASS DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stream Header Card */
+    .stream-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .stream-icon-large {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-2xl);
+        background: linear-gradient(135deg, var(--primary), var(--info));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stream-info {
+        flex: 1;
+    }
+
+    .stream-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .stream-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-top: 0.5rem;
+    }
+
+    .stream-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stream-meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stat-card.capacity::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.enrolled::before { background: linear-gradient(90deg, var(--primary), #1a73e8); }
+    .stat-card.available::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.utilization::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.capacity { background: var(--success-light); color: var(--success); }
+    .stat-icon.enrolled { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.available { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.utilization { background: var(--info-light); color: var(--info); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Detail Grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .info-card-header i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 0.75rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .info-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .info-value .badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        background: var(--gray-100);
+        border-radius: var(--radius-full);
+        height: 8px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.3s ease;
+    }
+
+    .progress-bar.low {
+        background-color: var(--success);
+    }
+
+    .progress-bar.medium {
+        background-color: var(--warning);
+    }
+
+    .progress-bar.high {
+        background-color: var(--danger);
+    }
+
+    /* Students Table */
+    .students-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .students-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .students-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .students-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 600px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-warning {
+        background: var(--warning);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Delete Modal */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stream-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .stream-meta {
+            justify-content: center;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-warning, .btn-danger, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .students-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Stream Details
+            </h1>
+            <p class="mb-0">View complete information for stream class {{ stream.name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:stream_class_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Streams</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stream Header Card -->
+<div class="stream-header-card">
+    <div class="stream-icon-large">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+    </div>
+    <div class="stream-info">
+        <h2>{{ stream.name }}</h2>
+        <div class="stream-meta">
+            <div class="stream-meta-item">
+                <i class="bi bi-diagram-3"></i>
+                <span>{{ stream.class_level.name }}</span>
+            </div>
+            <div class="stream-meta-item">
+                <i class="bi bi-building"></i>
+                <span>{{ stream.class_level.educational_level.name }}</span>
+            </div>
+            <div class="stream-meta-item">
+                <i class="bi bi-type"></i>
+                <span>Stream {{ stream.stream_letter }}</span>
+            </div>
+            <div class="stream-meta-item">
+                <i class="bi bi-calendar"></i>
+                <span>Created: {{ stream.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card capacity">
+        <div class="stat-icon capacity">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ stream.capacity }}</div>
+        <div class="stat-label">Total Capacity</div>
+    </div>
+    
+    <div class="stat-card enrolled">
+        <div class="stat-icon enrolled">
+            <i class="bi bi-person-check"></i>
+        </div>
+        <div class="stat-value">{{ student_count }}</div>
+        <div class="stat-label">Enrolled Students</div>
+    </div>
+    
+    <div class="stat-card available">
+        <div class="stat-icon available">
+            <i class="bi bi-door-open"></i>
+        </div>
+        <div class="stat-value">{{ stream.capacity|add:student_count|add:stream.capacity }}</div>
+        <div class="stat-label">Available Spots</div>
+    </div>
+    
+    <div class="stat-card utilization">
+        <div class="stat-icon utilization">
+            <i class="bi bi-graph-up"></i>
+        </div>
+        <div class="stat-value">{{ capacity_utilization|floatformat:1 }}%</div>
+        <div class="stat-label">Utilization Rate</div>
+    </div>
+</div>
+
+<!-- Detail Grid -->
+<div class="detail-grid">
+    <!-- Class Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-diagram-3"></i>
+            <h3>Class Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Class Level</span>
+                <span class="info-value">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                        <i class="bi bi-diagram-3 me-1"></i>
+                        {{ stream.class_level.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Educational Level</span>
+                <span class="info-value">
+                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                        <i class="bi bi-building me-1"></i>
+                        {{ stream.class_level.educational_level.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Class Order</span>
+                <span class="info-value">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">
+                        {{ stream.class_level.order }}
+                    </span>
+                </span>
+            </div>
+            {% if stream.class_level.is_final %}
+            <div class="info-row">
+                <span class="info-label">Class Type</span>
+                <span class="info-value">
+                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2">
+                        <i class="bi bi-star-fill me-1"></i>
+                        Final Class
+                    </span>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stream Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-info-circle"></i>
+            <h3>Stream Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Stream Name</span>
+                <span class="info-value">
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                        <i class="bi bi-grid-3x3-gap-fill me-1"></i>
+                        {{ stream.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Stream Letter</span>
+                <span class="info-value">
+                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                        {{ stream.stream_letter }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Capacity</span>
+                <span class="info-value">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                        <i class="bi bi-people me-1"></i>
+                        {{ stream.capacity }} students
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Current Enrollment</span>
+                <span class="info-value">
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                        <i class="bi bi-person-check me-1"></i>
+                        {{ student_count }} / {{ stream.capacity }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Utilization</span>
+                <span class="info-value">
+                    <div class="w-100">
+                        <span class="d-block mb-1">{{ capacity_utilization|floatformat:1 }}%</span>
+                        <div class="progress-container">
+                            <div class="progress-bar 
+                                {% if capacity_utilization <= 50 %}low
+                                {% elif capacity_utilization <= 80 %}medium
+                                {% else %}high{% endif %}"
+                                style="width: {{ capacity_utilization }}%">
+                            </div>
+                        </div>
+                    </div>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Students List Card - Updated with Assign Students button -->
+<div class="students-card">
+    <div class="students-header">
+        <h5>
+            <i class="bi bi-people-fill"></i>
+            Students Enrolled in {{ stream.name }}
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:stream_assign_students' stream.pk %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-person-plus"></i>
+                Assign Students
+            </a>
+            <span class="badge bg-primary px-3 py-2">
+                <i class="bi bi-person-check me-1"></i>
+                {{ student_count }} Student{{ student_count|pluralize }}
+            </span>
+        </div>
+    </div>
+
+    {% if current_students %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration Number</th>
+                    <th>Academic Year</th>
+                    <th>Enrollment Date</th>
+                    <th>Actions</th>
+                </thead>
+            <tbody>
+                {% for assignment in current_students %}
+                <tr>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ assignment.enrollment.student.first_name|first|upper }}{{ assignment.enrollment.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ assignment.enrollment.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code class="student-reg">{{ assignment.enrollment.student.registration_number }}</code>
+                    </td>
+                    <td>
+                        <span class="badge bg-info bg-opacity-10 text-info px-2 py-1">
+                            {{ assignment.enrollment.academic_year.name }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">
+                            {{ assignment.enrollment.enrollment_date|date:"M d, Y" }}
+                        </span>
+                    </td>
+                    <td>
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-danger" 
+                                onclick="removeStudentFromStream({{ assignment.pk }}, '{{ assignment.enrollment.student.full_name|escapejs }}')"
+                                title="Remove from stream">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if student_count > 20 %}
+    <div class="text-center mt-3">
+        <small class="text-muted">Showing first 20 students out of {{ student_count }} total</small>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <h6 class="text-muted mb-2">No Students Assigned</h6>
+        <p class="text-muted small">No students are currently assigned to this stream.</p>
+        <a href="{% url 'management:stream_assign_students' stream.pk %}" class="btn btn-sm btn-primary mt-2">
+            <i class="bi bi-person-plus"></i>
+            Assign Students
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'management:stream_class_update' stream.pk %}" class="btn-warning">
+        <i class="bi bi-pencil"></i>
+        Edit Stream
+    </a>
+    
+    <a href="{% url 'management:class_level_detail' stream.class_level.pk %}" class="btn-primary">
+        <i class="bi bi-diagram-3"></i>
+        View Class Level
+    </a>
+    
+    {% if student_count == 0 %}
+    <button type="button" class="btn-danger" onclick="showDeleteModal()">
+        <i class="bi bi-trash"></i>
+        Delete Stream
+    </button>
+    {% else %}
+    <button type="button" class="btn-danger" disabled style="opacity: 0.6; cursor: not-allowed;" title="Cannot delete stream with enrolled students">
+        <i class="bi bi-trash"></i>
+        Delete Stream
+    </button>
+    {% endif %}
+    
+    <a href="{% url 'management:stream_class_list' %}" class="btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+    </a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteStreamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-stream-form" method="POST" action="{% url 'management:stream_class_delete' stream.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the stream class <strong>{{ stream.name }}</strong>?</p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> This stream currently has <strong>{{ student_count }}</strong> student{{ student_count|pluralize }} assigned.
+                        {% if student_count > 0 %}
+                        <br>Please reassign these students before deleting the stream.
+                        {% else %}
+                        <br>This action cannot be undone.
+                        {% endif %}
+                    </div>
+                    
+                    {% if student_count == 0 %}
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        This action is permanent and cannot be reversed.
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {% if student_count == 0 %}
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Delete Permanently</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let streamId = {{ stream.pk }};
+let studentCount = {{ student_count }};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // DELETE MODAL HANDLING
+    // ============================================
+    
+    window.showDeleteModal = function() {
+        if (studentCount > 0) {
+            showNotification('Cannot delete stream with enrolled students. Please reassign students first.', 'warning');
+            return;
+        }
+        const modal = new bootstrap.Modal(document.getElementById('deleteStreamModal'));
+        modal.show();
+    };
+
+    $('#delete-stream-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        if (studentCount > 0) {
+            showNotification('Cannot delete stream with enrolled students. Please reassign students first.', 'error');
+            return;
+        }
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteStreamModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = '{% url "management:stream_class_list" %}';
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error deleting stream', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Permanently');
+                }
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Permanently');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred', 'error');
+                } catch(e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLER
+    // ============================================
+
+    $('#deleteStreamModal').on('hidden.bs.modal', function() {
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Permanently');
+    });
+    
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    
+    // Add hover effect to progress bar
+    $('.progress-bar').each(function() {
+        const width = $(this).css('width');
+        $(this).attr('data-width', width);
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,973 @@
+<!-- templates/portal_management/students/list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Students — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STUDENT LIST STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Status Summary Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.success::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.warning::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.danger::before { background: linear-gradient(90deg, var(--danger), #dc3545); }
+    .stat-card.info::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.success { background: var(--success-light); color: var(--success); }
+    .stat-icon.warning { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.danger { background: var(--danger-light); color: var(--danger); }
+    .stat-icon.info { background: var(--info-light); color: var(--info); }
+    .stat-icon.primary { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* DataTable Card */
+    .dt-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .dt-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dt-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-enroll {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-enroll:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Table Styles - FIXED for responsive with normal row spacing */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+        width: 100%;
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 1200px; /* Ensures table doesn't break on desktop */
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+        background-color: white;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background-color: transparent;
+    }
+    
+    .table tbody tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    /* Remove any extra spacing between rows */
+    .table tbody tr:last-child td {
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 2px solid white;
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
+    }
+
+    .student-avatar-placeholder {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        border: 2px solid white;
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 500;
+        color: var(--gray-800);
+        white-space: nowrap;
+    }
+
+    .registration-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .status-badge i {
+        font-size: 0.7rem;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.suspended {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.withdrawn {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .status-badge.transferred {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .status-badge.completed {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Gender icons */
+    .gender-male {
+        color: var(--primary);
+    }
+    
+    .gender-female {
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    /* Buttons */
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    .dt-button.buttons-excel:hover {
+        border-color: var(--success) !important;
+        color: var(--success) !important;
+    }
+
+    .dt-button.buttons-pdf:hover {
+        border-color: var(--danger) !important;
+        color: var(--danger) !important;
+    }
+
+    .dt-button.buttons-print:hover {
+        border-color: var(--info) !important;
+        color: var(--info) !important;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Loading State */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive - Keep table structure on mobile */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .dt-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        /* Keep table structure on mobile - just make it horizontally scrollable */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            min-width: 1200px; /* Maintain desktop width */
+        }
+        
+        /* Remove any card-like display on mobile */
+        .table tbody td {
+            display: table-cell;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .table tbody td::before {
+            display: none; /* Remove data-label pseudo-elements */
+        }
+        
+        .table thead {
+            display: table-header-group; /* Keep table headers visible */
+        }
+        
+        .action-buttons {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .student-avatar,
+        .student-avatar-placeholder {
+            width: 32px;
+            height: 32px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-people-fill me-2"></i>
+                Student Management
+            </h1>
+            <p class="mb-0">View and manage all enrolled students</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-calendar-check me-2"></i>
+                Total Students: {{ students|length }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Status Summary Cards -->
+<div class="stats-grid">
+    <div class="stat-card success">
+        <div class="stat-icon success">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ status_counts.active|default:"0" }}</div>
+        <div class="stat-label">Active Students</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-icon warning">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="stat-value">{{ status_counts.suspended|default:"0" }}</div>
+        <div class="stat-label">Suspended</div>
+    </div>
+    
+    <div class="stat-card danger">
+        <div class="stat-icon danger">
+            <i class="bi bi-box-arrow-right"></i>
+        </div>
+        <div class="stat-value">{{ status_counts.withdrawn|default:"0" }}</div>
+        <div class="stat-label">Withdrawn</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-icon info">
+            <i class="bi bi-arrow-left-right"></i>
+        </div>
+        <div class="stat-value">{{ status_counts.transferred|default:"0" }}</div>
+        <div class="stat-label">Transferred</div>
+    </div>
+    
+    <div class="stat-card primary">
+        <div class="stat-icon primary">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div class="stat-value">{{ status_counts.completed|default:"0" }}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+</div>
+
+<!-- Students Table Card -->
+<div class="dt-card">
+    <div class="dt-header">
+        <h5>
+            <i class="bi bi-table"></i>
+            All Students
+        </h5>
+        <a href="{% url 'management:student_create' %}" class="btn-enroll">
+            <i class="bi bi-plus-lg"></i>
+            <span>Enroll New Student</span>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="studentTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Reg No</th>
+                    <th>Student</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Admission Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        <span class="registration-code">{{ student.registration_number|default:"—" }}</span>
+                    </td>
+                    <td>
+                        <div class="student-info">
+                            {% if student.profile_picture %}
+                                <img src="{{ student.profile_picture.url }}" 
+                                     class="student-avatar" 
+                                     alt="{{ student.full_name }}">
+                            {% else %}
+                                <div class="student-avatar-placeholder">
+                                    {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="student-name">{{ student.full_name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if student.gender == 'male' %}
+                            <i class="bi bi-gender-male gender-male me-1"></i>
+                        {% elif student.gender == 'female' %}
+                            <i class="bi bi-gender-female gender-female me-1"></i>
+                        {% endif %}
+                        {{ student.get_gender_display|default:"—" }}
+                    </td>
+                    <td>
+                        <span class="status-badge {{ student.status }}">
+                            <i class="bi bi-circle-fill"></i>
+                            {{ student.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <i class="bi bi-calendar3 me-1 text-muted"></i>
+                        {{ student.admission_date|date:"d M Y" }}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'management:student_detail' student.pk %}"
+                               class="btn-action view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'management:student_update' student.pk %}"
+                               class="btn-action edit" 
+                               title="Edit Student">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if student.status == 'active' %}
+                            <button type="button" 
+                                    class="btn-action delete" 
+                                    title="More Actions"
+                                    onclick="showStudentActions({{ student.pk }})">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5 class="mb-2">No Students Found</h5>
+                            <p class="text-muted mb-3">Get started by enrolling your first student.</p>
+                            <a href="{% url 'management:student_create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Enroll First Student
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Actions Modal -->
+<div class="modal fade" id="studentActionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-lightning-charge me-2"></i>
+                    Quick Actions
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action" id="viewDetailLink">
+                        <i class="bi bi-eye text-primary me-3"></i>
+                        View Full Profile
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="editStudentLink">
+                        <i class="bi bi-pencil text-warning me-3"></i>
+                        Edit Student Details
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="enrollStudentLink">
+                        <i class="bi bi-building text-success me-3"></i>
+                        Manage Enrollment
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="parentsLink">
+                        <i class="bi bi-people text-info me-3"></i>
+                        Manage Parents
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="list-group-item list-group-item-action text-danger" id="suspendLink">
+                        <i class="bi bi-exclamation-triangle me-3"></i>
+                        Suspend Student
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    // Initialize DataTable with responsive fixes
+    const table = $('#studentTable').DataTable({
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                className: 'dt-button buttons-excel',
+                title: 'Students List'
+            },
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                className: 'dt-button buttons-pdf',
+                title: 'Students List',
+                orientation: 'landscape',
+                pageSize: 'A4'
+            },
+            {
+                extend: 'print',
+                text: '<i class="bi bi-printer me-1"></i>Print',
+                className: 'dt-button buttons-print',
+                title: 'Students List'
+            }
+        ],
+        dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+        order: [[0, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: -1 }
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search students...",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ students",
+            infoEmpty: "Showing 0 to 0 of 0 students",
+            infoFiltered: "(filtered from _MAX_ total students)",
+            paginate: {
+                first: '<i class="bi bi-chevron-double-left"></i>',
+                previous: '<i class="bi bi-chevron-left"></i>',
+                next: '<i class="bi bi-chevron-right"></i>',
+                last: '<i class="bi bi-chevron-double-right"></i>'
+            }
+        },
+        // Responsive fixes
+        scrollX: true,
+        autoWidth: false,
+        initComplete: function() {
+            // Add custom styling to search input
+            $('.dataTables_filter input').addClass('form-control form-control-sm');
+            $('.dataTables_length select').addClass('form-select form-select-sm');
+            
+            // Append buttons to a custom container
+            $('.dt-buttons').appendTo('.dataTables_length');
+            
+            // Fix responsive issues
+            $('.dataTables_scrollBody').css('overflow-x', 'auto');
+        }
+    });
+
+    // Handle window resize for responsive
+    $(window).on('resize', function() {
+        table.columns.adjust();
+    });
+
+    // Show loading on export
+    $('.dt-button').on('click', function() {
+        $('#loadingOverlay').addClass('show');
+        setTimeout(function() {
+            $('#loadingOverlay').removeClass('show');
+        }, 1000);
+    });
+});
+
+// Quick Actions Modal
+let currentStudentId = null;
+
+function showStudentActions(studentId) {
+    currentStudentId = studentId;
+    
+    // Update modal links with student ID
+    document.getElementById('viewDetailLink').href = `/management/students/${studentId}/`;
+    document.getElementById('editStudentLink').href = `/management/students/${studentId}/edit/`;
+    document.getElementById('enrollStudentLink').href = `/management/students/${studentId}/enroll/`;
+    document.getElementById('parentsLink').href = `/management/students/${studentId}/parents/`;
+    document.getElementById('suspendLink').href = `#`; // You can implement suspend modal here
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('studentActionsModal'));
+    modal.show();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+F to focus search
+    if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        $('.dataTables_filter input').focus();
+    }
+    
+    // Ctrl+N for new student
+    if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        window.location.href = "{% url 'management:student_create' %}";
+    }
+});
+
+// Show tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
+</script>
+{% endblock %}

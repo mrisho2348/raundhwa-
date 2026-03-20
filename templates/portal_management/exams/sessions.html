@@ -1,0 +1,80 @@
+{% extends 'portal_management/base.html' %}
+{% block title %}Exam Sessions — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Exam Sessions{% endblock %}
+
+{% block content %}
+<div class="dt-card">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-clipboard-check me-2 text-primary"></i>Exam Sessions</h6>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSessionModal">
+      <i class="bi bi-plus-lg me-1"></i>New Session
+    </button>
+  </div>
+  <div class="table-responsive">
+    <table id="sessionsTable" class="table table-hover align-middle w-100">
+      <thead class="table-light">
+        <tr><th>Name</th><th>Type</th><th>Class</th><th>Term</th><th>Year</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+        <tr>
+          <td class="fw-semibold">{{ session.name }}</td>
+          <td>{{ session.exam_type }}</td>
+          <td>{{ session.class_level }}</td>
+          <td>{{ session.term }}</td>
+          <td>{{ session.academic_year }}</td>
+          <td>{{ session.exam_date|date:"d M Y" }}</td>
+          <td>
+            <span class="badge bg-{% if session.status == 'published' %}success{% elif session.status == 'verified' %}info{% elif session.status == 'submitted' %}warning text-dark{% else %}secondary{% endif %}">
+              {{ session.get_status_display }}
+            </span>
+          </td>
+          <td class="d-flex gap-1">
+            <a href="{% url 'management:exam_session_detail' session.pk %}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'management:exam_session_update' session.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No exam sessions created yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Session Modal -->
+<div class="modal fade" id="addSessionModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create Exam Session</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'management:exam_session_create' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label fw-semibold">Session Name</label>{{ form.name }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Exam Type *</label>{{ form.exam_type }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Academic Year *</label>{{ form.academic_year }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Term *</label>{{ form.term }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Class Level *</label>{{ form.class_level }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Stream (optional)</label>{{ form.stream_class }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Exam Date *</label>{{ form.exam_date }}</div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Status</label>{{ form.status }}</div>
+          </div>
+          <small class="text-muted mt-2 d-block">Session name is auto-generated if left blank.</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>$(document).ready(function(){ $('#sessionsTable').DataTable({order:[[5,'desc']]}); });</script>
+{% endblock %}

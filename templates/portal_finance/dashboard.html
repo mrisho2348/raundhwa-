@@ -1,0 +1,24 @@
+{% extends 'shared/base.html' %}
+{% block title %}Finance Portal — {{ SCHOOL_NAME }}{% endblock %}
+{% block portal_primary %}#fd7e14{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block sidebar_menu %}
+<a href="{% url 'finance:dashboard' %}" class="nav-link active">
+    <i class="bi bi-speedometer2"></i>
+    <span class="link-text">Dashboard</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-card text-center py-5">
+    <i class="bi-cash-coin" style="font-size:3rem;color:#fd7e14;"></i>
+    <h4 class="mt-3 fw-bold">Finance Portal</h4>
+    <p class="text-muted">Fees & Payments</p>
+    <div class="alert alert-info d-inline-block mt-3">
+        <i class="bi bi-hammer me-2"></i>
+        This portal is scaffolded and ready to build.
+        Add views to <code>portal_finance/views.py</code> and URLs to <code>portal_finance/urls.py</code>
+    </div>
+</div>
+{% endblock %}

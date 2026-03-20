@@ -1,0 +1,2243 @@
+<!-- templates/portal_management/students/enrollment_detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Enrollment Details — {{ enrollment.student.full_name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Enrollment Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM ENROLLMENT DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Student Header Card */
+    .student-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .student-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .student-info {
+        flex: 1;
+    }
+
+    .student-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .student-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+    }
+
+    .student-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .student-meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.promoted {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .status-badge.completed {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .status-badge.transferred, .status-badge.withdrawn, .status-badge.suspended {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Main Grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .info-card-header i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 0.75rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .info-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .info-value .badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+    }
+
+    /* Full Width Cards */
+    .full-width-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-action.primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-action.success {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-action.success:hover {
+        background: #0b5e2c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(15,123,58,0.3);
+    }
+
+    .btn-action.warning {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-action.warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-action.secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+    }
+
+    .btn-action.secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-action.danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+        transform: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 800px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Subject Badges */
+    .subject-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin: 0.15rem;
+    }
+
+    .subject-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.2rem 0.4rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+    }
+
+    /* History Timeline */
+    .history-timeline {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 2rem;
+        padding-bottom: 1.5rem;
+        border-left: 2px solid var(--gray-300);
+    }
+
+    .timeline-item:last-child {
+        border-left-color: transparent;
+        padding-bottom: 0;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary);
+    }
+
+    .timeline-item.active::before {
+        background: var(--success);
+        box-shadow: 0 0 0 3px var(--success-light);
+    }
+
+    .timeline-date {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .timeline-content {
+        background: var(--gray-50);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .timeline-content strong {
+        color: var(--gray-800);
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-success {
+        background: linear-gradient(135deg, #0f7b3a 0%, #0b5e2c 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+    }
+
+    .modal-header.bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles in Modal */
+    .modal .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .modal .form-control, .modal .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+    }
+
+    .modal .form-control:focus, .modal .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    /* Required field indicator */
+    .required-field::after {
+        content: '*';
+        color: var(--danger);
+        margin-left: 4px;
+    }
+
+    /* Field hint text */
+    .field-hint {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+    }
+
+    /* Error message styling */
+    .error-message-box {
+        background: var(--danger-light);
+        border: 1px solid var(--danger);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: var(--danger);
+    }
+
+    .error-message-box ul {
+        margin: 0.5rem 0 0 1.5rem;
+    }
+
+    .error-message-box li {
+        margin-bottom: 0.25rem;
+    }
+
+    .field-error {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .detail-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .student-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .student-meta {
+            justify-content: center;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-journal-bookmark-fill me-2"></i>
+                Enrollment Details
+            </h1>
+            <p class="mb-0">View and manage student enrollment information</p>
+        </div>
+        <div>
+            <a href="{% url 'management:student_enrollment_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Enrollments
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Student Header Card -->
+<div class="student-header-card">
+    <div class="student-avatar-large">
+        {{ enrollment.student.first_name|first|upper }}{{ enrollment.student.last_name|first|upper }}
+    </div>
+    <div class="student-info">
+        <h2>{{ enrollment.student.full_name }}</h2>
+        <div class="student-meta">
+            <div class="student-meta-item">
+                <i class="bi bi-upc-scan"></i>
+                <span>{{ enrollment.student.registration_number }}</span>
+            </div>
+            <div class="student-meta-item">
+                <i class="bi bi-gender-{% if enrollment.student.gender == 'male' %}male{% else %}female{% endif %}"></i>
+                <span>{{ enrollment.student.get_gender_display|default:"Not specified" }}</span>
+            </div>
+            <div class="student-meta-item">
+                <i class="bi bi-calendar"></i>
+                <span>Age: {{ enrollment.student.age|default:"N/A" }}</span>
+            </div>
+            <div class="student-meta-item">
+                <i class="bi bi-flag"></i>
+                <span class="status-badge {{ enrollment.student.status }}">
+                    {{ enrollment.student.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="action-buttons">
+        <a href="{% url 'management:student_detail' enrollment.student.pk %}" class="btn-action primary">
+            <i class="bi bi-person"></i>
+            View Student
+        </a>
+    </div>
+</div>
+
+<!-- Detail Grid -->
+<div class="detail-grid">
+    <!-- Enrollment Information Card -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <i class="bi bi-journal-check"></i>
+            <h3>Enrollment Information</h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-row">
+                <span class="info-label">Academic Year</span>
+                <span class="info-value">
+                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                        {{ enrollment.academic_year.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Class Level</span>
+                <span class="info-value">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                        {{ enrollment.class_level.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Educational Level</span>
+                <span class="info-value">{{ enrollment.class_level.educational_level.name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Enrollment Date</span>
+                <span class="info-value">{{ enrollment.enrollment_date|date:"F d, Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="info-value">
+                    <span class="status-badge {{ enrollment.status }}">
+                        {{ enrollment.get_status_display }}
+                    </span>
+                </span>
+            </div>
+            {% if enrollment.remarks %}
+            <div class="info-row">
+                <span class="info-label">Remarks</span>
+                <span class="info-value">{{ enrollment.remarks }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stream Information Card -->
+    <div class="info-card" id="stream-info-card">
+        <div class="info-card-header">
+            <i class="bi bi-grid"></i>
+            <h3>Stream Information</h3>
+            {% if stream %}
+            <button type="button" class="btn-action primary btn-sm ms-auto" onclick="openStreamModal('edit')">
+                <i class="bi bi-pencil"></i>
+            </button>
+            {% endif %}
+        </div>
+        <div class="info-card-body">
+            {% if stream %}
+            <div class="info-row">
+                <span class="info-label">Stream</span>
+                <span class="info-value">
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                        <i class="bi bi-grid"></i>
+                        {{ stream.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Stream Letter</span>
+                <span class="info-value">{{ stream.stream_letter }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Capacity</span>
+                <span class="info-value">{{ stream.capacity }} students</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Assigned Date</span>
+                <span class="info-value">{{ enrollment.stream_assignment.assigned_date|date:"F d, Y" }}</span>
+            </div>
+            {% if enrollment.stream_assignment.remarks %}
+            <div class="info-row">
+                <span class="info-label">Remarks</span>
+                <span class="info-value">{{ enrollment.stream_assignment.remarks }}</span>
+            </div>
+            {% endif %}
+            <div class="mt-3">
+                <button type="button" class="btn-action danger w-100" onclick="removeStream()">
+                    <i class="bi bi-trash"></i>
+                    Remove from Stream
+                </button>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <div class="empty-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
+                    <i class="bi bi-grid" style="font-size: 2.5rem; color: var(--gray-400);"></i>
+                </div>
+                <p class="text-muted mb-3">No stream assigned yet</p>
+                <button type="button" class="btn-action primary" onclick="openStreamModal()">
+                    <i class="bi bi-plus-circle"></i>
+                    Assign Stream
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Combination Information Card (for A-Level) -->
+    <div class="info-card" id="combination-info-card">
+        <div class="info-card-header">
+            <i class="bi bi-journal-code"></i>
+            <h3>Combination Information</h3>
+            {% if enrollment.class_level.educational_level.level_type == 'A_LEVEL' and current_combination %}
+            <button type="button" class="btn-action primary btn-sm ms-auto" onclick="openCombinationModal('edit')">
+                <i class="bi bi-pencil"></i>
+            </button>
+            {% endif %}
+        </div>
+        <div class="info-card-body">
+            {% if enrollment.class_level.educational_level.level_type == 'A_LEVEL' %}
+                {% if current_combination %}
+                <div class="info-row">
+                    <span class="info-label">Combination</span>
+                    <span class="info-value">
+                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2">
+                            <i class="bi bi-journal-code"></i>
+                            {{ current_combination.code }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Assigned Date</span>
+                    <span class="info-value">
+                        {% if active_combination_assignment %}
+                            {{ active_combination_assignment.assigned_date|date:"F d, Y" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="mt-3">
+                    <button type="button" class="btn-action danger w-100" onclick="removeCombination()">
+                        <i class="bi bi-trash"></i>
+                        Remove Combination
+                    </button>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <div class="empty-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
+                        <i class="bi bi-journal-code" style="font-size: 2.5rem; color: var(--gray-400);"></i>
+                    </div>
+                    <p class="text-muted mb-3">No combination assigned yet</p>
+                    <button type="button" class="btn-action primary" onclick="openCombinationModal()">
+                        <i class="bi bi-plus-circle"></i>
+                        Assign Combination
+                    </button>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-4">
+                    <div class="empty-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
+                        <i class="bi bi-info-circle" style="font-size: 2.5rem; color: var(--gray-400);"></i>
+                    </div>
+                    <p class="text-muted">Combinations are only applicable for A-Level students</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons Card -->
+<div class="full-width-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-lightning-charge"></i>
+            Quick Actions
+        </h5>
+    </div>
+    <div class="action-buttons">
+        <a href="{% url 'management:student_enrollment_update' enrollment.pk %}" class="btn-action warning">
+            <i class="bi bi-pencil"></i>
+            Edit Enrollment
+        </a>
+        
+        {% if enrollment.status == 'active' and not enrollment.class_level.is_final %}
+        <button type="button" class="btn-action success" onclick="promoteStudent()">
+            <i class="bi bi-arrow-up-circle"></i>
+            Promote Student
+        </button>
+        {% endif %}
+        
+        {% if not stream %}
+        <button type="button" class="btn-action primary" onclick="openStreamModal()">
+            <i class="bi bi-grid"></i>
+            Assign Stream
+        </button>
+        {% endif %}
+        
+        {% if enrollment.class_level.educational_level.level_type == 'A_LEVEL' and not current_combination %}
+        <button type="button" class="btn-action primary" onclick="openCombinationModal()">
+            <i class="bi bi-journal-code"></i>
+            Assign Combination
+        </button>
+        {% endif %}
+        
+        <button type="button" class="btn-action secondary" onclick="updateStatus()">
+            <i class="bi bi-arrow-repeat"></i>
+            Update Status
+        </button>
+        
+        <!-- Delete button - only if no dependencies -->
+        {% if not stream and not combination_assignments and not subject_assignments %}
+        <button type="button" class="btn-action danger" onclick="showDeleteModal()">
+            <i class="bi bi-trash"></i>
+            Delete Enrollment
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Subject Assignments Card (for O-Level) -->
+{% if enrollment.class_level.educational_level.level_type == 'O_LEVEL' and subject_assignments %}
+<div class="full-width-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-book"></i>
+            Optional Subject Assignments
+        </h5>
+        <span class="badge bg-info">{{ subject_assignments|length }} Subject{{ subject_assignments|pluralize }}</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in subject_assignments %}
+                <tr>
+                    <td>
+                        <span class="subject-code">{{ assignment.subject.code }}</span>
+                    </td>
+                    <td>{{ assignment.subject.name }}</td>
+                    <td>{{ assignment.subject.description|truncatechars:50|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Combination History Card (for A-Level) -->
+{% if enrollment.class_level.educational_level.level_type == 'A_LEVEL' and combination_history %}
+<div class="full-width-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-clock-history"></i>
+            Combination Assignment History
+        </h5>
+        <span class="badge bg-info">{{ combination_history|length }} Assignment{{ combination_history|pluralize }}</span>
+    </div>
+
+    <div class="history-timeline">
+        {% for assignment in combination_history %}
+        <div class="timeline-item {% if assignment.is_active %}active{% endif %}">
+            <div class="timeline-date">{{ assignment.combination.assigned_date|date:"F d, Y" }}</div>
+            <div class="timeline-content">
+                <strong>{{ assignment.combination.code }}</strong>
+                <span class="badge bg-{% if assignment.is_active %}success{% else %}secondary{% endif %} ms-2">
+                    {% if assignment.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+                {% if assignment.remarks %}
+                <p class="mt-2 mb-0 text-muted small">{{ assignment.remarks }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ============================================
+     STREAM ASSIGNMENT MODAL (CREATE/UPDATE)
+     ============================================ -->
+<div class="modal fade" id="streamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="streamModalTitle">
+                    <i class="bi bi-grid me-2"></i>
+                    <span>Assign Stream</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="stream-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Error message container for stream -->
+                    <div id="stream-error-container" class="error-message-box" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Error:</strong>
+                        <ul id="stream-error-list"></ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stream_id" class="form-label required-field">Select Stream</label>
+                        <select class="form-select" id="stream_id" name="stream_id" required>
+                            <option value="">Choose a stream...</option>
+                            {% for s in enrollment.class_level.streams.all %}
+                            <option value="{{ s.id }}" 
+                                    data-capacity="{{ s.capacity }}"
+                                    data-count="{{ s.student_count }}"
+                                    {% if stream and stream.id == s.id %}selected{% endif %}>
+                                {{ s.name }} (Capacity: {{ s.capacity }} | Current: {{ s.student_count }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Select the stream for this student. Stream capacity is strictly enforced.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stream_assigned_date" class="form-label required-field">Assignment Date</label>
+                        <input type="date" class="form-control" id="stream_assigned_date" 
+                               name="assigned_date" value="{% now 'Y-m-d' %}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stream_remarks" class="form-label">Remarks (Optional)</label>
+                        <textarea class="form-control" id="stream_remarks" name="remarks" 
+                                  rows="2" placeholder="Any additional notes...">{% if enrollment.stream_assignment.remarks %}{{ enrollment.stream_assignment.remarks }}{% endif %}</textarea>
+                    </div>
+
+                    <!-- Stream capacity info -->
+                    <div class="alert alert-info" id="stream-capacity-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span id="stream-capacity-text">Select a stream to see capacity information</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-info" id="stream-submit-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span class="btn-text">Assign Stream</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     COMBINATION ASSIGNMENT MODAL (CREATE/UPDATE)
+     ============================================ -->
+<div class="modal fade" id="combinationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="combinationModalTitle">
+                    <i class="bi bi-journal-code me-2"></i>
+                    <span>Assign Combination</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="combination-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Error message container for combination -->
+                    <div id="combination-error-container" class="error-message-box" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Error:</strong>
+                        <ul id="combination-error-list"></ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="combination_id" class="form-label required-field">Select Combination</label>
+                        <select class="form-select" id="combination_id" name="combination_id" required>
+                            <option value="">Choose a combination...</option>
+                            {% for combo in enrollment.class_level.educational_level.combinations.all %}
+                            <option value="{{ combo.id }}" {% if current_combination and current_combination.id == combo.id %}selected{% endif %}>
+                                {{ combo.code }} — {{ combo.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Select the A-Level combination for this student.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="combination_assigned_date" class="form-label required-field">Assignment Date</label>
+                        <input type="date" class="form-control" id="combination_assigned_date" 
+                               name="assigned_date" value="{% now 'Y-m-d' %}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="combination_remarks" class="form-label">Remarks (Optional)</label>
+                        <textarea class="form-control" id="combination_remarks" name="remarks" 
+                                  rows="3" placeholder="Reason for assignment or change...">
+                            {% with active_assignment=enrollment.combination_assignments.filter.is_active.first %}
+                                {{ active_assignment.remarks|default:"" }}
+                            {% endwith %}
+                        </textarea>
+                    </div>
+
+                    <!-- Combination change warning -->
+                    <div class="alert alert-warning" id="combination-change-warning" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Note:</strong> Changing the combination will deactivate the previous assignment and create a new active assignment. The history will be preserved.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="combination-submit-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span class="btn-text">Assign Combination</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Update Enrollment Status
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="update-status-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Error message container for status update -->
+                    <div id="status-error-container" class="error-message-box" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Error:</strong>
+                        <ul id="status-error-list"></ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label required-field">New Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="">Select status...</option>
+                            {% for status_value, status_label in enrollment.STATUS_CHOICES %}
+                            <option value="{{ status_value }}" {% if enrollment.status == status_value %}selected{% endif %}>
+                                {{ status_label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Changing status affects student's academic progression
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status_remarks" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="status_remarks" name="remarks" rows="3" placeholder="Reason for status change...">{{ enrollment.remarks }}</textarea>
+                    </div>
+                    
+                    {% if enrollment.class_level.is_final %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        This is a final class level. Consider marking as 'completed' instead of 'promoted'.
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="confirm-status-update-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span class="btn-text">Update Status</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Promote Confirmation Modal -->
+<div class="modal fade" id="promoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-up-circle-fill me-2"></i>
+                    Promote Student
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="promote-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to promote <strong>{{ enrollment.student.full_name }}</strong> to the next class level?</p>
+                    <p class="text-muted mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This will mark the current enrollment as promoted and create a new enrollment for the next academic year.
+                    </p>
+                    
+                    <div class="alert alert-info p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="info-icon-sm me-2">
+                                <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                            </div>
+                            <strong class="text-info">Enrollment Details</strong>
+                        </div>
+                        
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="bi bi-diagram-3 me-2 text-primary"></i>
+                                    Current Class:
+                                </div>
+                                <div class="detail-value">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                        {{ enrollment.class_level.name }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="bi bi-building me-2 text-info"></i>
+                                    Educational Level:
+                                </div>
+                                <div class="detail-value">
+                                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                                        {{ enrollment.class_level.educational_level.name }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="bi bi-calendar me-2 text-warning"></i>
+                                    Academic Year:
+                                </div>
+                                <div class="detail-value">
+                                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2">
+                                        {{ enrollment.academic_year.name }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="bi bi-flag me-2 text-success"></i>
+                                    Current Status:
+                                </div>
+                                <div class="detail-value">
+                                    <span class="status-badge {{ enrollment.status }}">
+                                        {{ enrollment.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if enrollment.class_level.is_final %}
+                    <div class="alert alert-warning mt-3 d-flex align-items-start">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5 flex-shrink-0"></i>
+                        <div>
+                            <strong>Warning:</strong> This is a final class level. Students at this level should typically be marked as 'completed' rather than promoted.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer flex-wrap">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="confirm-promote-btn" {% if enrollment.class_level.is_final %}disabled{% endif %}>
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-arrow-up-circle me-2"></i>
+                        <span class="btn-text">Promote Student</span>
+                    </button>
+                    {% if enrollment.class_level.is_final %}
+                    <div class="w-100 text-center mt-2">
+                        <small class="text-danger">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            Promotion disabled - final class level
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this enrollment?</p>
+                    <div class="alert alert-danger">
+                        <strong>Student:</strong> {{ enrollment.student.full_name }}<br>
+                        <strong>Class:</strong> {{ enrollment.class_level.name }}<br>
+                        <strong>Academic Year:</strong> {{ enrollment.academic_year.name }}
+                    </div>
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone. All associated data will be permanently removed.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Enrollment</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     REMOVE STREAM CONFIRMATION MODAL
+     ============================================ -->
+<div class="modal fade" id="removeStreamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Remove from Stream
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="remove-stream-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="removeStreamStudentName"></strong> from stream <strong id="removeStreamName"></strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action can be undone by assigning a new stream later.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-remove-stream-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Remove from Stream</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     REMOVE COMBINATION CONFIRMATION MODAL
+     ============================================ -->
+<div class="modal fade" id="removeCombinationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Remove Combination
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="remove-combination-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <strong id="removeCombinationStudentName"></strong> from combination <strong id="removeCombinationCode"></strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action will permanently delete the combination assignment. You can assign a new combination later.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-remove-combination-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Remove Combination</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let enrollmentId = {{ enrollment.pk }};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // STREAM MODAL HANDLING
+    // ============================================
+    
+    window.openStreamModal = function(mode = 'create') {
+        // Reset form
+        $('#stream-form')[0].reset();
+        $('#stream-error-container').hide();
+        $('#stream-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        // Set current date as default
+        const today = new Date().toISOString().split('T')[0];
+        $('#stream_assigned_date').val(today);
+        
+        // Update modal title based on mode
+        if (mode === 'edit') {
+            $('#streamModalTitle span').text('Edit Stream Assignment');
+            $('#stream-submit-btn .btn-text').text('Update Assignment');
+        } else {
+            $('#streamModalTitle span').text('Assign Stream');
+            $('#stream-submit-btn .btn-text').text('Assign Stream');
+        }
+        
+        // Set form action URL using Django URL name
+        $('#stream-form').attr('action', "{% url 'management:student_enrollment_stream' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('streamModal'));
+        modal.show();
+    };
+
+    // Update stream capacity info when selection changes
+    $('#stream_id').on('change', function() {
+        const selected = $(this).find('option:selected');
+        if (selected.val()) {
+            const capacity = selected.data('capacity');
+            const count = selected.data('count');
+            const available = capacity - count;
+            
+            let statusClass = 'text-success';
+            if (available <= 0) {
+                statusClass = 'text-danger';
+            } else if (available < 5) {
+                statusClass = 'text-warning';
+            }
+            
+            $('#stream-capacity-text').html(
+                `Selected stream: <strong>${selected.text()}</strong><br>` +
+                `Capacity: <strong>${capacity}</strong> | Current: <strong>${count}</strong> | ` +
+                `Available: <strong class="${statusClass}">${available}</strong>`
+            );
+        } else {
+            $('#stream-capacity-text').text('Select a stream to see capacity information');
+        }
+    });
+
+    $('#stream-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#stream-submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        const errorContainer = $('#stream-error-container');
+        const errorList = $('#stream-error-list');
+        
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        errorContainer.hide();
+        errorList.empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#streamModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Assign Stream');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    if (response && response.errors) {
+                        errorList.empty();
+                        
+                        if (response.errors.__all__) {
+                            response.errors.__all__.forEach(function(error) {
+                                errorList.append(`<li>${error}</li>`);
+                            });
+                        }
+                        
+                        for (const field in response.errors) {
+                            if (field !== '__all__' && response.errors.hasOwnProperty(field)) {
+                                const fieldLabel = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                response.errors[field].forEach(function(error) {
+                                    errorList.append(`<li><strong>${fieldLabel}:</strong> ${error}</li>`);
+                                });
+                                
+                                $(`#${field}`).addClass('is-invalid');
+                                $(`#${field}`).after(`<small class="field-error">${error}</small>`);
+                            }
+                        }
+                        
+                        if (errorList.children().length > 0) {
+                            errorContainer.show();
+                        } else if (response.message) {
+                            errorList.append(`<li>${response.message}</li>`);
+                            errorContainer.show();
+                        }
+                    } else if (response && response.message) {
+                        errorList.append(`<li>${response.message}</li>`);
+                        errorContainer.show();
+                    } else {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    window.removeStream = function() {
+        // Show the remove stream confirmation modal
+        $('#removeStreamStudentName').text('{{ enrollment.student.full_name }}');
+        $('#removeStreamName').text('{{ stream.name }}');
+        
+        // Set form action URL using Django URL name
+        $('#remove-stream-form').attr('action', "{% url 'management:student_enrollment_stream_remove' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('removeStreamModal'));
+        modal.show();
+    };
+
+    // ============================================
+    // COMBINATION MODAL HANDLING
+    // ============================================
+    
+    window.openCombinationModal = function(mode = 'create') {
+        // Reset form
+        $('#combination-form')[0].reset();
+        $('#combination-error-container').hide();
+        $('#combination-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        // Set current date as default
+        const today = new Date().toISOString().split('T')[0];
+        $('#combination_assigned_date').val(today);
+        
+        // Update modal title based on mode
+        if (mode === 'edit') {
+            $('#combinationModalTitle span').text('Edit Combination Assignment');
+            $('#combination-submit-btn .btn-text').text('Update Assignment');
+            
+            // Check if we're changing an existing assignment
+            {% if current_combination %}
+            $('#combination-change-warning').show();
+            {% endif %}
+        } else {
+            $('#combinationModalTitle span').text('Assign Combination');
+            $('#combination-submit-btn .btn-text').text('Assign Combination');
+            $('#combination-change-warning').hide();
+        }
+        
+        // Set form action URL using Django URL name
+        $('#combination-form').attr('action', "{% url 'management:student_enrollment_combination' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('combinationModal'));
+        modal.show();
+    };
+
+    $('#combination-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#combination-submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        const errorContainer = $('#combination-error-container');
+        const errorList = $('#combination-error-list');
+        
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        errorContainer.hide();
+        errorList.empty();
+        
+        // Remove previous field errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#combinationModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Assign Combination');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    if (response && response.errors) {
+                        errorList.empty();
+                        
+                        if (response.errors.__all__) {
+                            response.errors.__all__.forEach(function(error) {
+                                errorList.append(`<li>${error}</li>`);
+                            });
+                        }
+                        
+                        for (const field in response.errors) {
+                            if (field !== '__all__' && response.errors.hasOwnProperty(field)) {
+                                const fieldLabel = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                response.errors[field].forEach(function(error) {
+                                    errorList.append(`<li><strong>${fieldLabel}:</strong> ${error}</li>`);
+                                });
+                                
+                                $(`#${field}`).addClass('is-invalid');
+                                $(`#${field}`).after(`<small class="field-error">${error}</small>`);
+                            }
+                        }
+                        
+                        if (errorList.children().length > 0) {
+                            errorContainer.show();
+                        } else if (response.message) {
+                            errorList.append(`<li>${response.message}</li>`);
+                            errorContainer.show();
+                        }
+                    } else if (response && response.message) {
+                        errorList.append(`<li>${response.message}</li>`);
+                        errorContainer.show();
+                    } else {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    window.removeCombination = function() {
+        // Show the remove combination confirmation modal
+        $('#removeCombinationStudentName').text('{{ enrollment.student.full_name }}');
+        $('#removeCombinationCode').text('{{ current_combination.code|default:"" }}');
+        
+        // Set form action URL using Django URL name
+        $('#remove-combination-form').attr('action', "{% url 'management:student_enrollment_combination_remove' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('removeCombinationModal'));
+        modal.show();
+    };
+
+    // ============================================
+    // UPDATE STATUS MODAL
+    // ============================================
+    
+    window.updateStatus = function() {
+        // Reset form
+        $('#update-status-form')[0].reset();
+        $('#status-error-container').hide();
+        $('#status-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        // Set current status
+        $('#status').val('{{ enrollment.status }}');
+        
+        // Set form action URL using Django URL name
+        $('#update-status-form').attr('action', "{% url 'management:student_enrollment_status_update' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+        modal.show();
+    };
+
+    $('#update-status-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const updateBtn = $('#confirm-status-update-btn');
+        const spinner = updateBtn.find('.spinner-border');
+        const btnText = updateBtn.find('.btn-text');
+        const errorContainer = $('#status-error-container');
+        const errorList = $('#status-error-list');
+        
+        updateBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Updating...');
+        errorContainer.hide();
+        errorList.empty();
+        
+        // Remove previous field errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#updateStatusModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                updateBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Update Status');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    if (response && response.errors) {
+                        errorList.empty();
+                        
+                        if (response.errors.__all__) {
+                            response.errors.__all__.forEach(function(error) {
+                                errorList.append(`<li>${error}</li>`);
+                            });
+                        }
+                        
+                        for (const field in response.errors) {
+                            if (field !== '__all__' && response.errors.hasOwnProperty(field)) {
+                                response.errors[field].forEach(function(error) {
+                                    errorList.append(`<li><strong>${field}:</strong> ${error}</li>`);
+                                });
+                                $(`#${field}`).addClass('is-invalid');
+                            }
+                        }
+                        
+                        if (errorList.children().length > 0) {
+                            errorContainer.show();
+                        }
+                    } else if (response && response.message) {
+                        errorList.append(`<li>${response.message}</li>`);
+                        errorContainer.show();
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // PROMOTE STUDENT
+    // ============================================
+    
+    window.promoteStudent = function() {
+        // Set form action URL using Django URL name
+        $('#promote-form').attr('action', "{% url 'management:student_enrollment_promote' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('promoteModal'));
+        modal.show();
+    };
+
+    $('#promote-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const promoteBtn = $('#confirm-promote-btn');
+        const spinner = promoteBtn.find('.spinner-border');
+        const btnText = promoteBtn.find('.btn-text');
+        
+        promoteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Promoting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#promoteModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    if (data.new_enrollment_id) {
+                        window.location.href = `/management/students/enrollments/${data.new_enrollment_id}/`;
+                    } else {
+                        location.reload();
+                    }
+                }, 1500);
+            },
+            error: function(xhr) {
+                promoteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Promote Student');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    showNotification(response.message || 'Error promoting student', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // DELETE ENROLLMENT
+    // ============================================
+    
+    window.showDeleteModal = function() {
+        // Set student info in delete modal
+        $('#deleteStudentName').text('{{ enrollment.student.full_name }}');
+        $('#deleteClassName').text('{{ enrollment.class_level.name }}');
+        $('#deleteAcademicYear').text('{{ enrollment.academic_year.name }}');
+        
+        // Set form action URL using Django URL name
+        $('#delete-form').attr('action', "{% url 'management:student_enrollment_delete' enrollment.pk %}");
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    };
+
+    $('#delete-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#deleteModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    window.location.href = "{% url 'management:student_enrollment_list' %}";
+                }, 1500);
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Enrollment');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    showNotification(response.message || 'Error deleting enrollment', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#streamModal').on('hidden.bs.modal', function() {
+        const submitBtn = $('#stream-submit-btn');
+        submitBtn.prop('disabled', false);
+        submitBtn.find('.spinner-border').addClass('d-none');
+        submitBtn.find('.btn-text').text('Assign Stream');
+        $('#stream-error-container').hide();
+        $('#stream-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+    });
+
+    $('#combinationModal').on('hidden.bs.modal', function() {
+        const submitBtn = $('#combination-submit-btn');
+        submitBtn.prop('disabled', false);
+        submitBtn.find('.spinner-border').addClass('d-none');
+        submitBtn.find('.btn-text').text('Assign Combination');
+        $('#combination-error-container').hide();
+        $('#combination-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+    });
+
+    $('#updateStatusModal').on('hidden.bs.modal', function() {
+        const updateBtn = $('#confirm-status-update-btn');
+        updateBtn.prop('disabled', false);
+        updateBtn.find('.spinner-border').addClass('d-none');
+        updateBtn.find('.btn-text').text('Update Status');
+        $('#status-error-container').hide();
+        $('#status-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+    });
+
+    $('#promoteModal').on('hidden.bs.modal', function() {
+        const promoteBtn = $('#confirm-promote-btn');
+        promoteBtn.prop('disabled', false);
+        promoteBtn.find('.spinner-border').addClass('d-none');
+        promoteBtn.find('.btn-text').text('Promote Student');
+    });
+
+    $('#deleteModal').on('hidden.bs.modal', function() {
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Enrollment');
+    });
+
+    $('#removeStreamModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirm-remove-stream-btn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove from Stream');
+    });
+
+    $('#removeCombinationModal').on('hidden.bs.modal', function() {
+        const removeBtn = $('#confirm-remove-combination-btn');
+        removeBtn.prop('disabled', false);
+        removeBtn.find('.spinner-border').addClass('d-none');
+        removeBtn.find('.btn-text').text('Remove Combination');
+    });
+
+    // ============================================
+    // REMOVE STREAM FORM SUBMIT
+    // ============================================
+    
+    $('#remove-stream-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const removeBtn = $('#confirm-remove-stream-btn');
+        const spinner = removeBtn.find('.spinner-border');
+        const btnText = removeBtn.find('.btn-text');
+        
+        removeBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Removing...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#removeStreamModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                removeBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Remove from Stream');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    showNotification(response.message || 'Error removing stream', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // REMOVE COMBINATION FORM SUBMIT
+    // ============================================
+    
+    $('#remove-combination-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const removeBtn = $('#confirm-remove-combination-btn');
+        const spinner = removeBtn.find('.spinner-border');
+        const btnText = removeBtn.find('.btn-text');
+        
+        removeBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Removing...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#removeCombinationModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                removeBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Remove Combination');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    showNotification(response.message || 'Error removing combination', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

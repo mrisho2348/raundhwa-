@@ -1,0 +1,1731 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Student Subject Assignments — O-Level Electives — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Student Subject Assignments (O-Level Electives){% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       STUDENT SUBJECT ASSIGNMENTS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.students::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.assignments::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.subjects::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.students { background: var(--info-light); color: var(--info); }
+    .stat-icon.assignments { background: var(--success-light); color: var(--success); }
+    .stat-icon.subjects { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 1000px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Student Badges */
+    .student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.95rem;
+    }
+
+    .student-reg {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+    }
+
+    .subject-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .class-badge {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .stream-badge {
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .academic-year-badge {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Loading States */
+    .select-loading {
+        position: relative;
+    }
+
+    .select-loading::after {
+        content: '';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--gray-300);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-journal-bookmark-fill me-2"></i>
+                Student Subject Assignments
+            </h1>
+            <p class="mb-0">Manage O-Level elective subject assignments</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Total Assignments: {{ total_assignments }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card students">
+        <div class="stat-icon students">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ total_students_with_electives|default:"0" }}</div>
+        <div class="stat-label">Students with Electives</div>
+    </div>
+    
+    <div class="stat-card assignments">
+        <div class="stat-icon assignments">
+            <i class="bi bi-journal-check"></i>
+        </div>
+        <div class="stat-value">{{ total_elective_assignments|default:"0" }}</div>
+        <div class="stat-label">Active Assignments</div>
+    </div>
+    
+    <div class="stat-card subjects">
+        <div class="stat-icon subjects">
+            <i class="bi bi-book"></i>
+        </div>
+        <div class="stat-value">{{ subjects|length }}</div>
+        <div class="stat-label">Optional Subjects</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="academic_year" class="filter-label">Academic Year</label>
+                <select name="academic_year" id="academic_year" class="filter-select">
+                    <option value="">All Academic Years</option>
+                    {% for year in academic_years %}
+                    <option value="{{ year.pk }}" {% if selected_academic_year == year.pk %}selected{% endif %}>{{ year.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="class_level" class="filter-label">Class Level</label>
+                <select name="class_level" id="class_level" class="filter-select">
+                    <option value="">All Classes</option>
+                    {% for class in class_levels %}
+                    <option value="{{ class.pk }}" {% if selected_class_level == class.pk %}selected{% endif %}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="stream" class="filter-label">Stream</label>
+                <select name="stream" id="stream" class="filter-select">
+                    <option value="">All Streams</option>
+                    {% for stream in streams %}
+                    <option value="{{ stream.pk }}" {% if selected_stream == stream.pk %}selected{% endif %}>{{ stream.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="subject" class="filter-label">Subject</label>
+                <select name="subject" id="subject" class="filter-select">
+                    <option value="">All Subjects</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.pk }}" {% if selected_subject == subject.pk %}selected{% endif %}>{{ subject.name }} ({{ subject.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:student_subject_assignments' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Assignments List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            Elective Subject Assignments
+        </h5>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn-add" data-bs-toggle="modal" data-bs-target="#addAssignmentModal">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Assignment</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="assignmentsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Registration #</th>
+                    <th>Class</th>
+                    <th>Stream</th>
+                    <th>Subject</th>
+                    <th>Academic Year</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                <tr id="assignment-row-{{ assignment.pk }}">
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ assignment.student.first_name|first|upper }}{{ assignment.student.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="student-name">{{ assignment.student.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="student-reg">{{ assignment.student.registration_number }}</span>
+                    </td>
+                    <td>
+                        <span class="class-badge">
+                            <i class="bi bi-diagram-3"></i>
+                            {{ assignment.enrollment.class_level.name }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if assignment.enrollment.stream_assignment %}
+                        <span class="stream-badge">
+                            <i class="bi bi-grid"></i>
+                            {{ assignment.enrollment.stream_assignment.stream_class.name }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="subject-badge">
+                            <i class="bi bi-book"></i>
+                            {{ assignment.subject.name }} ({{ assignment.subject.code }})
+                        </span>
+                    </td>
+                    <td>
+                        <span class="academic-year-badge">
+                            <i class="bi bi-calendar"></i>
+                            {{ assignment.enrollment.academic_year.name }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Edit Button -->
+                            <button type="button"
+                                    class="btn-action edit"
+                                    title="Edit Assignment"
+                                    onclick="editAssignment({{ assignment.pk }}, {{ assignment.subject_id }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete Assignment"
+                                    onclick="showDeleteModal({{ assignment.pk }}, '{{ assignment.student.full_name|escapejs }}', '{{ assignment.subject.name|escapejs }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-journal-bookmark"></i>
+                            </div>
+                            <h5 class="mb-2">No Assignments Found</h5>
+                            <p class="text-muted mb-3">Get started by assigning an elective subject to a student.</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssignmentModal">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Create First Assignment
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Assignment Modal -->
+<div class="modal fade" id="addAssignmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Assign Elective Subject
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="add-assignment-form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="add-student" class="form-label required-field">Student</label>
+                            <select class="form-select" id="add-student" name="student" required>
+                                <option value="">Select student...</option>
+                                {% for student in students %}
+                                <option value="{{ student.pk }}">{{ student.full_name }} ({{ student.registration_number }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Select an O-Level student
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="add-academic_year" class="form-label">Academic Year</label>
+                            <select class="form-select" id="add-academic_year">
+                                <option value="">All Years</option>
+                                {% for year in academic_years %}
+                                <option value="{{ year.pk }}" {% if year.is_active %}selected{% endif %}>{{ year.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Filter enrollments by year
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="add-enrollment" class="form-label required-field">Enrollment</label>
+                            <select class="form-select" id="add-enrollment" name="enrollment" required disabled>
+                                <option value="">First select a student</option>
+                            </select>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Select the student's current enrollment
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="add-subject" class="form-label required-field">Subject</label>
+                            <select class="form-select" id="add-subject" name="subject" required disabled>
+                                <option value="">First select an enrollment</option>
+                            </select>
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Optional subjects only
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-assignment-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Assign Subject</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Assignment Modal -->
+<div class="modal fade" id="editAssignmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit Subject Assignment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="edit-assignment-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit-id" name="id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Student</label>
+                        <input type="text" class="form-control" id="edit-student-display" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Current Enrollment</label>
+                        <input type="text" class="form-control" id="edit-enrollment-display" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit-subject" class="form-label required-field">Subject</label>
+                        <select class="form-select" id="edit-subject" name="subject" required>
+                            <option value="">Loading subjects...</option>
+                        </select>
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Select a different optional subject
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="update-assignment-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Update Assignment</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteAssignmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong id="delete-subject-name"></strong> from <strong id="delete-student-name"></strong>?</p>
+                <p class="text-danger mt-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This action cannot be undone. The student will no longer be assigned this elective subject.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-assignment-btn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span class="btn-text">Remove Assignment</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let currentEditId = null;
+let deleteAssignmentId = null;
+let deleteStudentName = '';
+let deleteSubjectName = '';
+let csrfToken = '';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#assignmentsTable').length && $.fn.DataTable) {
+        const table = $('#assignmentsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Student Subject Assignments'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Student Subject Assignments',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Student Subject Assignments'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[0, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search assignments...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ assignments",
+                infoEmpty: "Showing 0 to 0 of 0 assignments",
+                infoFiltered: "(filtered from _MAX_ total assignments)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // ADD FORM - DYNAMIC DEPENDENT DROPDOWNS
+    // ============================================
+    
+    // When student changes, load enrollments
+    $('#add-student').on('change', function() {
+        const studentId = $(this).val();
+        const academicYearId = $('#add-academic_year').val();
+        const enrollmentSelect = $('#add-enrollment');
+        const subjectSelect = $('#add-subject');
+        
+        if (!studentId) {
+            enrollmentSelect.prop('disabled', true).html('<option value="">First select a student</option>');
+            subjectSelect.prop('disabled', true).html('<option value="">First select an enrollment</option>');
+            return;
+        }
+        
+        // Show loading
+        enrollmentSelect.prop('disabled', true).html('<option value="">Loading enrollments...</option>').addClass('select-loading');
+        
+        // Fetch enrollments
+        $.ajax({
+            url: '{% url "management:get_student_enrollments" %}',
+            method: 'GET',
+            data: {
+                student_id: studentId,
+                academic_year_id: academicYearId
+            },
+            success: function(data) {
+                enrollmentSelect.removeClass('select-loading');
+                
+                let options = '<option value="">Select enrollment...</option>';
+                data.enrollments.forEach(function(enrollment) {
+                    options += `<option value="${enrollment.id}" data-academic-year="${enrollment.academic_year}" data-class="${enrollment.class_level}">${enrollment.text}</option>`;
+                });
+                
+                enrollmentSelect.prop('disabled', false).html(options);
+                subjectSelect.prop('disabled', true).html('<option value="">First select an enrollment</option>');
+            },
+            error: function() {
+                enrollmentSelect.removeClass('select-loading');
+                enrollmentSelect.prop('disabled', true).html('<option value="">Error loading enrollments</option>');
+                showNotification('Failed to load enrollments', 'error');
+            }
+        });
+    });
+    
+    // When academic year changes, refresh enrollments if student is selected
+    $('#add-academic_year').on('change', function() {
+        if ($('#add-student').val()) {
+            $('#add-student').trigger('change');
+        }
+    });
+    
+    // When enrollment changes, load available subjects
+    $('#add-enrollment').on('change', function() {
+        const enrollmentId = $(this).val();
+        const subjectSelect = $('#add-subject');
+        
+        if (!enrollmentId) {
+            subjectSelect.prop('disabled', true).html('<option value="">First select an enrollment</option>');
+            return;
+        }
+        
+        // Show loading
+        subjectSelect.prop('disabled', true).html('<option value="">Loading subjects...</option>').addClass('select-loading');
+        
+        // Fetch available subjects
+        $.ajax({
+            url: '{% url "management:get_available_subjects" %}',
+            method: 'GET',
+            data: {
+                enrollment_id: enrollmentId
+            },
+            success: function(data) {
+                subjectSelect.removeClass('select-loading');
+                
+                let options = '<option value="">Select subject...</option>';
+                data.subjects.forEach(function(subject) {
+                    options += `<option value="${subject.id}">${subject.text}</option>`;
+                });
+                
+                subjectSelect.prop('disabled', false).html(options);
+            },
+            error: function() {
+                subjectSelect.removeClass('select-loading');
+                subjectSelect.prop('disabled', true).html('<option value="">Error loading subjects</option>');
+                showNotification('Failed to load subjects', 'error');
+            }
+        });
+    });
+
+    // ============================================
+    // FORM VALIDATION HELPER FUNCTIONS
+    // ============================================
+    
+    function clearValidationErrors(formElement) {
+        $(formElement).find('.is-invalid').removeClass('is-invalid');
+        $(formElement).find('.invalid-feedback').remove();
+    }
+    
+    function displayValidationErrors(formElement, errors) {
+        clearValidationErrors(formElement);
+        
+        $.each(errors, function(fieldName, fieldErrors) {
+            const field = $(formElement).find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                field.addClass('is-invalid');
+                const errorHtml = `<div class="invalid-feedback">${fieldErrors.join('<br>')}</div>`;
+                field.next('.invalid-feedback').remove();
+                field.after(errorHtml);
+            } else {
+                showNotification(`${fieldName}: ${fieldErrors.join(', ')}`, 'error');
+            }
+        });
+    }
+
+    // ============================================
+    // ADD ASSIGNMENT FORM SUBMISSION
+    // ============================================
+
+    $('#add-assignment-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const saveBtn = $('#save-assignment-btn');
+        const spinner = saveBtn.find('.spinner-border');
+        const btnText = saveBtn.find('.btn-text');
+        
+        clearValidationErrors(this);
+        
+        saveBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Assigning...');
+        
+        const formData = new FormData(this);
+        formData.append('action', 'create');
+        
+        $.ajax({
+            url: '{% url "management:student_subject_assignment_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#addAssignmentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        displayValidationErrors('#add-assignment-form', data.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(data.message || 'Error creating assignment', 'error');
+                    }
+                    saveBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Assign Subject');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors('#add-assignment-form', response.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(response.message || 'An error occurred.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                saveBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Assign Subject');
+            }
+        });
+    });
+
+    // ============================================
+    // EDIT ASSIGNMENT FUNCTION
+    // ============================================
+
+    window.editAssignment = function(assignmentId, currentSubjectId) {
+        currentEditId = assignmentId;
+        
+        // Get the row data
+        const row = $(`#assignment-row-${assignmentId}`);
+        const studentName = row.find('.student-name').text();
+        const studentReg = row.find('.student-reg').text();
+        const className = row.find('.class-badge').text().trim();
+        const streamName = row.find('.stream-badge').text().trim() || 'No stream';
+        const academicYear = row.find('.academic-year-badge').text().trim();
+        const subjectName = row.find('.subject-badge').text().trim();
+        
+        // Get enrollment ID from the row (you might need to add this as data attribute)
+        // For now, we'll set display values
+        $('#edit-id').val(assignmentId);
+        $('#edit-student-display').val(`${studentName} (${studentReg})`);
+        $('#edit-enrollment-display').val(`${className} - ${streamName} - ${academicYear}`);
+        
+        // Get enrollment ID from data attribute if available
+        const enrollmentId = row.data('enrollment-id');
+        
+        // Load available subjects for this enrollment
+        const subjectSelect = $('#edit-subject');
+        subjectSelect.prop('disabled', true).html('<option value="">Loading subjects...</option>').addClass('select-loading');
+        
+        $.ajax({
+            url: '{% url "management:get_available_subjects" %}',
+            method: 'GET',
+            data: {
+                enrollment_id: enrollmentId,
+                current_assignment_id: assignmentId
+            },
+            success: function(data) {
+                subjectSelect.removeClass('select-loading');
+                
+                let options = '<option value="">Select subject...</option>';
+                data.subjects.forEach(function(subject) {
+                    const selected = subject.id == currentSubjectId ? 'selected' : '';
+                    options += `<option value="${subject.id}" ${selected}>${subject.text}</option>`;
+                });
+                
+                subjectSelect.prop('disabled', false).html(options);
+            },
+            error: function() {
+                subjectSelect.removeClass('select-loading');
+                subjectSelect.prop('disabled', true).html('<option value="">Error loading subjects</option>');
+                showNotification('Failed to load subjects', 'error');
+            }
+        });
+        
+        const modal = new bootstrap.Modal(document.getElementById('editAssignmentModal'));
+        modal.show();
+    };
+
+    // ============================================
+    // EDIT ASSIGNMENT FORM SUBMISSION
+    // ============================================
+
+    $('#edit-assignment-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const updateBtn = $('#update-assignment-btn');
+        const spinner = updateBtn.find('.spinner-border');
+        const btnText = updateBtn.find('.btn-text');
+        
+        clearValidationErrors(this);
+        
+        updateBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Updating...');
+        
+        const formData = new FormData(this);
+        formData.append('action', 'update');
+        
+        $.ajax({
+            url: '{% url "management:student_subject_assignment_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#editAssignmentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        displayValidationErrors('#edit-assignment-form', data.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(data.message || 'Error updating assignment', 'error');
+                    }
+                    updateBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Update Assignment');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        displayValidationErrors('#edit-assignment-form', response.errors);
+                        showNotification('Please correct the errors in the form.', 'error');
+                    } else {
+                        showNotification(response.message || 'An error occurred.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                updateBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Update Assignment');
+            }
+        });
+    });
+
+    // ============================================
+    // DELETE ASSIGNMENT FUNCTIONS
+    // ============================================
+
+    window.showDeleteModal = function(assignmentId, studentName, subjectName) {
+        deleteAssignmentId = assignmentId;
+        deleteStudentName = studentName;
+        deleteSubjectName = subjectName;
+        
+        document.getElementById('delete-student-name').textContent = studentName;
+        document.getElementById('delete-subject-name').textContent = subjectName;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteAssignmentModal'));
+        modal.show();
+    };
+
+    $('#confirm-delete-assignment-btn').on('click', function() {
+        if (!deleteAssignmentId) return;
+        
+        const deleteBtn = $(this);
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Removing...');
+        
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('id', deleteAssignmentId);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        $.ajax({
+            url: '{% url "management:student_subject_assignment_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteAssignmentModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    
+                    $(`#assignment-row-${deleteAssignmentId}`).remove();
+                    
+                    if ($('#assignmentsTable tbody tr').length === 0) {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    }
+                } else {
+                    showNotification(data.message || 'Error removing assignment', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Remove Assignment');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred.', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Remove Assignment');
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#addAssignmentModal').on('hidden.bs.modal', function() {
+        $('#add-assignment-form')[0].reset();
+        clearValidationErrors('#add-assignment-form');
+        $('#add-enrollment').prop('disabled', true).html('<option value="">First select a student</option>');
+        $('#add-subject').prop('disabled', true).html('<option value="">First select an enrollment</option>');
+        const saveBtn = $('#save-assignment-btn');
+        saveBtn.prop('disabled', false);
+        saveBtn.find('.spinner-border').addClass('d-none');
+        saveBtn.find('.btn-text').text('Assign Subject');
+    });
+
+    $('#editAssignmentModal').on('hidden.bs.modal', function() {
+        clearValidationErrors('#edit-assignment-form');
+        const updateBtn = $('#update-assignment-btn');
+        updateBtn.prop('disabled', false);
+        updateBtn.find('.spinner-border').addClass('d-none');
+        updateBtn.find('.btn-text').text('Update Assignment');
+    });
+
+    $('#deleteAssignmentModal').on('hidden.bs.modal', function() {
+        deleteAssignmentId = null;
+        deleteStudentName = '';
+        deleteSubjectName = '';
+        const deleteBtn = $('#confirm-delete-assignment-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Remove Assignment');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

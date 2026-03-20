@@ -1,0 +1,1658 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Streams — {{ class_level.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Streams in {{ class_level.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STREAMS MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.capacity::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.students::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.capacity { background: var(--success-light); color: var(--success); }
+    .stat-icon.students { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Class Info Card */
+    .class-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .class-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .info-value small {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: var(--gray-500);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action.students:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 800px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Stream Badges */
+    .stream-letter-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .capacity-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .students-badge {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .available-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .available-badge.high {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .available-badge.medium {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .available-badge.low {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+        box-shadow: none !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .class-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            border-radius: var(--radius-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-grid-fill me-2"></i>
+                Streams in {{ class_level.name }}
+            </h1>
+            <p class="mb-0">{{ class_level.code }} | {{ class_level.educational_level.get_level_type_display }}</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Total Streams: {{ total_streams }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon total">
+            <i class="bi bi-grid"></i>
+        </div>
+        <div class="stat-value">{{ total_streams }}</div>
+        <div class="stat-label">Total Streams</div>
+    </div>
+    
+    <div class="stat-card capacity">
+        <div class="stat-icon capacity">
+            <i class="bi bi-person-plus"></i>
+        </div>
+        <div class="stat-value">{{ total_capacity }}</div>
+        <div class="stat-label">Total Capacity</div>
+    </div>
+    
+    <div class="stat-card students">
+        <div class="stat-icon students">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ total_students }}</div>
+        <div class="stat-label">Enrolled Students</div>
+    </div>
+</div>
+
+<!-- Class Info Card -->
+<div class="class-info-card">
+    <div class="class-info-grid">
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Class Level</div>
+                <div class="info-value">{{ class_level.name }}</div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-upc-scan"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Class Code</div>
+                <div class="info-value"><span class="class-code">{{ class_level.code }}</span></div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-tag"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Class Type</div>
+                <div class="info-value">
+                    <span class="final-badge {% if class_level.is_final %}yes{% else %}no{% endif %}">
+                        <i class="bi bi-{% if class_level.is_final %}check-circle{% else %}circle{% endif %}"></i>
+                        {% if class_level.is_final %}Final{% else %}Regular{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="info-content">
+                <div class="info-label">Educational Level</div>
+                <div class="info-value">
+                    <span class="level-badge 
+                        {% if class_level.educational_level.level_type == 'NURSERY' %}nursery
+                        {% elif class_level.educational_level.level_type == 'PRIMARY' %}primary
+                        {% elif class_level.educational_level.level_type == 'O_LEVEL' %}o-level
+                        {% elif class_level.educational_level.level_type == 'A_LEVEL' %}a-level
+                        {% endif %}">
+                        {{ class_level.educational_level.name }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Streams List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            All Streams
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:class_level_list' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Classes</span>
+            </a>
+            <button type="button" class="btn-add" data-bs-toggle="modal" data-bs-target="#addStreamModal">
+                <i class="bi bi-plus-lg"></i>
+                <span>Add New Stream</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="streamsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Stream</th>
+                    <th>Letter</th>
+                    <th>Capacity</th>
+                    <th>Students</th>
+                    <th>Available</th>
+                    <th>Teachers</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stream in streams %}
+                <tr id="stream-row-{{ stream.pk }}">
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-semibold">{{ stream.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="stream-letter-badge">{{ stream.stream_letter }}</span>
+                    </td>
+                    <td>
+                        <span class="capacity-badge">
+                            <i class="bi bi-person-plus"></i>
+                            {{ stream.capacity }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if stream.student_count == 0 %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                                <i class="bi bi-people me-1"></i>
+                                No Students
+                            </span>
+                        {% else %}
+                            <span class="students-badge">
+                                <i class="bi bi-people me-1"></i>
+                                {{ stream.student_count }} Student{{ stream.student_count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% with available=stream.capacity|add:"-0" %}
+                            {% with available_spots=stream.capacity|add:stream.student_count|stringformat:"d"|slice:":-1" %}
+                                {% if stream.capacity|add:"-0" > stream.student_count %}
+                                    {% with spots=stream.capacity|add:stream.student_count %}
+                                        <span class="available-badge {% if spots > 20 %}high{% elif spots > 10 %}medium{% else %}low{% endif %}">
+                                            <i class="bi bi-door-open"></i>
+                                            {{ stream.capacity|add:stream.student_count }} spots
+                                        </span>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="available-badge low">
+                                        <i class="bi bi-door-closed"></i>
+                                        Full
+                                    </span>
+                                {% endif %}
+                            {% endwith %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% if stream.teacher_count == 0 %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                                <i class="bi bi-person-badge me-1"></i>
+                                No Teachers
+                            </span>
+                        {% else %}
+                            <span class="capacity-badge">
+                                <i class="bi bi-person-badge me-1"></i>
+                                {{ stream.teacher_count }} Teacher{{ stream.teacher_count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- View Students Button -->
+                            <a href="{% url 'management:stream_students' stream.pk %}" 
+                               class="btn-action students" 
+                               title="View Students">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <!-- Edit Button -->
+                            <button type="button"
+                                    class="btn-action edit"
+                                    title="Edit Stream"
+                                    onclick="editStream({{ stream.pk }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete Stream"
+                                    onclick="showDeleteModal({{ stream.pk }}, '{{ stream.name|escapejs }}')"
+                                    {% if stream.student_count > 0 %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>               
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Stream Modal -->
+<div class="modal fade" id="addStreamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add New Stream to {{ class_level.name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="add-stream-form">
+                {% csrf_token %}
+                <input type="hidden" name="class_level" value="{{ class_level.pk }}">
+                <div class="modal-body">
+                    <div id="add-form-general-error" class="alert alert-danger alert-general-error" style="display: none;"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="add-stream_letter" class="form-label required-field">Stream Letter</label>
+                            <input type="text" class="form-control" id="add-stream_letter" name="stream_letter" required 
+                                   placeholder="e.g., A, B, C" maxlength="1" style="text-transform: uppercase;">
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Single uppercase letter (A-Z)
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="add-capacity" class="form-label">Capacity</label>
+                            <input type="number" class="form-control" id="add-capacity" name="capacity" 
+                                   placeholder="e.g., 50" value="50" min="1" max="200">
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Maximum number of students (default: 50)
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="add-name" class="form-label">Stream Name (Optional)</label>
+                        <input type="text" class="form-control" id="add-name" name="name" 
+                               placeholder="e.g., Form 1A, Form 2B">
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Leave blank to auto-generate from class name and letter
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-stream-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Save Stream</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Stream Modal -->
+<div class="modal fade" id="editStreamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit Stream
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="edit-stream-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit-id" name="id">
+                <div class="modal-body">
+                    <div id="edit-form-general-error" class="alert alert-danger alert-general-error" style="display: none;"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit-stream_letter" class="form-label required-field">Stream Letter</label>
+                            <input type="text" class="form-control" id="edit-stream_letter" name="stream_letter" required 
+                                   maxlength="1" style="text-transform: uppercase;">
+                            <small class="field-hint">
+                                <i class="bi bi-info-circle"></i>
+                                Single uppercase letter (A-Z)
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="edit-capacity" class="form-label">Capacity</label>
+                            <input type="number" class="form-control" id="edit-capacity" name="capacity" 
+                                   min="1" max="200">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit-name" class="form-label">Stream Name</label>
+                        <input type="text" class="form-control" id="edit-name" name="name">
+                        <small class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Auto-generated from class name and letter if left blank
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Current enrollment:</strong> <span id="edit-student-count">0</span> students
+                            <br>
+                            <strong>Available spots:</strong> <span id="edit-available-spots">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="update-stream-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Update Stream</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteStreamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the stream <strong id="delete-stream-name"></strong>?</p>
+                <p class="text-danger mt-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This action cannot be undone. This stream will be removed from all student assignments.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-stream-btn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span class="btn-text">Delete Stream</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let currentEditId = null;
+let deleteStreamId = null;
+let deleteStreamName = '';
+let csrfToken = '';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    
+    if ($('#streamsTable').length && $.fn.DataTable) {
+        const table = $('#streamsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Streams - {{ class_level.name }}'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Streams - {{ class_level.name }}',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Streams - {{ class_level.name }}'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[0, 'asc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search streams...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ streams",
+                infoEmpty: "Showing 0 to 0 of 0 streams",
+                infoFiltered: "(filtered from _MAX_ total streams)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            table.columns.adjust();
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // ERROR HANDLING HELPER FUNCTIONS
+    // ============================================
+    
+    function clearValidationErrors(formElement) {
+        $(formElement).find('.is-invalid').removeClass('is-invalid');
+        $(formElement).find('.invalid-feedback').remove();
+        $(formElement).find('.alert-general-error').hide().empty();
+    }
+    
+    function displayValidationErrors(formElement, errors) {
+        clearValidationErrors(formElement);
+        
+        // Handle non-field errors (__all__)
+        if (errors.__all__ && errors.__all__.length > 0) {
+            const generalErrorDiv = $(formElement).find('.alert-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${errors.__all__.join('<br>')}`).show();
+        }
+        
+        // Handle field-specific errors
+        $.each(errors, function(fieldName, fieldErrors) {
+            if (fieldName === '__all__') return;
+            
+            const field = $(formElement).find(`[name="${fieldName}"]`);
+            
+            if (field.length) {
+                field.addClass('is-invalid');
+                
+                let errorText = '';
+                if (Array.isArray(fieldErrors)) {
+                    errorText = fieldErrors.join('<br>');
+                } else if (typeof fieldErrors === 'string') {
+                    errorText = fieldErrors;
+                } else {
+                    errorText = 'Invalid value';
+                }
+                
+                const errorHtml = `<div class="invalid-feedback">${errorText}</div>`;
+                field.next('.invalid-feedback').remove();
+                field.after(errorHtml);
+            }
+        });
+    }
+
+    function handleAjaxError(xhr, formElement, defaultMessage) {
+        try {
+            const response = JSON.parse(xhr.responseText);
+            
+            if (response.errors) {
+                displayValidationErrors(formElement, response.errors);
+                
+                if (response.message) {
+                    showNotification(response.message, 'error');
+                } else {
+                    showNotification('Please correct the errors in the form.', 'error');
+                }
+            } 
+            else if (response.message) {
+                showNotification(response.message, 'error');
+                
+                if (formElement) {
+                    const generalErrorDiv = $(formElement).find('.alert-general-error');
+                    generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill me-2"></i>${response.message}`).show();
+                }
+            }
+            else {
+                showNotification(defaultMessage || 'An error occurred. Please try again.', 'error');
+            }
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            showNotification(defaultMessage || 'An error occurred. Please try again.', 'error');
+        }
+    }
+
+    // ============================================
+    // ADD STREAM FORM SUBMISSION
+    // ============================================
+
+    $('#add-stream-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const saveBtn = $('#save-stream-btn');
+        const spinner = saveBtn.find('.spinner-border');
+        const btnText = saveBtn.find('.btn-text');
+        
+        clearValidationErrors(form);
+        
+        saveBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = new FormData(form);
+        formData.append('action', 'create');
+        
+        $.ajax({
+            url: '{% url "management:stream_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#addStreamModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        displayValidationErrors('#add-stream-form', data.errors);
+                        
+                        if (data.message && data.message !== 'Validation error.') {
+                            showNotification(data.message, 'error');
+                        } else {
+                            showNotification('Please correct the errors in the form.', 'error');
+                        }
+                    } else {
+                        showNotification(data.message || 'Error saving stream', 'error');
+                    }
+                    
+                    saveBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Save Stream');
+                }
+            },
+            error: function(xhr) {
+                handleAjaxError(xhr, '#add-stream-form', 'An error occurred while saving. Please try again.');
+                
+                saveBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Save Stream');
+            }
+        });
+    });
+
+    // ============================================
+    // EDIT STREAM FUNCTIONS
+    // ============================================
+
+    window.editStream = function(streamId) {
+        currentEditId = streamId;
+        
+        // Show loading state
+        const editBtn = $(`#stream-row-${streamId} .btn-action.edit`);
+        const originalHtml = editBtn.html();
+        editBtn.html('<span class="spinner-border spinner-border-sm"></span>').prop('disabled', true);
+        
+        $.ajax({
+            url: `{% url 'management:get_stream_details' 0 %}`.replace('0', streamId),
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(data) {
+                editBtn.html(originalHtml).prop('disabled', false);
+                
+                $('#edit-id').val(data.id);
+                $('#edit-stream_letter').val(data.stream_letter);
+                $('#edit-name').val(data.name);
+                $('#edit-capacity').val(data.capacity);
+                $('#edit-student-count').text(data.student_count);
+                $('#edit-available-spots').text(data.available_spots);
+                
+                clearValidationErrors('#edit-stream-form');
+                
+                const modal = new bootstrap.Modal(document.getElementById('editStreamModal'));
+                modal.show();
+            },
+            error: function() {
+                editBtn.html(originalHtml).prop('disabled', false);
+                showNotification('Failed to load stream details.', 'error');
+            }
+        });
+    };
+
+    // Edit Form Submission
+    $('#edit-stream-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const updateBtn = $('#update-stream-btn');
+        const spinner = updateBtn.find('.spinner-border');
+        const btnText = updateBtn.find('.btn-text');
+        
+        clearValidationErrors(form);
+        
+        updateBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Updating...');
+        
+        const formData = new FormData(form);
+        formData.append('action', 'update');
+        
+        $.ajax({
+            url: '{% url "management:stream_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#editStreamModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        displayValidationErrors('#edit-stream-form', data.errors);
+                        
+                        if (data.message && data.message !== 'Validation error.') {
+                            showNotification(data.message, 'error');
+                        } else {
+                            showNotification('Please correct the errors in the form.', 'error');
+                        }
+                    } else {
+                        showNotification(data.message || 'Error updating stream', 'error');
+                    }
+                    
+                    updateBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Update Stream');
+                }
+            },
+            error: function(xhr) {
+                handleAjaxError(xhr, '#edit-stream-form', 'An error occurred while updating. Please try again.');
+                
+                updateBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Update Stream');
+            }
+        });
+    });
+
+    // ============================================
+    // DELETE STREAM FUNCTIONS
+    // ============================================
+
+    window.showDeleteModal = function(id, name) {
+        deleteStreamId = id;
+        deleteStreamName = name;
+        
+        document.getElementById('delete-stream-name').textContent = name;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteStreamModal'));
+        modal.show();
+    };
+
+    $('#confirm-delete-stream-btn').on('click', function() {
+        if (!deleteStreamId) return;
+        
+        const deleteBtn = $(this);
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('id', deleteStreamId);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        $.ajax({
+            url: '{% url "management:stream_crud" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    $('#deleteStreamModal').modal('hide');
+                    showNotification(data.message, 'success');
+                    
+                    $(`#stream-row-${deleteStreamId}`).fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        if ($('#streamsTable tbody tr').length === 0) {
+                            setTimeout(function() {
+                                location.reload();
+                            }, 500);
+                        }
+                    });
+                } else {
+                    showNotification(data.message || 'Error deleting stream', 'error');
+                    deleteBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('Delete Stream');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showNotification(response.message || 'An error occurred while deleting.', 'error');
+                } catch (e) {
+                    showNotification('An error occurred while deleting. Please try again.', 'error');
+                }
+                
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Stream');
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#addStreamModal').on('hidden.bs.modal', function() {
+        $('#add-stream-form')[0].reset();
+        clearValidationErrors('#add-stream-form');
+        const saveBtn = $('#save-stream-btn');
+        saveBtn.prop('disabled', false);
+        saveBtn.find('.spinner-border').addClass('d-none');
+        saveBtn.find('.btn-text').text('Save Stream');
+    });
+
+    $('#editStreamModal').on('hidden.bs.modal', function() {
+        clearValidationErrors('#edit-stream-form');
+        const updateBtn = $('#update-stream-btn');
+        updateBtn.prop('disabled', false);
+        updateBtn.find('.spinner-border').addClass('d-none');
+        updateBtn.find('.btn-text').text('Update Stream');
+    });
+
+    $('#deleteStreamModal').on('hidden.bs.modal', function() {
+        deleteStreamId = null;
+        deleteStreamName = '';
+        const deleteBtn = $('#confirm-delete-stream-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Stream');
+    });
+
+    // ============================================
+    // LOADING OVERLAY
+    // ============================================
+
+    // Show loading overlay on form submissions (except AJAX forms)
+    document.querySelectorAll('form:not(#add-stream-form):not(#edit-stream-form)').forEach(form => {
+        form.addEventListener('submit', function() {
+            if (!this.classList.contains('no-loading')) {
+                document.getElementById('loadingOverlay').classList.add('show');
+            }
+        });
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1449 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Classes — {{ level.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Classes in {{ level.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM CLASS LEVEL MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.classes { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.streams { background: var(--info-light); color: var(--info); }
+    .stat-icon.students { background: var(--success-light); color: var(--success); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.students:hover {
+        background: var(--success-light);
+        color: var(--success);
+        border-color: var(--success);
+    }
+
+    .btn-action.streams:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+        border-color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+        border-color: var(--danger);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 900px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .class-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 1rem;
+    }
+
+    .class-code {
+        font-family: 'Courier New', monospace;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        color: var(--gray-600);
+        display: inline-block;
+        border: 1px solid var(--gray-200);
+    }
+
+    .count-badge {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .count-badge i {
+        color: var(--primary);
+    }
+
+    .count-badge.primary {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .count-badge.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.final {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.regular {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    /* Modal Styles with Bootstrap Grid */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .modal-header.bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+    }
+
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Bootstrap Grid Form Styles */
+    .modal .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .modal .form-control, .modal .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .modal .form-control:focus, .modal .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .modal .form-control.is-invalid, .modal .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .field-error {
+        display: block;
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        color: var(--danger);
+    }
+
+    .field-hint {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+    }
+
+    /* Checkbox Switch */
+    .form-switch .form-check-input {
+        width: 2.5rem;
+        height: 1.25rem;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-input:checked {
+        background-color: var(--warning);
+        border-color: var(--warning);
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    .error-message-box {
+        background: var(--danger-light);
+        border: 1px solid var(--danger);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        color: var(--danger);
+    }
+
+    .error-message-box ul {
+        margin: 0.5rem 0 0 1.5rem;
+    }
+
+    .error-message-box li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .table tbody td {
+            display: block;
+            text-align: right;
+            padding: 0.75rem;
+            border-bottom: 1px dashed var(--gray-200);
+        }
+
+        .table tbody td:last-child {
+            border-bottom: none;
+        }
+
+        .table tbody td::before {
+            content: attr(data-label);
+            float: left;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+
+        .action-buttons {
+            justify-content: flex-end;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .modal-body .row {
+            margin-bottom: 0;
+        }
+        
+        .modal-body [class*="col-"] {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-diagram-3-fill me-2"></i>
+                Classes in {{ level.name }}
+            </h1>
+            <p class="mb-0">{{ level.code }} | {{ level.get_level_type_display }}</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                Total Classes: {{ classes|length }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon classes">
+            <i class="bi bi-diagram-3"></i>
+        </div>
+        <div class="stat-value">{{ classes|length }}</div>
+        <div class="stat-label">Total Classes</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon streams">
+            <i class="bi bi-grid"></i>
+        </div>
+        <div class="stat-value">{{ total_streams|default:"0" }}</div>
+        <div class="stat-label">Total Streams</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon students">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ total_students|default:"0" }}</div>
+        <div class="stat-label">Students</div>
+    </div>
+</div>
+
+<!-- Classes List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            All Classes
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:educational_level_list' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Levels</span>
+            </a>
+            <button type="button" class="btn-add" onclick="openClassModal('create')">
+                <i class="bi bi-plus-lg"></i>
+                <span>Add New Class</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table" id="classesTable">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Code</th>
+                    <th>Order</th>
+                    <th>Streams</th>
+                    <th>Students</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in classes %}
+                <tr id="class-row-{{ class.pk }}">
+                    <td data-label="Class">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="class-name">{{ class.name }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Code">
+                        <span class="class-code">{{ class.code }}</span>
+                    </td>
+                    <td data-label="Order">
+                        <span class="count-badge">
+                            <i class="bi bi-sort-numeric-up"></i>
+                            {{ class.order }}
+                        </span>
+                    </td>
+                    <td data-label="Streams">
+                        <span class="count-badge primary">
+                            <i class="bi bi-diagram-3"></i>
+                            {{ class.stream_count|default:"0" }}
+                        </span>
+                    </td>
+                    <td data-label="Students">
+                        <span class="count-badge success">
+                            <i class="bi bi-people"></i>
+                            {{ class.student_count|default:"0" }}
+                        </span>
+                    </td>
+                    <td data-label="Status">
+                        {% if class.is_final %}
+                            <span class="status-badge final">
+                                <i class="bi bi-flag-fill"></i>
+                                Final
+                            </span>
+                        {% else %}
+                            <span class="status-badge regular">
+                                <i class="bi bi-arrow-right"></i>
+                                Regular
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <!-- View Students - New Action -->
+                            <a href="{% url 'management:level_students' level.pk %}?class={{ class.pk }}" 
+                               class="btn-action students"
+                               title="View Students in this Class">
+                                <i class="bi bi-people"></i>
+                            </a>
+                            
+                            <!-- View Streams -->
+                            <button type="button"
+                                    class="btn-action streams"
+                                    title="View Streams"
+                                    onclick="viewStreams({{ class.pk }})">
+                                <i class="bi bi-diagram-3"></i>
+                            </button>
+                            
+                            <!-- Edit Class -->
+                            <button type="button"
+                                    class="btn-action edit"
+                                    title="Edit Class"
+                                    onclick="openClassModal('edit', {{ class.pk }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            
+                            <!-- Delete Class -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete Class"
+                                    onclick="showDeleteModal({{ class.pk }}, '{{ class.name|escapejs }}', {{ class.stream_count|default:0 }})"
+                                    {% if class.stream_count > 0 or class.student_count > 0 %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>                
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-diagram-3"></i>
+                            </div>
+                            <h5 class="mb-2">No Classes Found</h5>
+                            <p class="text-muted mb-3">Get started by adding your first class to {{ level.name }}.</p>
+                            <button type="button" class="btn-add" onclick="openClassModal('create')">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Add First Class
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ============================================
+     CLASS LEVEL MODAL (CREATE/UPDATE) - BOOTSTRAP GRID LAYOUT
+     ============================================ -->
+<div class="modal fade" id="classModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="classModalTitle">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    <span>Add New Class</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="class-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Error message container -->
+                    <div id="class-error-container" class="error-message-box" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Error:</strong>
+                        <ul id="class-error-list"></ul>
+                    </div>
+
+                    <input type="hidden" name="educational_level" id="educational_level" value="{{ level.pk }}">
+                    
+                    <!-- Bootstrap Grid Layout - 2 columns -->
+                    <div class="row g-3">
+                        <!-- First Column -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label required-field">Class Name</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       placeholder="e.g., Form 1, Standard 3" required>
+                                <small class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Full name of the class level
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Second Column -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="code" class="form-label required-field">Class Code</label>
+                                <input type="text" class="form-control" id="code" name="code" 
+                                       placeholder="e.g., F1, STD3" required>
+                                <small class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Unique code (uppercase letters and numbers only)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row - 2 columns -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="order" class="form-label required-field">Order</label>
+                                <input type="number" class="form-control" id="order" name="order" 
+                                       placeholder="e.g., 1, 2, 3" required min="1">
+                                <small class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Numeric order for proper sequencing
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label d-block">&nbsp;</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="is_final" name="is_final" value="true">
+                                    <label class="form-check-label" for="is_final">Final Class Level</label>
+                                </div>
+                                <small class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Check if this is the final class
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final class warning - Full width -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-warning" id="final-class-warning" style="display: none;">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <strong>Note:</strong> Marking a class as final will affect promotion rules. Students in this class will be marked as 'completed' rather than promoted.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="class-submit-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span class="btn-text">Create Class</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     DELETE CONFIRMATION MODAL
+     ============================================ -->
+<div class="modal fade" id="deleteClassModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-class-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete class <strong id="delete-class-name"></strong>?</p>
+                    
+                    <div class="alert alert-warning" id="delete-class-warning" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This class has streams that will also be deleted.
+                    </div>
+                    
+                    <p class="text-danger mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Class</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let levelId = {{ level.pk }};
+let deleteClassId = null;
+
+// URL endpoints - Using placeholder replacement method
+const URLS = {
+    crud: "{% url 'management:class_level_crud' %}",
+    getDetails: "{% url 'management:get_class_level_details' 999999 %}",
+    streams: "{% url 'management:class_streams' 999999 %}",
+    students: "{% url 'management:level_students' level.pk %}?class="
+};
+
+// Helper function to replace placeholder with actual ID
+function buildUrl(url, id) {
+    return url.replace('999999', id);
+}
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // FINAL CLASS WARNING TOGGLE
+    // ============================================
+    
+    $('#is_final').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#final-class-warning').slideDown();
+        } else {
+            $('#final-class-warning').slideUp();
+        }
+    });
+
+    // ============================================
+    // OPEN CLASS MODAL (CREATE/EDIT)
+    // ============================================
+    
+    window.openClassModal = function(mode, classId = null) {
+        // Reset form
+        $('#class-form')[0].reset();
+        $('#class-error-container').hide();
+        $('#class-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        $('#final-class-warning').hide();
+        
+        // Reset checkbox - IMPORTANT: Set to false explicitly
+        $('#is_final').prop('checked', false);
+        
+        // Remove any existing action/id fields
+        $('#class-form input[name="action"]').remove();
+        $('#class-form input[name="id"]').remove();
+        
+        if (mode === 'create') {
+            $('#classModalTitle span').text('Add New Class');
+            $('#class-submit-btn .btn-text').text('Create Class');
+            $('#class-form').attr('action', URLS.crud);
+            
+            // Add action parameter
+            $('#class-form').append('<input type="hidden" name="action" value="create">');
+            
+            const modal = new bootstrap.Modal(document.getElementById('classModal'));
+            modal.show();
+        } else {
+            // Edit mode - load class data
+            if (!classId) return;
+            
+            $('#classModalTitle span').text('Edit Class');
+            $('#class-submit-btn .btn-text').text('Update Class');
+            
+            // Add action parameter and ID
+            $('#class-form').append('<input type="hidden" name="action" value="update">');
+            $('#class-form').append(`<input type="hidden" name="id" value="${classId}">`);
+            
+            // Set form action
+            $('#class-form').attr('action', URLS.crud);
+            
+            // Show loading
+            showLoading();
+            
+            // Fetch class details - Build URL using helper function
+            const detailsUrl = buildUrl(URLS.getDetails, classId);
+            
+            $.ajax({
+                url: detailsUrl,
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(data) {
+                    hideLoading();
+                    
+                    $('#name').val(data.name);
+                    $('#code').val(data.code);
+                    $('#order').val(data.order);
+                    
+                    // IMPORTANT: Set checkbox based on data.is_final
+                    // The view expects 'true' string for checked, so we need to handle accordingly
+                    if (data.is_final) {
+                        $('#is_final').prop('checked', true);
+                    } else {
+                        $('#is_final').prop('checked', false);
+                    }
+                    
+                    if (data.is_final) {
+                        $('#final-class-warning').show();
+                    }
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('classModal'));
+                    modal.show();
+                },
+                error: function(xhr) {
+                    hideLoading();
+                    try {
+                        const response = xhr.responseJSON;
+                        showNotification(response?.message || 'Error loading class details', 'error');
+                    } catch (e) {
+                        showNotification('Error loading class details', 'error');
+                    }
+                }
+            });
+        }
+    };
+
+    // ============================================
+    // CLASS FORM SUBMIT - FIXED is_final handling
+    // ============================================
+    
+    $('#class-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#class-submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        const errorContainer = $('#class-error-container');
+        const errorList = $('#class-error-list');
+        
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        errorContainer.hide();
+        errorList.empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        // Get form data and properly handle is_final checkbox
+        // The view expects: is_final = request.POST.get('is_final') == 'true'
+        let formData = form.serializeArray();
+        
+        // Check if is_final checkbox is checked and add/update the value
+        let isFinalChecked = $('#is_final').is(':checked');
+        
+        // Remove any existing is_final entry
+        formData = formData.filter(item => item.name !== 'is_final');
+        
+        // Add is_final with proper value - 'true' if checked
+        if (isFinalChecked) {
+            formData.push({ name: 'is_final', value: 'true' });
+        }
+        // If not checked, don't add is_final parameter at all
+        // The view will treat missing is_final as False
+        
+        // Convert back to URL-encoded string
+        let serializedData = $.param(formData);
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: serializedData,
+            success: function(data) {
+                $('#classModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text($('#classModalTitle span').text() === 'Add New Class' ? 'Create Class' : 'Update Class');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    
+                    // Clear any existing error displays
+                    errorList.empty();
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.field-error').remove();
+                    
+                    if (response && response.errors) {
+                        // Handle field-specific errors
+                        let hasErrors = false;
+                        
+                        for (const field in response.errors) {
+                            if (response.errors.hasOwnProperty(field)) {
+                                const errors = response.errors[field];
+                                
+                                if (Array.isArray(errors) && errors.length > 0) {
+                                    hasErrors = true;
+                                    
+                                    // Format field label for display
+                                    let fieldLabel = field;
+                                    if (field === '__all__') {
+                                        fieldLabel = 'General Error';
+                                    } else {
+                                        fieldLabel = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                    }
+                                    
+                                    // Add to error list
+                                    errors.forEach(function(error) {
+                                        errorList.append(`<li><strong>${fieldLabel}:</strong> ${error}</li>`);
+                                    });
+                                    
+                                    // Highlight the specific field if it's not a general error
+                                    if (field !== '__all__') {
+                                        const fieldElement = $(`#${field}`);
+                                        if (fieldElement.length) {
+                                            fieldElement.addClass('is-invalid');
+                                            // Add error message below the field
+                                            fieldElement.after(`<small class="field-error">${errors[0]}</small>`);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (hasErrors) {
+                            errorContainer.show();
+                        }
+                        
+                        // Also show the main message if provided
+                        if (response.message) {
+                            showNotification(response.message, 'error');
+                        }
+                    } else if (response && response.message) {
+                        // Just a simple error message
+                        errorList.append(`<li>${response.message}</li>`);
+                        errorContainer.show();
+                    } else {
+                        showNotification('An unexpected error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // VIEW STREAMS
+    // ============================================
+    
+    window.viewStreams = function(classId) {
+        // Build URL using helper function
+        const streamsUrl = buildUrl(URLS.streams, classId);
+        window.location.href = streamsUrl;
+    };
+
+    // ============================================
+    // DELETE CLASS
+    // ============================================
+    
+    window.showDeleteModal = function(classId, className, streamCount) {
+        deleteClassId = classId;
+        $('#delete-class-name').text(className);
+        
+        if (streamCount > 0) {
+            $('#delete-class-warning').show();
+        } else {
+            $('#delete-class-warning').hide();
+        }
+        
+        // Remove any existing action/id fields
+        $('#delete-class-form input[name="action"]').remove();
+        $('#delete-class-form input[name="id"]').remove();
+        
+        $('#delete-class-form').attr('action', URLS.crud);
+        
+        // Add hidden fields
+        $('#delete-class-form').append(`<input type="hidden" name="action" value="delete">`);
+        $('#delete-class-form').append(`<input type="hidden" name="id" value="${classId}">`);
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteClassModal'));
+        modal.show();
+    };
+
+    $('#delete-class-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const deleteBtn = $('#confirm-delete-btn');
+        const spinner = deleteBtn.find('.spinner-border');
+        const btnText = deleteBtn.find('.btn-text');
+        
+        deleteBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Deleting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: form.serialize(),
+            success: function(data) {
+                $('#deleteClassModal').modal('hide');
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                deleteBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Delete Class');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    showNotification(response?.message || 'Error deleting class', 'error');
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLERS
+    // ============================================
+
+    $('#classModal').on('hidden.bs.modal', function() {
+        // Remove dynamically added hidden inputs
+        $('#class-form input[name="action"]').remove();
+        $('#class-form input[name="id"]').remove();
+        
+        const submitBtn = $('#class-submit-btn');
+        submitBtn.prop('disabled', false);
+        submitBtn.find('.spinner-border').addClass('d-none');
+        submitBtn.find('.btn-text').text('Create Class');
+        $('#class-error-container').hide();
+        $('#class-error-list').empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+    });
+
+    $('#deleteClassModal').on('hidden.bs.modal', function() {
+        // Remove dynamically added hidden inputs
+        $('#delete-class-form input[name="action"]').remove();
+        $('#delete-class-form input[name="id"]').remove();
+        
+        const deleteBtn = $('#confirm-delete-btn');
+        deleteBtn.prop('disabled', false);
+        deleteBtn.find('.spinner-border').addClass('d-none');
+        deleteBtn.find('.btn-text').text('Delete Class');
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

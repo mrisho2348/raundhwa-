@@ -1,0 +1,689 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Add Educational Level — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Add New Educational Level{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header Section */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .page-header .badge {
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-back {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        font-size: 1rem;
+    }
+
+    .btn-submit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        font-size: 1rem;
+        text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    .character-counter {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-align: right;
+        margin-top: 0.25rem;
+        font-family: monospace;
+    }
+
+    .character-counter.warning {
+        color: var(--warning);
+    }
+
+    .character-counter.danger {
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .btn-back {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-plus-circle-fill me-2"></i>
+                Add Educational Level
+            </h1>
+            <p class="mb-0">Create a new educational level for the school system</p>
+        </div>
+        <div>
+            <span class="badge">
+                <i class="bi bi-info-circle me-1"></i>
+                All fields marked with * are required
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-header">
+        <h5>
+            <i class="bi bi-layers"></i>
+            Educational Level Details
+        </h5>
+        <a href="{% url 'management:educational_level_list' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Levels</span>
+        </a>
+    </div>
+
+    <form method="post" action="{% url 'management:educational_level_create' %}" id="addLevelForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label required-field">Level Name</label>
+            <input type="text" 
+                   name="name" 
+                   id="levelName"
+                   class="form-control" 
+                   placeholder="e.g., Primary Education"
+                   value="{{ form.name.value|default:'' }}"
+                   required
+                   maxlength="100">
+            <div class="invalid-feedback" id="nameError"></div>
+            <div class="field-hint">
+                <i class="bi bi-info-circle"></i>
+                Full name of the educational level (e.g., Primary Education, Secondary Education)
+            </div>
+            <div class="character-counter">
+                <span id="nameCount">0</span>/100
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label required-field">Level Code</label>
+            <input type="text" 
+                   name="code" 
+                   id="levelCode"
+                   class="form-control" 
+                   placeholder="e.g., PRI"
+                   value="{{ form.code.value|default:'' }}"
+                   required
+                   maxlength="20">
+            <div class="invalid-feedback" id="codeError"></div>
+            <div class="field-hint">
+                <i class="bi bi-info-circle"></i>
+                Unique identifier (e.g., PRI for Primary, SEC for Secondary)
+            </div>
+            <div class="character-counter">
+                <span id="codeCount">0</span>/20
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label required-field">Level Type</label>
+            <select name="level_type" id="levelType" class="form-select" required>
+                <option value="">Select level type</option>
+                <option value="NURSERY" {% if form.level_type.value == 'NURSERY' %}selected{% endif %}>Nursery</option>
+                <option value="PRIMARY" {% if form.level_type.value == 'PRIMARY' %}selected{% endif %}>Primary</option>
+                <option value="O_LEVEL" {% if form.level_type.value == 'O_LEVEL' %}selected{% endif %}>O-Level</option>
+                <option value="A_LEVEL" {% if form.level_type.value == 'A_LEVEL' %}selected{% endif %}>A-Level</option>
+            </select>
+            <div class="invalid-feedback" id="typeError"></div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea name="description" 
+                      id="levelDescription"
+                      class="form-control" 
+                      rows="4"
+                      placeholder="Enter description (optional)">{{ form.description.value|default:'' }}</textarea>
+            <div class="field-hint">
+                <i class="bi bi-info-circle"></i>
+                Brief description of this educational level
+            </div>
+            <div class="character-counter">
+                <span id="descCount">0</span>/500
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-3 justify-content-end mt-4">
+            <a href="{% url 'management:educational_level_list' %}" class="btn-secondary">
+                <i class="bi bi-x-lg"></i>
+                Cancel
+            </a>
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <i class="bi bi-check-lg"></i>
+                Create Level
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+
+    // ============================================
+    // CHARACTER COUNTERS
+    // ============================================
+    
+    function setupCounter(inputId, counterId, maxLength) {
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+        
+        if (input && counter) {
+            counter.textContent = input.value.length;
+            
+            input.addEventListener('input', function() {
+                const length = this.value.length;
+                counter.textContent = length;
+                
+                counter.classList.remove('warning', 'danger');
+                if (length > maxLength * 0.9) {
+                    counter.classList.add('danger');
+                } else if (length > maxLength * 0.7) {
+                    counter.classList.add('warning');
+                }
+            });
+        }
+    }
+    
+    setupCounter('levelName', 'nameCount', 100);
+    setupCounter('levelCode', 'codeCount', 20);
+    setupCounter('levelDescription', 'descCount', 500);
+
+    // ============================================
+    // REAL-TIME VALIDATION
+    // ============================================
+    
+    const codeInput = document.getElementById('levelCode');
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            // Auto-uppercase and remove special characters
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    }
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    
+    const addForm = document.getElementById('addLevelForm');
+    
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            // Clear previous errors
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            document.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.textContent = '';
+            });
+            
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Basic validation
+            let isValid = true;
+            const name = document.getElementById('levelName');
+            const code = document.getElementById('levelCode');
+            const type = document.getElementById('levelType');
+            
+            if (!name.value.trim()) {
+                name.classList.add('is-invalid');
+                document.getElementById('nameError').textContent = 'Level name is required';
+                isValid = false;
+            }
+            
+            if (!code.value.trim()) {
+                code.classList.add('is-invalid');
+                document.getElementById('codeError').textContent = 'Level code is required';
+                isValid = false;
+            } else if (code.value.length > 20) {
+                code.classList.add('is-invalid');
+                document.getElementById('codeError').textContent = 'Code must be 20 characters or less';
+                isValid = false;
+            }
+            
+            if (!type.value) {
+                type.classList.add('is-invalid');
+                document.getElementById('typeError').textContent = 'Please select a level type';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                
+                // Scroll to first error
+                const firstError = document.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                showNotification('Please fix the errors before submitting', 'error');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loadingOverlay').classList.add('show');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+        });
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+S to submit
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            document.getElementById('addLevelForm').requestSubmit();
+        }
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${message}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
