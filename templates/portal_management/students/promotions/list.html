@@ -522,6 +522,10 @@
         border-left: 4px solid var(--danger);
     }
 
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
     .toast-icon {
         width: 32px;
         height: 32px;
@@ -540,6 +544,11 @@
     .toast-icon.error {
         background: var(--danger-light);
         color: var(--danger);
+    }
+
+    .toast-icon.warning {
+        background: var(--warning-light);
+        color: var(--warning);
     }
 
     /* Loading Overlay */
@@ -1022,6 +1031,7 @@
 // GLOBAL VARIABLES
 // ============================================
 let csrfToken = '{{ csrf_token }}';
+let activeModal = null;
 
 $(document).ready(function () {
     'use strict';
@@ -1073,13 +1083,23 @@ function promoteSingle(enrollmentId) {
     $('#single-enrollment-id').val(enrollmentId);
     $('#single-student-name').text(studentName);
     
-    const modal = new bootstrap.Modal(document.getElementById('singlePromoteModal'));
-    modal.show();
+    // Reset form and hide any previous alerts
+    $('#single-promote-form')[0].reset();
+    $('#single_preserve_stream').prop('checked', true);
+    $('#single_preserve_combination').prop('checked', true);
+    
+    activeModal = new bootstrap.Modal(document.getElementById('singlePromoteModal'));
+    activeModal.show();
 }
 
 function openBulkModal() {
-    const modal = new bootstrap.Modal(document.getElementById('bulkPromoteModal'));
-    modal.show();
+    // Reset form and hide any previous alerts
+    $('#bulk-promote-form')[0].reset();
+    $('#preserve_stream').prop('checked', true);
+    $('#preserve_combination').prop('checked', true);
+    
+    activeModal = new bootstrap.Modal(document.getElementById('bulkPromoteModal'));
+    activeModal.show();
 }
 
 function revertPromotion(enrollmentId) {
@@ -1094,10 +1114,19 @@ function revertPromotion(enrollmentId) {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             success: function(data) {
-                showNotification(data.message, 'success');
-                setTimeout(function() {
-                    location.reload();
-                }, 1500);
+                $('#loadingOverlay').removeClass('show');
+                
+                if (data.success) {
+                    // Show success notification
+                    showNotification(data.message, 'success');
+                    
+                    // Reload after short delay
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Error reverting promotion', 'error');
+                }
             },
             error: function(xhr) {
                 $('#loadingOverlay').removeClass('show');
@@ -1113,20 +1142,228 @@ function revertPromotion(enrollmentId) {
 }
 
 // ============================================
-// FORM SUBMISSIONS
+// FORM SUBMISSIONS WITH IMPROVED HANDLING
 // ============================================
 
-$('#promotion-form, #single-promote-form, #bulk-promote-form').on('submit', function(e) {
+// Single Promotion Form Submission
+$('#single-promote-form').on('submit', function(e) {
     e.preventDefault();
+    
+    const form = $(this);
+    const submitBtn = $('#confirm-single-promote-btn');
+    const spinner = submitBtn.find('.spinner-border');
+    const btnText = submitBtn.find('.btn-text');
+    
+    // Store original button text
+    const originalText = btnText.text();
+    
+    // Disable button and show spinner
+    submitBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Processing...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            // Close modal immediately
+            if (activeModal) {
+                activeModal.hide();
+                activeModal = null;
+            }
+            
+            // Show notification based on response type
+            if (data.message_type === 'success') {
+                showNotification(data.message, 'success');
+            } else if (data.message_type === 'warning') {
+                showNotification(data.message, 'warning');
+            } else {
+                showNotification(data.message, 'error');
+            }
+            
+            // If there are warnings, show them as separate notifications
+            if (data.warnings && data.warnings.length > 0) {
+                data.warnings.forEach(function(warning) {
+                    setTimeout(function() {
+                        showNotification(warning, 'warning');
+                    }, 100);
+                });
+            }
+            
+            // Only reload if the response indicates we should
+            if (data.reload === true) {
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                // Re-enable button if no reload
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text(originalText);
+            }
+        },
+        error: function(xhr) {
+            // Close modal on error
+            if (activeModal) {
+                activeModal.hide();
+                activeModal = null;
+            }
+            
+            // Re-enable button
+            submitBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text(originalText);
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'An error occurred', 'error');
+                
+                // Show detailed errors if available
+                if (response.errors && response.errors.length > 0) {
+                    response.errors.forEach(function(error) {
+                        setTimeout(function() {
+                            showNotification(error, 'error');
+                        }, 100);
+                    });
+                }
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+// Bulk Promotion Form Submission
+$('#bulk-promote-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const submitBtn = $('#confirm-bulk-promote-btn');
+    const spinner = submitBtn.find('.spinner-border');
+    const btnText = submitBtn.find('.btn-text');
+    
+    // Store original button text
+    const originalText = btnText.text();
+    
+    // Disable button and show spinner
+    submitBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Processing...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            // Close modal immediately
+            if (activeModal) {
+                activeModal.hide();
+                activeModal = null;
+            }
+            
+            // Show notification based on response type
+            if (data.message_type === 'success') {
+                showNotification(data.message, 'success');
+            } else if (data.message_type === 'warning') {
+                showNotification(data.message, 'warning');
+            } else {
+                showNotification(data.message, 'error');
+            }
+            
+            // Show details of promoted/failed students
+            if (data.promoted_students && data.promoted_students.length > 0) {
+                setTimeout(function() {
+                    const promotedNames = data.promoted_students.map(s => s.name).join(', ');
+                    showNotification(`✅ Promoted: ${promotedNames}`, 'success');
+                }, 200);
+            }
+            
+            if (data.failed_students && data.failed_students.length > 0) {
+                data.failed_students.forEach(function(failed, index) {
+                    setTimeout(function() {
+                        const errorMsg = `❌ ${failed.name}: ${failed.errors.join(', ')}`;
+                        showNotification(errorMsg, 'error');
+                    }, 300 + (index * 200));
+                });
+            }
+            
+            // Show warnings
+            if (data.warnings && data.warnings.length > 0) {
+                data.warnings.forEach(function(warning, index) {
+                    setTimeout(function() {
+                        showNotification(warning, 'warning');
+                    }, 400 + (index * 200));
+                });
+            }
+            
+            // Only reload if the response indicates we should
+            if (data.reload === true) {
+                setTimeout(function() {
+                    window.location.reload();
+                }, 3000);
+            } else {
+                // Re-enable button if no reload
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text(originalText);
+            }
+        },
+        error: function(xhr) {
+            // Close modal on error
+            if (activeModal) {
+                activeModal.hide();
+                activeModal = null;
+            }
+            
+            // Re-enable button
+            submitBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text(originalText);
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'An error occurred', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+
+// Main Promotion Form (Selected Students)
+$('#promotion-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    // Check if any students are selected
+    const selectedCount = $('.student-checkbox:checked').length;
+    if (selectedCount === 0) {
+        showNotification('Please select at least one student to promote.', 'warning');
+        return;
+    }
     
     const form = $(this);
     const submitBtn = form.find('button[type="submit"]');
     const spinner = submitBtn.find('.spinner-border');
+    const btnText = submitBtn.find('.btn-text');
     
-    // Show loading
-    $('#loadingOverlay').addClass('show');
+    // Store original button text
+    const originalText = btnText.text();
+    
+    // Disable button and show spinner
     submitBtn.prop('disabled', true);
     spinner.removeClass('d-none');
+    btnText.text('Processing...');
+    $('#loadingOverlay').addClass('show');
     
     $.ajax({
         url: form.attr('action'),
@@ -1139,19 +1376,60 @@ $('#promotion-form, #single-promote-form, #bulk-promote-form').on('submit', func
         success: function(data) {
             $('#loadingOverlay').removeClass('show');
             
-            // Close modals if open
-            $('#singlePromoteModal, #bulkPromoteModal').modal('hide');
+            // Show notification based on response type
+            if (data.message_type === 'success') {
+                showNotification(data.message, 'success');
+            } else if (data.message_type === 'warning') {
+                showNotification(data.message, 'warning');
+            } else {
+                showNotification(data.message, 'error');
+            }
             
-            showNotification(data.message, 'success');
+            // Show details of promoted/failed students
+            if (data.promoted_students && data.promoted_students.length > 0) {
+                setTimeout(function() {
+                    const promotedNames = data.promoted_students.map(s => s.name).join(', ');
+                    showNotification(`✅ Promoted: ${promotedNames}`, 'success');
+                }, 200);
+            }
             
-            setTimeout(function() {
-                location.reload();
-            }, 1500);
+            if (data.failed_students && data.failed_students.length > 0) {
+                data.failed_students.forEach(function(failed, index) {
+                    setTimeout(function() {
+                        const errorMsg = `❌ ${failed.name}: ${failed.errors.join(', ')}`;
+                        showNotification(errorMsg, 'error');
+                    }, 300 + (index * 200));
+                });
+            }
+            
+            // Show warnings
+            if (data.warnings && data.warnings.length > 0) {
+                data.warnings.forEach(function(warning, index) {
+                    setTimeout(function() {
+                        showNotification(warning, 'warning');
+                    }, 400 + (index * 200));
+                });
+            }
+            
+            // Re-enable button
+            submitBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text(originalText);
+            
+            // Only reload if the response indicates we should
+            if (data.reload === true) {
+                setTimeout(function() {
+                    window.location.reload();
+                }, 3000);
+            }
         },
         error: function(xhr) {
             $('#loadingOverlay').removeClass('show');
+            
+            // Re-enable button
             submitBtn.prop('disabled', false);
             spinner.addClass('d-none');
+            btnText.text(originalText);
             
             try {
                 const response = JSON.parse(xhr.responseText);
@@ -1162,20 +1440,25 @@ $('#promotion-form, #single-promote-form, #bulk-promote-form').on('submit', func
         }
     });
 });
-
 // ============================================
-// NOTIFICATION SYSTEM
+// NOTIFICATION SYSTEM WITH ENHANCED STYLES
 // ============================================
 
 function showNotification(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
     toast.innerHTML = `
         <div class="toast-icon ${type}">
-            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+            <i class="bi bi-${icon}"></i>
         </div>
         <div class="flex-grow-1">
-            <div class="fw-semibold">${message}</div>
+            <div class="fw-semibold">${escapeHtml(message)}</div>
         </div>
         <button class="btn-close" onclick="this.parentElement.remove()"></button>
     `;
@@ -1187,9 +1470,42 @@ function showNotification(message, type = 'success') {
         document.body.appendChild(toast);
     }
     
+    // Auto-remove after 5 seconds
     setTimeout(() => {
-        toast.remove();
+        if (toast.parentElement) {
+            toast.remove();
+        }
     }, 5000);
+}
+
+// Helper function to escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// MODAL CLEANUP ON CLOSE
+// ============================================
+
+$('#singlePromoteModal, #bulkPromoteModal').on('hidden.bs.modal', function() {
+    activeModal = null;
+    // Reset any form errors or alerts
+    $(this).find('.alert').remove();
+    $(this).find('.is-invalid').removeClass('is-invalid');
+});
+
+// ============================================
+// LOADING OVERLAY FUNCTIONS
+// ============================================
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
 }
 </script>
 {% endblock %}

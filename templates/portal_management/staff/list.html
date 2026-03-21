@@ -1,91 +1,1282 @@
+<!-- templates/portal_management/hr/staff/list.html -->
 {% extends 'portal_management/base.html' %}
-{% block title %}Staff — {{ SCHOOL_NAME }}{% endblock %}
-{% block page_title %}Staff{% endblock %}
+{% load static %}
+
+{% block title %}Staff Management — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.with-user { background: var(--success-light); color: var(--success); }
+    .stat-icon.without-user { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.permanent { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        min-width: 70px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        flex-shrink: 0;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+        width: 100%;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gray-400) var(--gray-200);
+    }
+
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--gray-400);
+        border-radius: var(--radius-full);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        background-color: white;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    /* Staff Avatar */
+    .staff-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .staff-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 200px;
+    }
+
+    .staff-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .staff-id {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        font-family: 'Courier New', monospace;
+        white-space: nowrap;
+    }
+
+    /* Badges */
+    .badge-permanent {
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-contract {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-part-time {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-temporary {
+        background: var(--danger-light);
+        color: var(--danger);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .user-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    .user-badge.has-user {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .user-badge.no-user {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .page-link {
+        border-radius: var(--radius-md);
+        margin: 0 0.25rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .page-link:hover {
+        background-color: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .staff-info {
+            min-width: 180px;
+        }
+        
+        .staff-name {
+            white-space: normal;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="dt-card">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h6 class="mb-0 fw-semibold"><i class="bi bi-person-badge me-2 text-primary"></i>All Staff</h6>
-    <div class="d-flex gap-2">
-      <a href="{% url 'management:staff_role_list' %}" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-tags me-1"></i>Manage Roles
-      </a>
-      <a href="{% url 'management:staff_create' %}" class="btn btn-sm btn-primary">
-        <i class="bi bi-plus-lg me-1"></i>Add Staff
-      </a>
-    </div>
-  </div>
-  <div class="table-responsive">
-    <table id="staffTable" class="table table-hover align-middle w-100">
-      <thead class="table-light">
-        <tr>
-          <th>Employee ID</th>
-          <th>Full Name</th>
-          <th>Phone</th>
-          <th>Employment Type</th>
-          <th>Active Roles</th>
-          <th>System Access</th>
-          <th width="100">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in staff_list %}
-        <tr>
-          <td><code>{{ s.employee_id|default:"—" }}</code></td>
-          <td>{{ s.get_full_name }}</td>
-          <td>{{ s.phone_number|default:"—" }}</td>
-          <td>
-            <span class="badge bg-{% if s.employment_type == 'permanent' %}success{% elif s.employment_type == 'contract' %}warning text-dark{% else %}secondary{% endif %}">
-              {{ s.get_employment_type_display }}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-people-fill me-2"></i>
+                Staff Management
+            </h1>
+            <p class="mb-0">Manage school staff, teachers, and administrators</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-people-fill me-2"></i>
+                Total Staff: {{ total_staff }}
             </span>
-          </td>
-          <td>
-            {% for ra in s.role_assignments.all %}
-              {% if ra.is_active %}
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">{{ ra.role.name }}</span>
-              {% endif %}
-            {% endfor %}
-          </td>
-          <td>
-            {% if s.user %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle">
-                <i class="bi bi-check-circle me-1"></i>{{ s.user.username }}
-              </span>
-            {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border">No Login</span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="stat-value">{{ total_staff }}</div>
+        <div class="stat-label">Total Staff</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon with-user">
+            <i class="bi bi-person-check-fill"></i>
+        </div>
+        <div class="stat-value">{{ with_user_account }}</div>
+        <div class="stat-label">With User Account</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon without-user">
+            <i class="bi bi-person-x-fill"></i>
+        </div>
+        <div class="stat-value">{{ without_user_account }}</div>
+        <div class="stat-label">Without User Account</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon permanent">
+            <i class="bi bi-briefcase-fill"></i>
+        </div>
+        <div class="stat-value">{{ permanent_staff }}</div>
+        <div class="stat-label">Permanent Staff</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="search" class="filter-label">Search</label>
+                <input type="text" class="filter-input" id="search" name="search" 
+                       placeholder="Name, employee ID, or phone number..." 
+                       value="{{ search_query }}">
+            </div>
+            
+            <div class="filter-group">
+                <label for="employment_type" class="filter-label">Employment Type</label>
+                <select name="employment_type" id="employment_type" class="filter-select select2-filter">
+                    <option value="">All Types</option>
+                    {% for type_code, type_name in employment_type_choices %}
+                    <option value="{{ type_code }}" {% if selected_employment_type == type_code %}selected{% endif %}>
+                        {{ type_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="gender" class="filter-label">Gender</label>
+                <select name="gender" id="gender" class="filter-select select2-filter">
+                    <option value="">All Genders</option>
+                    {% for gender_code, gender_name in gender_choices %}
+                    <option value="{{ gender_code }}" {% if selected_gender == gender_code %}selected{% endif %}>
+                        {{ gender_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="department" class="filter-label">Department</label>
+                <select name="department" id="department" class="filter-select select2-filter">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.pk }}" {% if selected_department == dept.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ dept.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="has_user" class="filter-label">User Account</label>
+                <select name="has_user" id="has_user" class="filter-select select2-filter">
+                    <option value="">All</option>
+                    <option value="yes" {% if selected_has_user == 'yes' %}selected{% endif %}>Has User Account</option>
+                    <option value="no" {% if selected_has_user == 'no' %}selected{% endif %}>No User Account</option>
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1" id="apply-filters">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:staff_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Staff List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            Staff Members
+        </h5>
+        <a href="{% url 'management:staff_create' %}" class="btn-add">
+            <i class="bi bi-plus-lg"></i>
+            <span>New Staff Member</span>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="staffTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>Employee ID</th>
+                    <th>Employment Type</th>
+                    <th>Department</th>
+                    <th>Phone</th>
+                    <th>User Account</th>
+                    <th>Actions</th>
+                </thead>
+            <tbody>
+                {% for staff in staff_members %}
+                <tr id="staff-row-{{ staff.pk }}">
+                    <td>
+                        <div class="staff-info">
+                            <div class="staff-avatar">
+                                {{ staff.first_name|first|upper }}{{ staff.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="staff-name">{{ staff.get_full_name }}</div>
+                                {% if staff.gender %}
+                                <div class="staff-id">
+                                    <i class="bi bi-gender-{% if staff.gender == 'male' %}male{% else %}female{% endif %}"></i>
+                                    {{ staff.get_gender_display }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="staff-id">{{ staff.employee_id|default:"—" }}</span>
+                    </td>
+                    <td>
+                        {% if staff.employment_type == 'permanent' %}
+                        <span class="badge-permanent"><i class="bi bi-check-circle"></i> Permanent</span>
+                        {% elif staff.employment_type == 'contract' %}
+                        <span class="badge-contract"><i class="bi bi-file-text"></i> Contract</span>
+                        {% elif staff.employment_type == 'part_time' %}
+                        <span class="badge-part-time"><i class="bi bi-clock"></i> Part Time</span>
+                        {% elif staff.employment_type == 'temporary' %}
+                        <span class="badge-temporary"><i class="bi bi-hourglass"></i> Temporary</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% with dept=staff.department_assignments.filter.is_active.first %}
+                            {% if dept %}
+                            <span class="badge bg-info bg-opacity-10 text-info px-2 py-1 rounded-pill">
+                                <i class="bi bi-building"></i> {{ dept.department.name }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% if staff.phone_number %}
+                        <span class="text-muted">
+                            <i class="bi bi-telephone"></i> {{ staff.phone_number }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if staff.user %}
+                        <span class="user-badge has-user">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="user-badge no-user">
+                            <i class="bi bi-x-circle"></i>
+                            No Account
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- View Details Button -->
+                            <a href="{% url 'management:staff_detail' staff.pk %}" 
+                               class="btn-action view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <!-- Edit Button -->
+                            <a href="{% url 'management:staff_update' staff.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete"
+                                    onclick="showDeleteModal({{ staff.pk }}, '{{ staff.get_full_name|escapejs }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5 class="text-muted mb-2">No staff members found</h5>
+                            <p class="text-muted mb-3">
+                                {% if search_query or selected_employment_type or selected_gender or selected_department or selected_has_user %}
+                                    Try adjusting your search filters or
+                                {% endif %}
+                                add your first staff member
+                            </p>
+                            <a href="{% url 'management:staff_create' %}" class="btn-add">
+                                <i class="bi bi-plus-lg"></i>
+                                Add Staff Member
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ previous_page }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_employment_type %}&employment_type={{ selected_employment_type }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_has_user %}&has_user={{ selected_has_user }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
             {% endif %}
-          </td>
-          <td>
-            <a href="{% url 'management:staff_detail' s.pk %}" class="btn btn-sm btn-outline-primary" title="View">
-              <i class="bi bi-eye"></i>
-            </a>
-            <a href="{% url 'management:staff_update' s.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit">
-              <i class="bi bi-pencil"></i>
-            </a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="7" class="text-center text-muted py-4">No staff found.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+            
+            {% for page_num in total_pages|make_list %}
+                {% if forloop.counter == current_page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ current_page }}</span>
+                </li>
+                {% elif forloop.counter <= 5 or forloop.counter > total_pages|add:-5 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ forloop.counter }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_employment_type %}&employment_type={{ selected_employment_type }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_has_user %}&has_user={{ selected_has_user }}{% endif %}">
+                        {{ forloop.counter }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ next_page }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_employment_type %}&employment_type={{ selected_employment_type }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_has_user %}&has_user={{ selected_has_user }}{% endif %}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the staff member <strong id="delete-staff-name"></strong>?</p>
+                    
+                    <div id="delete-warning-dependencies" class="alert alert-warning mt-3" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This staff member has active assignments. 
+                        Deleting will also remove these associations.
+                    </div>
+                    
+                    <div id="delete-warning-no-dependencies" class="alert alert-danger mt-3" style="display: none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Staff Member</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let staffToDelete = null;
+
 $(document).ready(function () {
-    $('#staffTable').DataTable({
-        buttons: [
-            { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel', className: 'btn btn-sm btn-outline-success' },
-            { extend: 'print', text: '<i class="bi bi-printer me-1"></i>Print', className: 'btn btn-sm btn-outline-secondary' },
-        ],
-        dom: "<'row mb-2'<'col-md-6'B><'col-md-6'f>>" +
-             "<'row'<'col-sm-12'tr>>" +
-             "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
-        columnDefs: [{ orderable: false, targets: -1 }],
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR FILTERS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function() {
+            return $(this).data('placeholder') || 'Select option';
+        }
+    });
+
+    // ============================================
+    // FILTER FORM SUBMIT - ONLY ON BUTTON CLICK
+    // ============================================
+    $('#apply-filters').on('click', function(e) {
+        e.preventDefault();
+        
+        // Show loading indicator
+        $('#loadingOverlay').addClass('show');
+        
+        // Get form data
+        const form = $('#filter-form');
+        const formData = form.serialize();
+        
+        // Submit the form
+        window.location.href = `${window.location.pathname}?${formData}`;
+    });
+
+    // ============================================
+    // ENTER KEY IN SEARCH FIELD - SUBMIT FILTERS
+    // ============================================
+    $('#search').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#apply-filters').click();
+        }
     });
 });
+
+// ============================================
+// DELETE STAFF FUNCTIONS
+// ============================================
+
+window.showDeleteModal = function(staffId, staffName) {
+    staffToDelete = staffId;
+    $('#delete-staff-name').text(staffName);
+    
+    // Check if staff has dependencies via AJAX
+    $.ajax({
+        url: `/management/hr/staff/${staffId}/check-dependencies/`,
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(data) {
+            if (data.has_dependencies) {
+                $('#delete-warning-dependencies').show();
+                $('#delete-warning-no-dependencies').hide();
+                $('#delete-warning-dependencies').html(`
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This staff member has ${data.dependencies.length} active assignment(s): ${data.dependencies.join(', ')}. 
+                    Deleting will also remove these associations.
+                `);
+            } else {
+                $('#delete-warning-dependencies').hide();
+                $('#delete-warning-no-dependencies').show();
+            }
+            
+            // Set form action URL
+            $('#delete-form').attr('action', `/management/hr/staff/${staffId}/delete/`);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        },
+        error: function() {
+            // If AJAX fails, show generic warning
+            $('#delete-warning-dependencies').hide();
+            $('#delete-warning-no-dependencies').show();
+            $('#delete-form').attr('action', `/management/hr/staff/${staffId}/delete/`);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    });
+};
+
+$('#delete-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deleteBtn = $('#confirm-delete-btn');
+    const spinner = deleteBtn.find('.spinner-border');
+    const btnText = deleteBtn.find('.btn-text');
+    
+    deleteBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deleting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:staff_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deleteBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Delete Staff Member');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deleting staff member', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deleteModal').on('hidden.bs.modal', function() {
+    const deleteBtn = $('#confirm-delete-btn');
+    deleteBtn.prop('disabled', false);
+    deleteBtn.find('.spinner-border').addClass('d-none');
+    deleteBtn.find('.btn-text').text('Delete Staff Member');
+    staffToDelete = null;
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
 </script>
 {% endblock %}

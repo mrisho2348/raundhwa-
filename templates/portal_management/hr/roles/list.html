@@ -1,0 +1,1172 @@
+<!-- templates/portal_management/hr/roles/list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Staff Roles — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Roles{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF ROLE MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.with-group { background: var(--success-light); color: var(--success); }
+    .stat-icon.without-group { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        min-width: 70px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        flex-shrink: 0;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+        width: 100%;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gray-400) var(--gray-200);
+    }
+
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--gray-400);
+        border-radius: var(--radius-full);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        background-color: white;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    /* Role Badges */
+    .role-badge {
+        display: inline-block;
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .portal-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .portal-badge.management { background: var(--primary-light); color: var(--primary); }
+    .portal-badge.academic { background: var(--success-light); color: var(--success); }
+    .portal-badge.administration { background: var(--info-light); color: var(--info); }
+    .portal-badge.finance { background: var(--warning-light); color: var(--warning); }
+    .portal-badge.transport { background: #e6f7ff; color: #0891b2; }
+    .portal-badge.library { background: #f3e8ff; color: #7c3aed; }
+    .portal-badge.health { background: #fee2e2; color: #dc2626; }
+    .portal-badge.none { background: var(--gray-100); color: var(--gray-600); }
+
+    .group-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--gray-100);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+    }
+
+    .group-badge.has-group {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .group-badge.no-group {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .description-preview {
+        max-width: 300px;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.4;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .page-link {
+        border-radius: var(--radius-md);
+        margin: 0 0.25rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .page-link:hover {
+        background-color: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .description-preview {
+            max-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-tag-fill me-2"></i>
+                Staff Roles
+            </h1>
+            <p class="mb-0">Manage staff roles and their portal access permissions</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-tag-fill me-2"></i>
+                Total Roles: {{ total_roles }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-tag-fill"></i>
+        </div>
+        <div class="stat-value">{{ total_roles }}</div>
+        <div class="stat-label">Total Roles</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon with-group">
+            <i class="bi bi-diagram-3"></i>
+        </div>
+        <div class="stat-value">{{ with_group }}</div>
+        <div class="stat-label">With Permission Group</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon without-group">
+            <i class="bi bi-diagram-3"></i>
+        </div>
+        <div class="stat-value">{{ without_group }}</div>
+        <div class="stat-label">Without Permission Group</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="search" class="filter-label">Search Roles</label>
+                <input type="text" class="filter-input" id="search" name="search" 
+                       placeholder="Role name or description..." 
+                       value="{{ search_query }}">
+            </div>
+            
+            <div class="filter-group">
+                <label for="portal_category" class="filter-label">Portal Category</label>
+                <select name="portal_category" id="portal_category" class="filter-select select2-filter">
+                    <option value="">All Portals</option>
+                    {% for portal_code, portal_name in portal_choices %}
+                    <option value="{{ portal_code }}" {% if selected_portal_category == portal_code %}selected{% endif %}>
+                        {{ portal_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="has_group" class="filter-label">Permission Group</label>
+                <select name="has_group" id="has_group" class="filter-select select2-filter">
+                    <option value="">All</option>
+                    <option value="yes" {% if selected_has_group == 'yes' %}selected{% endif %}>Has Group</option>
+                    <option value="no" {% if selected_has_group == 'no' %}selected{% endif %}>No Group</option>
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1" id="apply-filters">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:staff_role_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Staff Roles List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            Staff Roles
+        </h5>
+        <a href="{% url 'management:staff_role_create' %}" class="btn-add">
+            <i class="bi bi-plus-lg"></i>
+            <span>New Role</span>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="rolesTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Role Name</th>
+                    <th>Portal Category</th>
+                    <th>Description</th>
+                    <th>Permission Group</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                 </thead>
+            <tbody>
+                {% for role in roles %}
+                <tr id="role-row-{{ role.pk }}">
+                    <td>
+                        <div class="fw-semibold">{{ role.name }}</div>
+                    </td>
+                    <td>
+                        <span class="portal-badge {{ role.portal_category }}">
+                            <i class="bi bi-{% if role.portal_category == 'management' %}shield{% elif role.portal_category == 'academic' %}book{% elif role.portal_category == 'administration' %}building{% elif role.portal_category == 'finance' %}cash{% elif role.portal_category == 'transport' %}truck{% elif role.portal_category == 'library' %}book{% elif role.portal_category == 'health' %}heart{% else %}slash-circle{% endif %}"></i>
+                            {{ role.get_portal_category_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="description-preview">
+                            {{ role.description|truncatechars:100|default:"—" }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if role.group %}
+                        <span class="group-badge has-group">
+                            <i class="bi bi-check-circle-fill"></i>
+                            {{ role.group.name }}
+                        </span>
+                        {% else %}
+                        <span class="group-badge no-group">
+                            <i class="bi bi-x-circle"></i>
+                            No Group
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="text-muted" title="{{ role.created_at|date:"F d, Y H:i" }}">
+                            {{ role.created_at|date:"M d, Y" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- View Details Button -->
+                            <a href="{% url 'management:staff_role_detail' role.pk %}" 
+                               class="btn-action view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <!-- Edit Button -->
+                            <a href="{% url 'management:staff_role_update' role.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete"
+                                    onclick="showDeleteModal({{ role.pk }}, '{{ role.name|escapejs }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-tag"></i>
+                            </div>
+                            <h5 class="text-muted mb-2">No staff roles found</h5>
+                            <p class="text-muted mb-3">
+                                {% if search_query or selected_portal_category or selected_has_group %}
+                                    Try adjusting your search filters or
+                                {% endif %}
+                                create your first staff role
+                            </p>
+                            <a href="{% url 'management:staff_role_create' %}" class="btn-add">
+                                <i class="bi bi-plus-lg"></i>
+                                Create Role
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ previous_page }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_portal_category %}&portal_category={{ selected_portal_category }}{% endif %}{% if selected_has_group %}&has_group={{ selected_has_group }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in total_pages|make_list %}
+                {% if forloop.counter == current_page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ current_page }}</span>
+                </li>
+                {% elif forloop.counter <= 5 or forloop.counter > total_pages|add:-5 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ forloop.counter }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_portal_category %}&portal_category={{ selected_portal_category }}{% endif %}{% if selected_has_group %}&has_group={{ selected_has_group }}{% endif %}">
+                        {{ forloop.counter }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ next_page }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_portal_category %}&portal_category={{ selected_portal_category }}{% endif %}{% if selected_has_group %}&has_group={{ selected_has_group }}{% endif %}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the staff role <strong id="delete-role-name"></strong>?</p>
+                    
+                    <div id="delete-warning-dependencies" class="alert alert-warning mt-3" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This role has active staff assignments. 
+                        Deleting it will also remove these assignments.
+                    </div>
+                    
+                    <div id="delete-warning-no-dependencies" class="alert alert-danger mt-3" style="display: none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Role</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let roleToDelete = null;
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR FILTERS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function() {
+            return $(this).data('placeholder') || 'Select option';
+        }
+    });
+
+    // ============================================
+    // FILTER FORM SUBMIT - ONLY ON BUTTON CLICK
+    // ============================================
+    $('#apply-filters').on('click', function(e) {
+        e.preventDefault();
+        
+        // Show loading indicator
+        $('#loadingOverlay').addClass('show');
+        
+        // Get form data
+        const form = $('#filter-form');
+        const formData = form.serialize();
+        
+        // Submit the form
+        window.location.href = `${window.location.pathname}?${formData}`;
+    });
+
+    // ============================================
+    // ENTER KEY IN SEARCH FIELD - SUBMIT FILTERS
+    // ============================================
+    $('#search').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#apply-filters').click();
+        }
+    });
+});
+
+// ============================================
+// DELETE ROLE FUNCTIONS
+// ============================================
+
+window.showDeleteModal = function(roleId, roleName) {
+    roleToDelete = roleId;
+    $('#delete-role-name').text(roleName);
+    
+    // Check if role has dependencies via AJAX
+    $.ajax({
+        url: `/management/staff-roles/${roleId}/check-dependencies/`,
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(data) {
+            if (data.has_dependencies) {
+                $('#delete-warning-dependencies').show();
+                $('#delete-warning-no-dependencies').hide();
+                $('#delete-warning-dependencies').html(`
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This role has ${data.dependencies.length} active staff assignment(s): ${data.dependencies.join(', ')}. 
+                    Deleting it will also remove these assignments.
+                `);
+            } else {
+                $('#delete-warning-dependencies').hide();
+                $('#delete-warning-no-dependencies').show();
+            }
+            
+            // Set form action URL
+            $('#delete-form').attr('action', `/management/staff-roles/${roleId}/delete/`);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        },
+        error: function() {
+            // If AJAX fails, show generic warning
+            $('#delete-warning-dependencies').hide();
+            $('#delete-warning-no-dependencies').show();
+            $('#delete-form').attr('action', `/management/staff-roles/${roleId}/delete/`);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    });
+};
+
+$('#delete-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deleteBtn = $('#confirm-delete-btn');
+    const spinner = deleteBtn.find('.spinner-border');
+    const btnText = deleteBtn.find('.btn-text');
+    
+    deleteBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deleting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:staff_role_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deleteBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Delete Role');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deleting role', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deleteModal').on('hidden.bs.modal', function() {
+    const deleteBtn = $('#confirm-delete-btn');
+    deleteBtn.prop('disabled', false);
+    deleteBtn.find('.spinner-border').addClass('d-none');
+    deleteBtn.find('.btn-text').text('Delete Role');
+    roleToDelete = null;
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

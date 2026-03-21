@@ -1,0 +1,1502 @@
+<!-- templates/portal_management/hr/leaves/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Leave Details — {{ leave.staff.get_full_name }} - {{ leave.get_leave_type_display }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Leave Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF LEAVE DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Consolidated Action Bar */
+    .action-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .action-group-divider {
+        width: 1px;
+        height: 30px;
+        background: var(--gray-300);
+        margin: 0 0.5rem;
+    }
+
+    /* Button Styles - Improved Hierarchy */
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-secondary-outline {
+        background: transparent;
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-300);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-secondary-outline:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-400);
+        transform: translateY(-2px);
+    }
+
+    .btn-warning-custom {
+        background: var(--warning);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-warning-custom:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-success-custom {
+        background: var(--success);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-success-custom:hover {
+        background: #0f7b3a;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger-outline {
+        background: transparent;
+        color: var(--danger);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--danger);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-danger-outline:hover {
+        background: var(--danger-light);
+        transform: translateY(-2px);
+    }
+
+    /* Leave Header Card */
+    .leave-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .leave-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-2xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .leave-info {
+        flex: 1;
+    }
+
+    .leave-info h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .leave-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .meta-item i {
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon.duration { background: var(--info-light); color: var(--info); }
+    .stat-icon.created { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.updated { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.leaves { background: var(--success-light); color: var(--success); }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-sub {
+        font-size: 0.75rem;
+        color: var(--gray-400);
+        margin-top: 0.5rem;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Info Rows */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* Staff Card */
+    .staff-card {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .staff-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    /* Badges */
+    .leave-type-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .leave-type-badge.annual { background: var(--info-light); color: var(--info); }
+    .leave-type-badge.sick { background: var(--success-light); color: var(--success); }
+    .leave-type-badge.maternity { background: var(--warning-light); color: var(--warning); }
+    .leave-type-badge.paternity { background: var(--primary-light); color: var(--primary); }
+    .leave-type-badge.study { background: var(--info-light); color: var(--info); }
+    .leave-type-badge.compassionate { background: var(--danger-light); color: var(--danger); }
+    .leave-type-badge.unpaid { background: var(--gray-100); color: var(--gray-600); }
+    .leave-type-badge.other { background: var(--gray-100); color: var(--gray-600); }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-badge.pending {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .status-badge.approved {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.rejected {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .status-badge.cancelled {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    .duration-badge {
+        display: inline-block;
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+    }
+
+    /* Leave History Table */
+    .history-table {
+        margin-top: 1rem;
+    }
+
+    .history-table .table {
+        margin-bottom: 0;
+    }
+
+    .history-table .table td {
+        padding: 0.75rem;
+        vertical-align: middle;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .leave-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .leave-meta {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-group {
+            justify-content: center;
+        }
+
+        .action-group-divider {
+            display: none;
+        }
+
+        .btn-primary-custom, 
+        .btn-secondary-outline, 
+        .btn-warning-custom,
+        .btn-success-custom,
+        .btn-danger-outline {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .history-table {
+            overflow-x: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-calendar-check me-2"></i>
+                Leave Details
+            </h1>
+            <p class="mb-0">View and manage staff leave application details</p>
+        </div>
+        <div>
+            <a href="{% url 'management:staff_leave_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Leaves
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Consolidated Action Bar -->
+<div class="action-bar">
+    <div class="action-group">
+        {% if leave.status == 'pending' %}
+        <a href="{% url 'management:staff_leave_update' leave.pk %}" class="btn-warning-custom">
+            <i class="bi bi-pencil"></i>
+            Edit Application
+        </a>
+        {% endif %}
+        <a href="{% url 'management:staff_detail' leave.staff.pk %}" class="btn-secondary-outline">
+            <i class="bi bi-person"></i>
+            View Staff Profile
+        </a>
+        <a href="{% url 'management:staff_leave_create' %}" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i>
+            New Application
+        </a>
+    </div>
+    <div class="action-group">
+        <div class="action-group-divider"></div>
+        {% if leave.status == 'pending' %}
+        <button type="button" class="btn-success-custom" onclick="approveLeave()">
+            <i class="bi bi-check-circle"></i>
+            Approve
+        </button>
+        <button type="button" class="btn-danger-outline" onclick="rejectLeave()">
+            <i class="bi bi-x-circle"></i>
+            Reject
+        </button>
+        <button type="button" class="btn-danger-outline" onclick="cancelLeave()">
+            <i class="bi bi-ban"></i>
+            Cancel
+        </button>
+        {% endif %}
+        {% if leave.status != 'approved' or leave.start_date > today %}
+        <button type="button" class="btn-danger-outline" onclick="showDeleteModal()">
+            <i class="bi bi-trash"></i>
+            Delete
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Leave Header Card -->
+<div class="leave-header-card">
+    <div class="leave-icon">
+        <i class="bi bi-{% if leave.leave_type == 'annual' %}calendar-check{% elif leave.leave_type == 'sick' %}heart-pulse{% elif leave.leave_type == 'maternity' %}baby{% elif leave.leave_type == 'paternity' %}person-standing{% elif leave.leave_type == 'study' %}book{% elif leave.leave_type == 'compassionate' %}heart{% else %}calendar{% endif %}"></i>
+    </div>
+    <div class="leave-info">
+        <h2>
+            {{ leave.staff.get_full_name }}
+            <span class="status-badge {{ leave.status }}">
+                <i class="bi bi-{% if leave.status == 'pending' %}hourglass-split{% elif leave.status == 'approved' %}check-circle-fill{% elif leave.status == 'rejected' %}x-circle-fill{% else %}ban{% endif %}"></i>
+                {{ leave.get_status_display }}
+            </span>
+        </h2>
+        <div class="leave-meta">
+            <div class="meta-item">
+                <i class="bi bi-tag-fill"></i>
+                <span class="leave-type-badge {{ leave.leave_type }}">
+                    {{ leave.get_leave_type_display }}
+                </span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-range"></i>
+                <span>{{ leave.start_date|date:"M d, Y" }} → {{ leave.end_date|date:"M d, Y" }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-clock"></i>
+                <span class="duration-badge">{{ duration }} day{{ duration|pluralize }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-plus"></i>
+                <span>Applied: {{ leave.created_at|date:"M d, Y" }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>Updated: {{ leave.updated_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        {% if leave.status == 'approved' and leave.reviewed_by %}
+        <div class="alert alert-success mt-3 mb-0">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Approved by:</strong> {{ leave.reviewed_by.get_full_name }} on {{ leave.reviewed_at|date:"F d, Y H:i" }}
+            {% if leave.review_remarks %}
+            <br><strong>Remarks:</strong> {{ leave.review_remarks }}
+            {% endif %}
+        </div>
+        {% elif leave.status == 'rejected' and leave.reviewed_by %}
+        <div class="alert alert-danger mt-3 mb-0">
+            <i class="bi bi-x-circle-fill me-2"></i>
+            <strong>Rejected by:</strong> {{ leave.reviewed_by.get_full_name }} on {{ leave.reviewed_at|date:"F d, Y H:i" }}
+            {% if leave.review_remarks %}
+            <br><strong>Reason:</strong> {{ leave.review_remarks }}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon duration">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ duration }}</div>
+        <div class="stat-label">Duration</div>
+        <div class="stat-sub">{{ duration }} day{{ duration|pluralize }} total</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon created">
+                <i class="bi bi-calendar-plus"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ leave.created_at|date:"M d, Y" }}</div>
+        <div class="stat-label">Applied Date</div>
+        <div class="stat-sub">{{ leave.created_at|timesince }} ago</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon updated">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ leave.updated_at|date:"M d, Y" }}</div>
+        <div class="stat-label">Last Updated</div>
+        <div class="stat-sub">{{ leave.updated_at|timesince }} ago</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon leaves">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ staff_stats.total_leaves|default:0 }}</div>
+        <div class="stat-label">Total Leaves</div>
+        <div class="stat-sub">{{ staff_stats.total_days|default:0 }} days total</div>
+    </div>
+</div>
+
+<!-- Staff Information Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-person-circle"></i>
+            Staff Information
+        </h5>
+    </div>
+    
+    <div class="staff-card">
+        <div class="staff-avatar">
+            {{ leave.staff.first_name|first|upper }}{{ leave.staff.last_name|first|upper }}
+        </div>
+        <div>
+            <h5 class="mb-1">{{ leave.staff.get_full_name }}</h5>
+            <div class="text-muted small">
+                <i class="bi bi-upc-scan"></i> {{ leave.staff.employee_id }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-grid">
+        <div class="info-row">
+            <span class="info-label">Phone Number</span>
+            <span class="info-value">{{ leave.staff.phone_number|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ leave.staff.user.email|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Employment Type</span>
+            <span class="info-value">{{ leave.staff.get_employment_type_display }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Joining Date</span>
+            <span class="info-value">{{ leave.staff.joining_date|date:"M d, Y"|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Pending Applications</span>
+            <span class="info-value">
+                {% if pending_count > 0 %}
+                <span class="badge bg-warning">{{ pending_count }} pending</span>
+                {% else %}
+                <span class="text-muted">No pending applications</span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Details Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-info-circle"></i>
+            Leave Details
+        </h5>
+    </div>
+    
+    <div class="info-grid">
+        <div class="info-row">
+            <span class="info-label">Application ID</span>
+            <span class="info-value">{{ leave.pk }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Leave Type</span>
+            <span class="info-value">{{ leave.get_leave_type_display }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Start Date</span>
+            <span class="info-value">{{ leave.start_date|date:"l, F d, Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">End Date</span>
+            <span class="info-value">{{ leave.end_date|date:"l, F d, Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Duration</span>
+            <span class="info-value">{{ duration }} day{{ duration|pluralize }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Current Status</span>
+            <span class="info-value">
+                <span class="status-badge {{ leave.status }}">
+                    {{ leave.get_status_display }}
+                </span>
+            </span>
+        </div>
+        {% if leave.substitute %}
+        <div class="info-row">
+            <span class="info-label">Substitute</span>
+            <span class="info-value">
+                {{ leave.substitute.get_full_name }}
+                <small class="text-muted">({{ leave.substitute.employee_id }})</small>
+            </span>
+        </div>
+        {% endif %}
+        <div class="info-row">
+            <span class="info-label">Leave Status</span>
+            <span class="info-value">
+                {% if is_active_leave %}
+                <span class="text-success"><i class="bi bi-play-circle-fill"></i> Currently Active</span>
+                {% elif is_upcoming %}
+                <span class="text-info"><i class="bi bi-calendar-week"></i> Upcoming</span>
+                {% elif is_completed %}
+                <span class="text-muted"><i class="bi bi-check-circle"></i> Completed</span>
+                {% else %}
+                <span class="text-muted">Not started</span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Reason Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-chat-text"></i>
+            Reason for Leave
+        </h5>
+    </div>
+    <div class="info-value" style="white-space: pre-wrap; line-height: 1.6;">
+        {{ leave.reason|linebreaks }}
+    </div>
+</div>
+
+<!-- Staff Leave History -->
+{% if staff_leaves %}
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-clock-history"></i>
+            Leave History for {{ leave.staff.first_name }}
+        </h5>
+        <div class="action-buttons">
+            <a href="{% url 'management:staff_leave_list' %}?staff={{ leave.staff.pk }}" class="btn-secondary-outline">
+                <i class="bi bi-search"></i>
+                View All
+            </a>
+        </div>
+    </div>
+    
+    <div class="history-table">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Leave Type</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                 </thead>
+            <tbody>
+                {% for history in staff_leaves %}
+                <tr>
+                     <td class="date-range">
+                        <i class="bi bi-calendar-check"></i>
+                        {{ history.start_date|date:"M d, Y" }}
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        {{ history.end_date|date:"M d, Y" }}
+                     </div>
+                     <td>
+                        <span class="leave-type-badge {{ history.leave_type }}">
+                            {{ history.get_leave_type_display }}
+                        </span>
+                     </div>
+                     <td>
+                        <span class="duration-badge">{{ history.duration_days }} day{{ history.duration_days|pluralize }}</span>
+                     </div>
+                     <td>
+                        <span class="status-badge {{ history.status }}">
+                            {{ history.get_status_display }}
+                        </span>
+                     </div>
+                     <td>
+                        <a href="{% url 'management:staff_leave_detail' history.pk %}" class="btn-action view" title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                     </div>
+                  </tr>
+                {% endfor %}
+            </tbody>
+         </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Approve Leave Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Approve Leave Application
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="approve-form" method="POST" action="{% url 'management:staff_leave_approve' leave.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to approve the leave application for <strong>{{ leave.staff.get_full_name }}</strong>?</p>
+                    <p><strong>Leave Period:</strong> {{ leave.start_date|date:"M d, Y" }} to {{ leave.end_date|date:"M d, Y" }}<br>
+                    <strong>Duration:</strong> {{ duration }} day{{ duration|pluralize }}</p>
+                    <div class="mb-3">
+                        <label for="approve_remarks" class="form-label">Review Remarks (Optional)</label>
+                        <textarea class="form-control" id="approve_remarks" name="review_remarks" rows="3" 
+                                  placeholder="Add any remarks about this approval..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="confirm-approve-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span class="btn-text">Approve Leave</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Leave Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    Reject Leave Application
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reject-form" method="POST" action="{% url 'management:staff_leave_reject' leave.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to reject the leave application for <strong>{{ leave.staff.get_full_name }}</strong>?</p>
+                    <div class="mb-3">
+                        <label for="reject_remarks" class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="reject_remarks" name="review_remarks" rows="3" required
+                                  placeholder="Please provide a reason for rejecting this leave application..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-reject-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-x-circle me-2"></i>
+                        <span class="btn-text">Reject Leave</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Leave Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-ban me-2"></i>
+                    Cancel Leave Application
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="cancel-form" method="POST" action="{% url 'management:staff_leave_cancel' leave.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to cancel this leave application?</p>
+                    <p><strong>Staff:</strong> {{ leave.staff.get_full_name }}<br>
+                    <strong>Leave Period:</strong> {{ leave.start_date|date:"M d, Y" }} to {{ leave.end_date|date:"M d, Y" }}</p>
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="confirm-cancel-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-ban me-2"></i>
+                        <span class="btn-text">Cancel Leave</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST" action="{% url 'management:staff_leave_delete' leave.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this leave application?</p>
+                    <p><strong>Staff:</strong> {{ leave.staff.get_full_name }}<br>
+                    <strong>Leave Type:</strong> {{ leave.get_leave_type_display }}<br>
+                    <strong>Period:</strong> {{ leave.start_date|date:"M d, Y" }} to {{ leave.end_date|date:"M d, Y" }}</p>
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Application</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+});
+
+// ============================================
+// APPROVE LEAVE FUNCTIONS
+// ============================================
+
+function approveLeave() {
+    const modal = new bootstrap.Modal(document.getElementById('approveModal'));
+    modal.show();
+}
+
+$('#approve-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const approveBtn = $('#confirm-approve-btn');
+    const spinner = approveBtn.find('.spinner-border');
+    const btnText = approveBtn.find('.btn-text');
+    
+    approveBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Approving...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#approveModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.reload();
+            }, 1500);
+        },
+        error: function(xhr) {
+            approveBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Approve Leave');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error approving leave', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#approveModal').on('hidden.bs.modal', function() {
+    const approveBtn = $('#confirm-approve-btn');
+    approveBtn.prop('disabled', false);
+    approveBtn.find('.spinner-border').addClass('d-none');
+    approveBtn.find('.btn-text').text('Approve Leave');
+});
+
+// ============================================
+// REJECT LEAVE FUNCTIONS
+// ============================================
+
+function rejectLeave() {
+    const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    modal.show();
+}
+
+$('#reject-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const rejectBtn = $('#confirm-reject-btn');
+    const spinner = rejectBtn.find('.spinner-border');
+    const btnText = rejectBtn.find('.btn-text');
+    
+    // Validate remarks
+    const remarks = $('#reject_remarks').val().trim();
+    if (!remarks) {
+        showNotification('Please provide a reason for rejection.', 'error');
+        return;
+    }
+    
+    rejectBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Rejecting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#rejectModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.reload();
+            }, 1500);
+        },
+        error: function(xhr) {
+            rejectBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Reject Leave');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error rejecting leave', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#rejectModal').on('hidden.bs.modal', function() {
+    const rejectBtn = $('#confirm-reject-btn');
+    rejectBtn.prop('disabled', false);
+    rejectBtn.find('.spinner-border').addClass('d-none');
+    rejectBtn.find('.btn-text').text('Reject Leave');
+});
+
+// ============================================
+// CANCEL LEAVE FUNCTIONS
+// ============================================
+
+function cancelLeave() {
+    const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    modal.show();
+}
+
+$('#cancel-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const cancelBtn = $('#confirm-cancel-btn');
+    const spinner = cancelBtn.find('.spinner-border');
+    const btnText = cancelBtn.find('.btn-text');
+    
+    cancelBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Cancelling...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#cancelModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.reload();
+            }, 1500);
+        },
+        error: function(xhr) {
+            cancelBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Cancel Leave');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error cancelling leave', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#cancelModal').on('hidden.bs.modal', function() {
+    const cancelBtn = $('#confirm-cancel-btn');
+    cancelBtn.prop('disabled', false);
+    cancelBtn.find('.spinner-border').addClass('d-none');
+    cancelBtn.find('.btn-text').text('Cancel Leave');
+});
+
+// ============================================
+// DELETE FUNCTIONS
+// ============================================
+
+function showDeleteModal() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+$('#delete-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deleteBtn = $('#confirm-delete-btn');
+    const spinner = deleteBtn.find('.spinner-border');
+    const btnText = deleteBtn.find('.btn-text');
+    
+    deleteBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deleting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:staff_leave_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deleteBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Delete Application');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deleting leave', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deleteModal').on('hidden.bs.modal', function() {
+    const deleteBtn = $('#confirm-delete-btn');
+    deleteBtn.prop('disabled', false);
+    deleteBtn.find('.spinner-border').addClass('d-none');
+    deleteBtn.find('.btn-text').text('Delete Application');
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

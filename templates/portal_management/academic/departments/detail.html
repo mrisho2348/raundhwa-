@@ -1,4 +1,4 @@
-<!-- templates/portal_management/academics/departments/detail.html -->
+<!-- templates/portal_management/academic/departments/detail.html -->
 {% extends 'portal_management/base.html' %}
 {% load static %}
 
@@ -8,7 +8,7 @@
 {% block extra_css %}
 <style>
     /* ============================================
-       PREMIUM DEPARTMENT DETAIL STYLES
+       PREMIUM DEPARTMENT DETAIL STYLES - IMPROVED
        ============================================ */
     
     :root {
@@ -48,6 +48,26 @@
         --radius-full: 9999px;
         
         --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Status Badge Styles */
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.inactive {
+        background: var(--warning-light);
+        color: var(--warning);
     }
 
     /* Page Header */
@@ -91,6 +111,138 @@
         z-index: 1;
         opacity: 0.9;
         margin: 0;
+    }
+
+    /* Consolidated Action Bar */
+    .action-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .action-group-divider {
+        width: 1px;
+        height: 30px;
+        background: var(--gray-300);
+        margin: 0 0.5rem;
+    }
+
+    /* Button Styles - Improved Hierarchy */
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-secondary-outline {
+        background: transparent;
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-300);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-secondary-outline:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-400);
+        transform: translateY(-2px);
+    }
+
+    .btn-warning-custom {
+        background: var(--warning);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-warning-custom:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger-outline {
+        background: transparent;
+        color: var(--danger);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--danger);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-danger-outline:hover {
+        background: var(--danger-light);
+        transform: translateY(-2px);
+    }
+
+    .btn-danger-custom {
+        background: var(--danger);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-danger-custom:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
     }
 
     /* Department Header Card */
@@ -184,10 +336,10 @@
         line-height: 1.6;
     }
 
-    /* Stats Grid */
+    /* Stats Grid - Improved */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 1rem;
         margin-bottom: 2rem;
     }
@@ -199,12 +351,30 @@
         box-shadow: var(--shadow-md);
         border: 1px solid var(--gray-200);
         transition: var(--transition);
-        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--success));
     }
 
     .stat-card:hover {
         transform: translateY(-3px);
         box-shadow: var(--shadow-lg);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
     }
 
     .stat-icon {
@@ -215,7 +385,6 @@
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
-        margin: 0 auto 1rem;
     }
 
     .stat-icon.staff { 
@@ -234,7 +403,7 @@
     }
 
     .stat-value {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 700;
         color: var(--gray-800);
         line-height: 1.2;
@@ -243,8 +412,16 @@
 
     .stat-label {
         color: var(--gray-500);
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-sub {
+        font-size: 0.75rem;
+        color: var(--gray-400);
+        margin-top: 0.5rem;
     }
 
     /* Staff Card */
@@ -264,6 +441,8 @@
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
         border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 
     .card-header h5 {
@@ -281,67 +460,13 @@
         font-size: 1.4rem;
     }
 
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-action {
-        padding: 0.6rem 1.2rem;
-        border-radius: var(--radius-lg);
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-        border: none;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .btn-action.primary {
-        background: var(--primary);
-        color: white;
-    }
-
-    .btn-action.primary:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
-    }
-
-    .btn-action.warning {
-        background: var(--warning);
-        color: white;
-    }
-
-    .btn-action.warning:hover {
-        background: #e0a800;
-        transform: translateY(-2px);
-    }
-
-    .btn-action.danger {
-        background: var(--danger);
-        color: white;
-    }
-
-    .btn-action.danger:hover {
-        background: #bd2130;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
-    }
-
-    .btn-action.secondary {
-        background: var(--gray-100);
-        color: var(--gray-700);
-        border: 1px solid var(--gray-200);
-    }
-
-    .btn-action.secondary:hover {
-        background: var(--gray-200);
-        transform: translateY(-2px);
+    .badge-count {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 600;
     }
 
     /* Staff Table */
@@ -354,7 +479,7 @@
 
     .table {
         margin-bottom: 0;
-        min-width: 600px;
+        min-width: 700px;
         width: 100%;
     }
 
@@ -386,6 +511,47 @@
         color: var(--gray-800);
     }
 
+    /* Table Action Buttons - Compact */
+    .table-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        text-decoration: none;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        border: 1px solid var(--gray-200);
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    /* Loading Skeleton */
+    .skeleton-loader {
+        background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: var(--radius-md);
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Empty State */
     .empty-state {
         text-align: center;
         padding: 3rem;
@@ -440,6 +606,10 @@
         border-left: 4px solid var(--danger);
     }
 
+    .toast-notification.info {
+        border-left: 4px solid var(--info);
+    }
+
     .toast-icon {
         width: 32px;
         height: 32px;
@@ -458,6 +628,11 @@
     .toast-icon.error {
         background: var(--danger-light);
         color: var(--danger);
+    }
+
+    .toast-icon.info {
+        background: var(--info-light);
+        color: var(--info);
     }
 
     /* Loading Overlay */
@@ -515,17 +690,29 @@
             grid-template-columns: 1fr;
         }
 
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-group {
+            justify-content: center;
+        }
+
+        .action-group-divider {
+            display: none;
+        }
+
         .card-header {
             flex-direction: column;
-            gap: 1rem;
             align-items: flex-start;
         }
 
-        .action-buttons {
-            flex-direction: column;
-        }
-
-        .btn-action {
+        .btn-primary-custom, 
+        .btn-secondary-outline, 
+        .btn-warning-custom,
+        .btn-danger-outline,
+        .btn-danger-custom {
             width: 100%;
             justify-content: center;
         }
@@ -599,28 +786,81 @@
     </div>
 </div>
 
-<!-- Statistics Cards -->
+<!-- Consolidated Action Bar -->
+<div class="action-bar">
+    <div class="action-group">
+        <a href="{% url 'management:department_update' department.pk %}" class="btn-warning-custom">
+            <i class="bi bi-pencil"></i>
+            Edit Department
+        </a>
+        <a href="{% url 'management:staff_department_assignment_create' %}?department={{ department.pk }}" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i>
+            Assign Staff Member
+        </a>
+    </div>
+    {% if staff_count == 0 %}
+    <div class="action-group">
+        <div class="action-group-divider"></div>
+        <button type="button" class="btn-danger-outline" onclick="showDeleteModal()">
+            <i class="bi bi-trash"></i>
+            Delete Department
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistics Cards - Improved with better visual hierarchy -->
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon staff">
-            <i class="bi bi-people"></i>
+        <div class="stat-header">
+            <div class="stat-icon staff">
+                <i class="bi bi-people"></i>
+            </div>
         </div>
-        <div class="stat-value">{{ staff_count }}</div>
-        <div class="stat-label">Staff Assigned</div>
+        <div class="stat-value">{{ active_assignments|default:0 }}</div>
+        <div class="stat-label">Active Staff</div>
+        <div class="stat-sub">
+            {% if inactive_assignments > 0 %}
+            + {{ inactive_assignments }} inactive
+            {% else %}
+            All staff active
+            {% endif %}
+        </div>
     </div>
+    
+    {% if has_hod %}
     <div class="stat-card">
-        <div class="stat-icon created">
-            <i class="bi bi-calendar-plus"></i>
+        <div class="stat-header">
+            <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
+                <i class="bi bi-star-fill"></i>
+            </div>
+        </div>
+        <div class="stat-value">1</div>
+        <div class="stat-label">Head of Department</div>
+        <div class="stat-sub">{{ hod.staff.get_full_name|truncatechars:25 }}</div>
+    </div>
+    {% endif %}
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon created">
+                <i class="bi bi-calendar-plus"></i>
+            </div>
         </div>
         <div class="stat-value">{{ department.created_at|date:"M d, Y" }}</div>
         <div class="stat-label">Created Date</div>
+        <div class="stat-sub">{{ department.created_at|timesince }} ago</div>
     </div>
+    
     <div class="stat-card">
-        <div class="stat-icon updated">
-            <i class="bi bi-calendar-check"></i>
+        <div class="stat-header">
+            <div class="stat-icon updated">
+                <i class="bi bi-calendar-check"></i>
+            </div>
         </div>
         <div class="stat-value">{{ department.updated_at|date:"M d, Y" }}</div>
         <div class="stat-label">Last Updated</div>
+        <div class="stat-sub">{{ department.updated_at|timesince }} ago</div>
     </div>
 </div>
 
@@ -629,8 +869,18 @@
     <div class="card-header">
         <h5>
             <i class="bi bi-people"></i>
-            Staff Members in {{ department.name }}
+            Staff Members
         </h5>
+        <div>
+            <span class="badge-count">
+                <i class="bi bi-person-check"></i> {{ active_assignments|default:0 }} Active
+            </span>
+            {% if inactive_assignments > 0 %}
+            <span class="badge-count ms-2">
+                <i class="bi bi-person-x"></i> {{ inactive_assignments }} Inactive
+            </span>
+            {% endif %}
+        </div>
     </div>
 
     {% if staff_assignments %}
@@ -638,42 +888,67 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Staff Name</th>
+                    <th>Staff Member</th>
+                    <th>Employee ID</th>
                     <th>Role</th>
                     <th>Status</th>
-                    <th>Assigned Date</th>
+                    <th>Assigned Since</th>
                     <th>Actions</th>
-                </tr>
-            </thead>
+                </thead>
             <tbody>
                 {% for assignment in staff_assignments %}
                 <tr>
                     <td>
                         <div class="staff-name">{{ assignment.staff.get_full_name }}</div>
+                        {% if assignment.is_head %}
+                        <small class="text-primary"><i class="bi bi-star-fill"></i> Department Head</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <code class="text-muted">{{ assignment.staff.employee_id }}</code>
                     </td>
                     <td>
                         {% if assignment.is_head %}
-                        <span class="badge bg-primary">Head of Department</span>
+                        <span class="badge bg-primary">
+                            <i class="bi bi-star-fill"></i> Head
+                        </span>
                         {% else %}
-                        <span class="badge bg-secondary">Staff Member</span>
+                        <span class="badge bg-secondary">Member</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if assignment.is_active %}
-                        <span class="status-badge active">Active</span>
+                        <span class="status-badge active">
+                            <i class="bi bi-check-circle-fill"></i> Active
+                        </span>
                         {% else %}
-                        <span class="status-badge inactive">Inactive</span>
+                        <span class="status-badge inactive">
+                            <i class="bi bi-pause-circle"></i> Inactive
+                        </span>
                         {% endif %}
                     </td>
-                    <td>{{ assignment.start_date|date:"M d, Y" }}</td>
                     <td>
-                        <div class="action-buttons">
+                        <i class="bi bi-calendar-check me-1 text-muted"></i>
+                        {{ assignment.start_date|date:"M d, Y" }}
+                        {% if assignment.end_date %}
+                        <br>
+                        <small class="text-muted">Ended: {{ assignment.end_date|date:"M d, Y" }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="table-actions">
                             <a href="{% url 'management:staff_detail' assignment.staff.pk %}" 
-                               class="btn-action secondary" 
-                               style="padding: 0.4rem 0.8rem;" 
-                               title="View Staff">
+                               class="btn-icon" 
+                               title="View Staff Profile">
                                 <i class="bi bi-eye"></i>
                             </a>
+                            {% if assignment.is_active %}
+                            <a href="{% url 'management:staff_department_assignment_update' assignment.pk %}" 
+                               class="btn-icon" 
+                               title="Edit Assignment">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -688,28 +963,12 @@
         </div>
         <h5 class="text-muted mb-2">No Staff Members</h5>
         <p class="text-muted mb-3">This department doesn't have any staff members assigned yet.</p>
+        <a href="{% url 'management:staff_department_assignment_create' %}?department={{ department.pk }}" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i>
+            Assign Staff Member
+        </a>
     </div>
     {% endif %}
-</div>
-
-<!-- Action Buttons Card -->
-<div class="staff-card">
-    <div class="card-header">
-        <h5>
-            <i class="bi bi-lightning-charge"></i>
-            Quick Actions
-        </h5>
-    </div>
-    <div class="action-buttons">
-        <a href="{% url 'management:department_update' department.pk %}" class="btn-action warning">
-            <i class="bi bi-pencil"></i>
-            Edit Department
-        </a>
-        <button type="button" class="btn-action danger" onclick="showDeleteModal()">
-            <i class="bi bi-trash"></i>
-            Delete Department
-        </button>
-    </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -719,25 +978,26 @@
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    Confirm Delete
+                    Confirm Deletion
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="delete-form" method="POST" action="{% url 'management:department_delete' department.pk %}">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <p>Are you sure you want to delete the department <strong>{{ department.name }}</strong>?</p>
+                    <p>Are you sure you want to delete <strong>{{ department.name }}</strong>?</p>
                     
                     {% if staff_count > 0 %}
                     <div class="alert alert-warning mt-3">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <strong>Warning:</strong> This department has {{ staff_count }} active staff assignment{{ staff_count|pluralize }}. 
-                        Please reassign these staff members before deleting.
+                        <strong>Cannot Delete:</strong> This department has {{ staff_count }} active staff assignment{{ staff_count|pluralize }}.
+                        <br><br>
+                        Please reassign or end these assignments before deleting.
                     </div>
                     {% else %}
                     <div class="alert alert-danger mt-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        This action cannot be undone.
+                        This action is permanent and cannot be undone.
                     </div>
                     {% endif %}
                 </div>
@@ -746,11 +1006,13 @@
                         <i class="bi bi-x-circle me-2"></i>
                         Cancel
                     </button>
+                    {% if staff_count == 0 %}
                     <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
                         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         <i class="bi bi-trash me-2"></i>
                         <span class="btn-text">Delete Department</span>
                     </button>
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -839,12 +1101,18 @@ $('#deleteModal').on('hidden.bs.modal', function() {
 function showNotification(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'info') icon = 'info-circle';
+    else icon = 'exclamation-triangle';
+    
     toast.innerHTML = `
         <div class="toast-icon ${type}">
-            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+            <i class="bi bi-${icon}"></i>
         </div>
         <div class="flex-grow-1">
-            <div class="fw-semibold">${message}</div>
+            <div class="fw-semibold">${escapeHtml(message)}</div>
         </div>
         <button class="btn-close" onclick="this.parentElement.remove()"></button>
     `;
@@ -857,8 +1125,16 @@ function showNotification(message, type = 'success') {
     }
     
     setTimeout(() => {
-        toast.remove();
+        if (toast.parentElement) {
+            toast.remove();
+        }
     }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function showLoading() {

@@ -97,6 +97,42 @@
                 <span class="link-text">All Staff</span>
                 <span class="nav-counter">{{ staff_count|default:0 }}</span>
             </a>
+            <a href="{% url 'management:staff_leave_list' %}"
+               class="nav-link {% if 'staff_leave_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">Leaves</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:staff_role_list' %}"
+               class="nav-link {% if 'staff_role_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">Role group</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:staff_role_assignment_list' %}"
+               class="nav-link {% if 'staff_role_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">Role Assignments</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:staff_department_assignment_list' %}"
+               class="nav-link {% if 'staff_department_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">Department Assignments</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:staff_teaching_assignment_list' %}"
+               class="nav-link {% if 'staff_teaching_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">Teaching Assignments</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'management:class_teacher_assignment_list' %}"
+               class="nav-link {% if 'class_teacher_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-badge"></i>
+                <span class="link-text">Class Teacher Assignments</span>
+                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+            </a>
             <a href="{% url 'management:staff_create' %}"
                class="nav-link {% if 'staff_create' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-person-plus-fill"></i>
@@ -122,6 +158,12 @@
                class="nav-link {% if 'academic_year' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-calendar3"></i>
                 <span class="link-text">Academic Years</span>
+                <span class="nav-badge active-badge">Active</span>
+            </a>
+            <a href="{% url 'management:term_list' %}"
+               class="nav-link {% if 'term' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-calendar3"></i>
+                <span class="link-text">Terms</span>
                 <span class="nav-badge active-badge">Active</span>
             </a>
             <a href="{% url 'management:class_level_list' %}"
@@ -165,11 +207,22 @@
             <i class="bi bi-chevron-down section-toggle ms-auto"></i>
         </div>
         <div class="nav-section-content">
+            <a href="{% url 'management:exam_type_list' %}"
+               class="nav-link {% if 'exam_type_list' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clipboard-check"></i>
+                <span class="link-text">Exam Type</span>
+                <span class="nav-badge success-badge">New</span>
+            </a>
             <a href="{% url 'management:exam_session_list' %}"
                class="nav-link {% if 'exam_session' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-clipboard-check"></i>
                 <span class="link-text">Exam Sessions</span>
                 <span class="nav-badge success-badge">New</span>
+            </a>
+            <a href="{% url 'management:division_scale_list' %}"
+               class="nav-link {% if 'division_scale' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-bar-chart-steps"></i>
+                <span class="link-text">Division Scales</span>
             </a>
             <a href="{% url 'management:grading_scale_list' %}"
                class="nav-link {% if 'grading_scale' in request.resolver_match.url_name %}active{% endif %}">

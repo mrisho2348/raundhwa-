@@ -1,0 +1,1233 @@
+<!-- templates/portal_management/hr/roles/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF ROLE FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Portal Category Selector */
+    .portal-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .portal-option {
+        cursor: pointer;
+    }
+
+    .portal-option input {
+        display: none;
+    }
+
+    .portal-option-card {
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .portal-option-card:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .portal-option input:checked + .portal-option-card {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+    }
+
+    .portal-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .portal-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .portal-description {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+    }
+
+    /* Group Action Selector */
+    .group-action-selector {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .group-action-option {
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .group-action-option input {
+        display: none;
+    }
+
+    .group-action-card {
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .group-action-card:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .group-action-option input:checked + .group-action-card {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    /* Group Fields */
+    .group-fields {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--gray-200);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+    }
+
+    .alert-general-error .error-content {
+        flex: 1;
+    }
+
+    .alert-general-error ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .alert-general-error li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .portal-selector {
+            grid-template-columns: 1fr;
+        }
+
+        .group-action-selector {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-tag-fill me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if role %}
+                    Update staff role details for {{ role.name }}
+                {% else %}
+                    Create a new staff role with portal access permissions
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:staff_role_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Roles</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Role Details
+        </h5>
+        {% if role %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Created: {{ role.created_at|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="staff-role-form" method="POST" 
+          {% if role %}action="{% url 'management:staff_role_update' role.pk %}"{% else %}action="{% url 'management:staff_role_create' %}"{% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <div class="row g-4">
+            <!-- Role Name -->
+            <div class="col-md-12">
+                <label for="name" class="form-label required-field">Role Name</label>
+                <input type="text" class="form-control" id="name" name="name" 
+                       value="{% if role %}{{ role.name }}{% endif %}" 
+                       placeholder="e.g., Headmaster, Class Teacher, Accountant" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    A unique name for this staff role (e.g., Headmaster, Class Teacher, Accountant)
+                </small>
+            </div>
+
+            <!-- Portal Category Selection -->
+            <div class="col-md-12">
+                <label class="form-label required-field">Portal Category</label>
+                <div class="portal-selector" id="portal-selector">
+                    {% for portal_code, portal_name in portal_choices %}
+                    <label class="portal-option">
+                        <input type="radio" name="portal_category" value="{{ portal_code }}" 
+                               {% if role and role.portal_category == portal_code %}checked{% endif %}
+                               {% if not role and portal_code == 'management' %}checked{% endif %}
+                               required>
+                        <div class="portal-option-card">
+                            <div class="portal-icon">
+                                {% if portal_code == 'management' %}
+                                <i class="bi bi-shield"></i>
+                                {% elif portal_code == 'academic' %}
+                                <i class="bi bi-book"></i>
+                                {% elif portal_code == 'administration' %}
+                                <i class="bi bi-building"></i>
+                                {% elif portal_code == 'finance' %}
+                                <i class="bi bi-cash"></i>
+                                {% elif portal_code == 'transport' %}
+                                <i class="bi bi-truck"></i>
+                                {% elif portal_code == 'library' %}
+                                <i class="bi bi-journal-bookmark-fill"></i>
+                                {% elif portal_code == 'health' %}
+                                <i class="bi bi-heart-pulse"></i>
+                                {% else %}
+                                <i class="bi bi-slash-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="portal-name">{{ portal_name }}</div>
+                            <div class="portal-description">
+                                {% if portal_code == 'management' %}
+                                School administration and oversight
+                                {% elif portal_code == 'academic' %}
+                                Teaching and academic management
+                                {% elif portal_code == 'administration' %}
+                                Administrative operations
+                                {% elif portal_code == 'finance' %}
+                                Financial management
+                                {% elif portal_code == 'transport' %}
+                                Transport and fleet management
+                                {% elif portal_code == 'library' %}
+                                Library management
+                                {% elif portal_code == 'health' %}
+                                Health services
+                                {% else %}
+                                No portal access
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Determines which portal this role can access after login
+                </small>
+            </div>
+
+            <!-- Description -->
+            <div class="col-md-12">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" 
+                          rows="4" placeholder="Brief description of this role and its responsibilities...">{% if role %}{{ role.description }}{% endif %}</textarea>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Optional description explaining the role's purpose and responsibilities
+                </small>
+            </div>
+
+            <!-- Permission Group Section (for create mode) -->
+            {% if not role %}
+            <div class="col-md-12">
+                <label class="form-label">Permission Group</label>
+                <div class="group-action-selector" id="group-action-selector">
+                    <label class="group-action-option">
+                        <input type="radio" name="group_action" value="none" checked>
+                        <div class="group-action-card">
+                            <i class="bi bi-x-circle fs-4"></i>
+                            <div class="fw-semibold mt-2">No Group</div>
+                            <small class="text-muted">Role without permission group</small>
+                        </div>
+                    </label>
+                    <label class="group-action-option">
+                        <input type="radio" name="group_action" value="create">
+                        <div class="group-action-card">
+                            <i class="bi bi-plus-circle fs-4"></i>
+                            <div class="fw-semibold mt-2">Create New Group</div>
+                            <small class="text-muted">Create a new Django permission group</small>
+                        </div>
+                    </label>
+                </div>
+                
+                <div id="create-group-fields" class="group-fields" style="display: none;">
+                    <label for="group_name" class="form-label">Group Name</label>
+                    <input type="text" class="form-control" id="group_name" name="group_name" 
+                           placeholder="e.g., headmaster_group, class_teacher_group">
+                    <small class="field-hint mt-2">
+                        <i class="bi bi-info-circle"></i>
+                        The group name will be used to manage permissions in the system
+                    </small>
+                </div>
+                
+                <small class="field-hint mt-2 d-block">
+                    <i class="bi bi-info-circle"></i>
+                    Permission groups control what actions staff can perform in the system
+                </small>
+            </div>
+            {% endif %}
+
+            <!-- Permission Group Section (for update mode) -->
+            {% if role %}
+            <div class="col-md-12">
+                <label class="form-label">Permission Group</label>
+                
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Current Group:</strong>
+                    {% if role.group %}
+                    {{ role.group.name }}
+                    {% else %}
+                    No group assigned
+                    {% endif %}
+                </div>
+                
+                <div class="group-action-selector" id="group-action-selector">
+                    <label class="group-action-option">
+                        <input type="radio" name="group_action" value="keep" checked>
+                        <div class="group-action-card">
+                            <i class="bi bi-check-circle fs-4"></i>
+                            <div class="fw-semibold mt-2">Keep Current</div>
+                            <small class="text-muted">Keep the existing group assignment</small>
+                        </div>
+                    </label>
+                    <label class="group-action-option">
+                        <input type="radio" name="group_action" value="remove">
+                        <div class="group-action-card">
+                            <i class="bi bi-trash fs-4"></i>
+                            <div class="fw-semibold mt-2">Remove Group</div>
+                            <small class="text-muted">Remove the group from this role</small>
+                        </div>
+                    </label>
+                    <label class="group-action-option">
+                        <input type="radio" name="group_action" value="link">
+                        <div class="group-action-card">
+                            <i class="bi bi-link fs-4"></i>
+                            <div class="fw-semibold mt-2">Link Existing</div>
+                            <small class="text-muted">Link to an existing group</small>
+                        </div>
+                    </label>
+                    <label class="group-action-option">
+                        <input type="radio" name="group_action" value="create">
+                        <div class="group-action-card">
+                            <i class="bi bi-plus-circle fs-4"></i>
+                            <div class="fw-semibold mt-2">Create New</div>
+                            <small class="text-muted">Create and link a new group</small>
+                        </div>
+                    </label>
+                </div>
+                
+                <div id="link-group-fields" class="group-fields" style="display: none;">
+                    <label for="existing_group" class="form-label">Select Existing Group</label>
+                    <select name="existing_group" id="existing_group" class="form-select select2-filter">
+                        <option value="">Select a group...</option>
+                        {% for group in available_groups %}
+                        <option value="{{ group.pk }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div id="update-create-group-fields" class="group-fields" style="display: none;">
+                    <label for="new_group_name" class="form-label">New Group Name</label>
+                    <input type="text" class="form-control" id="new_group_name" name="new_group_name" 
+                           placeholder="e.g., headmaster_group, class_teacher_group">
+                    <small class="field-hint mt-2">
+                        <i class="bi bi-info-circle"></i>
+                        The group name will be used to manage permissions in the system
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Preview Card -->
+        <div class="preview-card mt-4" id="preview-card" style="display: none;">
+            <h6>
+                <i class="bi bi-eye"></i>
+                Role Preview
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-muted small">Role Name</div>
+                    <div class="fw-semibold" id="preview-name">—</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Portal Category</div>
+                    <div id="preview-portal" class="mt-1">—</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Permission Group</div>
+                    <div id="preview-group" class="mt-1">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if role %}Update Role{% else %}Create Role{% endif %}
+                </span>
+            </button>
+
+            <a href="{% url 'management:staff_role_list' %}" class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let roleId = {% if role %}{{ role.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR DROPDOWNS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Select a group'
+    });
+
+    // ============================================
+    // PREVIEW FUNCTION
+    // ============================================
+    function updatePreview() {
+        const roleName = $('#name').val().trim();
+        const selectedPortal = $('input[name="portal_category"]:checked');
+        const portalName = selectedPortal.closest('.portal-option').find('.portal-name').text();
+        
+        $('#preview-name').text(roleName || '—');
+        
+        if (selectedPortal.val()) {
+            const portalCode = selectedPortal.val();
+            let badgeClass = 'badge bg-secondary';
+            if (portalCode === 'management') badgeClass = 'badge bg-primary';
+            else if (portalCode === 'academic') badgeClass = 'badge bg-success';
+            else if (portalCode === 'administration') badgeClass = 'badge bg-info';
+            else if (portalCode === 'finance') badgeClass = 'badge bg-warning';
+            else if (portalCode === 'transport') badgeClass = 'badge bg-info';
+            else if (portalCode === 'library') badgeClass = 'badge bg-purple';
+            else if (portalCode === 'health') badgeClass = 'badge bg-danger';
+            else badgeClass = 'badge bg-secondary';
+            
+            $('#preview-portal').html(`<span class="${badgeClass}">${portalName}</span>`);
+        } else {
+            $('#preview-portal').html('—');
+        }
+        
+        // Group preview (for create mode)
+        {% if not role %}
+        const groupAction = $('input[name="group_action"]:checked').val();
+        if (groupAction === 'create') {
+            const groupName = $('#group_name').val().trim();
+            if (groupName) {
+                $('#preview-group').html(`<span class="badge bg-success">${groupName}</span>`);
+            } else {
+                $('#preview-group').html('<span class="badge bg-warning">Will be created</span>');
+            }
+        } else if (groupAction === 'none') {
+            $('#preview-group').html('<span class="badge bg-secondary">No group</span>');
+        }
+        {% else %}
+        const groupAction = $('input[name="group_action"]:checked').val();
+        if (groupAction === 'keep') {
+            $('#preview-group').html('<span class="badge bg-info">Keep current</span>');
+        } else if (groupAction === 'remove') {
+            $('#preview-group').html('<span class="badge bg-danger">Remove group</span>');
+        } else if (groupAction === 'link') {
+            const selectedGroup = $('#existing_group option:selected').text();
+            if (selectedGroup) {
+                $('#preview-group').html(`<span class="badge bg-success">Link to: ${selectedGroup}</span>`);
+            } else {
+                $('#preview-group').html('<span class="badge bg-warning">Select a group</span>');
+            }
+        } else if (groupAction === 'create') {
+            const groupName = $('#new_group_name').val().trim();
+            if (groupName) {
+                $('#preview-group').html(`<span class="badge bg-success">Create: ${groupName}</span>`);
+            } else {
+                $('#preview-group').html('<span class="badge bg-warning">Will be created</span>');
+            }
+        }
+        {% endif %}
+        
+        if (roleName || selectedPortal.val()) {
+            $('#preview-card').show();
+        } else {
+            $('#preview-card').hide();
+        }
+    }
+    
+    // ============================================
+    // GROUP ACTION HANDLERS (Create Mode)
+    // ============================================
+    {% if not role %}
+    $('input[name="group_action"]').on('change', function() {
+        const action = $(this).val();
+        if (action === 'create') {
+            $('#create-group-fields').slideDown();
+        } else {
+            $('#create-group-fields').slideUp();
+        }
+        updatePreview();
+    });
+    {% endif %}
+
+    // ============================================
+    // GROUP ACTION HANDLERS (Update Mode)
+    // ============================================
+    {% if role %}
+    $('input[name="group_action"]').on('change', function() {
+        const action = $(this).val();
+        $('#link-group-fields').slideUp();
+        $('#update-create-group-fields').slideUp();
+        
+        if (action === 'link') {
+            $('#link-group-fields').slideDown();
+        } else if (action === 'create') {
+            $('#update-create-group-fields').slideDown();
+        }
+        updatePreview();
+    });
+    
+    $('#existing_group').on('change', updatePreview);
+    $('#new_group_name').on('input', updatePreview);
+    {% endif %}
+    
+    // ============================================
+    // INPUT EVENT LISTENERS
+    // ============================================
+    $('#name').on('input', updatePreview);
+    $('input[name="portal_category"]').on('change', updatePreview);
+    {% if not role %}
+    $('#group_name').on('input', updatePreview);
+    {% endif %}
+    
+    // Initialize preview
+    updatePreview();
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    $('#staff-role-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate required fields
+        const roleName = $('#name').val().trim();
+        if (!roleName) {
+            showNotification('Role name is required.', 'error');
+            $('#name').addClass('is-invalid');
+            return;
+        }
+        
+        const selectedPortal = $('input[name="portal_category"]:checked').val();
+        if (!selectedPortal) {
+            showNotification('Please select a portal category.', 'error');
+            return;
+        }
+        
+        // Validate group fields for create mode
+        {% if not role %}
+        const groupAction = $('input[name="group_action"]:checked').val();
+        if (groupAction === 'create') {
+            const groupName = $('#group_name').val().trim();
+            if (!groupName) {
+                showNotification('Group name is required when creating a new group.', 'error');
+                $('#group_name').addClass('is-invalid');
+                return;
+            }
+        }
+        {% endif %}
+        
+        // Validate group fields for update mode
+        {% if role %}
+        const groupAction = $('input[name="group_action"]:checked').val();
+        if (groupAction === 'link') {
+            const existingGroup = $('#existing_group').val();
+            if (!existingGroup) {
+                showNotification('Please select a group to link.', 'error');
+                $('#existing_group').addClass('is-invalid');
+                return;
+            }
+        } else if (groupAction === 'create') {
+            const newGroupName = $('#new_group_name').val().trim();
+            if (!newGroupName) {
+                showNotification('Group name is required when creating a new group.', 'error');
+                $('#new_group_name').addClass('is-invalid');
+                return;
+            }
+        }
+        {% endif %}
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = form.serialize();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = "{% url 'management:staff_role_list' %}";
+                        }
+                    }, 1500);
+                } else {
+                    displayErrors(data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if role %}Update Role{% else %}Create Role{% endif %}');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    displayErrors(response);
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if role %}Update Role{% else %}Create Role{% endif %}');
+            }
+        });
+    });
+
+    // ============================================
+    // ERROR HANDLING FUNCTIONS
+    // ============================================
+    
+    function clearErrors() {
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    }
+    
+    function displayErrors(data) {
+        let hasGeneralErrors = false;
+        let errorContent = '<div class="error-content">';
+        
+        // Handle main message
+        if (data.message && data.message !== 'Please correct the errors below.') {
+            errorContent += `<div class="fw-semibold mb-2">${escapeHtml(data.message)}</div>`;
+            hasGeneralErrors = true;
+        }
+        
+        // Handle field-specific errors
+        if (data.errors) {
+            $.each(data.errors, function(fieldName, fieldErrors) {
+                // Handle __all__ errors (non-field errors)
+                if (fieldName === '__all__') {
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += '<ul>';
+                        fieldErrors.forEach(function(error) {
+                            errorContent += `<li>${escapeHtml(error)}</li>`;
+                        });
+                        errorContent += '</ul>';
+                    } else {
+                        errorContent += `<div class="mt-1">${escapeHtml(fieldErrors)}</div>`;
+                    }
+                    return;
+                }
+                
+                // Try to find the field
+                let field = $(`[name="${fieldName}"]`);
+                if (field.length === 0) {
+                    field = $(`#${fieldName}`);
+                }
+                
+                if (field.length) {
+                    field.addClass('is-invalid');
+                    
+                    let errorText = '';
+                    if (Array.isArray(fieldErrors)) {
+                        errorText = fieldErrors.join('<br>');
+                    } else if (typeof fieldErrors === 'string') {
+                        errorText = fieldErrors;
+                    } else {
+                        errorText = 'Invalid value';
+                    }
+                    
+                    // Check if it's a Select2 field
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        const select2Container = field.next('.select2-container');
+                        if (select2Container.length) {
+                            select2Container.after(`<div class="invalid-feedback d-block">${escapeHtml(errorText)}</div>`);
+                        } else {
+                            field.after(`<div class="invalid-feedback">${escapeHtml(errorText)}</div>`);
+                        }
+                    } else {
+                        const errorHtml = `<div class="invalid-feedback">${escapeHtml(errorText)}</div>`;
+                        field.next('.invalid-feedback').remove();
+                        field.after(errorHtml);
+                    }
+                } else {
+                    // Field not found, treat as general error
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors.join(', '))}</div>`;
+                    } else {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors)}</div>`;
+                    }
+                }
+            });
+        }
+        
+        errorContent += '</div>';
+        
+        // Display general errors if any
+        if (hasGeneralErrors) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill"></i>${errorContent}`).show();
+            
+            // Scroll to error message
+            $('html, body').animate({
+                scrollTop: generalErrorDiv.offset().top - 100
+            }, 500);
+        }
+        
+        // If there's only a message and no errors, show it as notification
+        if (!data.errors && data.message && !hasGeneralErrors) {
+            showNotification(data.message, 'error');
+        }
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

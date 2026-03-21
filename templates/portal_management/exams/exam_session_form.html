@@ -1,0 +1,1211 @@
+<!-- templates/portal_management/exams/exam_session_form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM EXAM SESSION FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* ── Form Card ── */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .form-header h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-header h3 i { color: var(--primary); font-size: 1.5rem; }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* ── Form Fields ── */
+    .form-group   { margin-bottom: 1.5rem; }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-label .required { color: var(--danger); margin-left: 0.25rem; }
+
+    .form-control,
+    .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        font-size: 0.95rem;
+        background: white;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid { border-color: var(--danger); }
+
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus { box-shadow: 0 0 0 3px rgba(220,53,69,0.15); }
+
+    .form-text {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .invalid-feedback {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* ── Term loading state ── */
+    #term-loading-indicator {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--primary);
+        margin-top: 0.25rem;
+    }
+
+    #term-loading-indicator.show { display: flex; }
+
+    #term-loading-indicator .spinner-border {
+        width: 0.85rem;
+        height: 0.85rem;
+        border-width: 2px;
+    }
+
+    /* ── Preview Card ── */
+    .preview-card {
+        background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .preview-card h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-card h4 i { color: var(--primary); }
+
+    .preview-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .preview-badge {
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+    }
+
+    /* ── Status badges ── */
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .status-badge.draft     { background: var(--warning-light); color: #856404; }
+    .status-badge.submitted { background: var(--info-light);    color: var(--info); }
+    .status-badge.verified  { background: var(--primary-light); color: var(--primary); }
+    .status-badge.published { background: var(--success-light); color: var(--success); }
+
+    /* ── Buttons ── */
+    .btn-save {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-save:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-cancel {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-300);
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-cancel:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ── Select2 overrides — no dropdownAutoWidth ── */
+    .select2-container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 50px;
+        padding: 0.3rem 1rem;
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 36px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 48px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        /* Never exceed viewport on mobile */
+        max-width: calc(100vw - 2rem) !important;
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* ── Toast Notifications ── */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        max-width: calc(100vw - 2rem);
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error   { border-left: 4px solid var(--danger); }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error   { background: var(--danger-light);  color: var(--danger); }
+
+    /* ── Loading Overlay ── */
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .page-header    { padding: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; }
+        .form-card      { padding: 1.5rem; }
+
+        .form-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-buttons { width: 100%; }
+
+        .btn-save,
+        .btn-cancel {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .preview-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-calendar-check me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">Configure examination session details, schedule, and status</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_session_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-header">
+        <h3>
+            <i class="bi bi-{% if is_edit %}pencil-square{% else %}plus-circle{% endif %}"></i>
+            {{ title }}
+        </h3>
+        <div class="action-buttons">
+            <a href="{% url 'management:exam_session_list' %}" class="btn-cancel">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+            <button type="submit" form="exam-session-form" class="btn-save" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <i class="bi bi-{% if is_edit %}check-lg{% else %}plus-lg{% endif %}"></i>
+                <span class="btn-text">{% if is_edit %}Update Session{% else %}Create Session{% endif %}</span>
+            </button>
+        </div>
+    </div>
+
+    <form id="exam-session-form"
+          method="POST"
+          action="{% if is_edit %}{% url 'management:exam_session_update' session.pk %}{% else %}{% url 'management:exam_session_create' %}{% endif %}">
+        {% csrf_token %}
+
+        <!-- Session Name -->
+        <div class="form-group">
+            <label for="name" class="form-label">
+                Session Name <span class="required">*</span>
+            </label>
+            <input type="text"
+                   class="form-control {% if errors.name %}is-invalid{% endif %}"
+                   id="name"
+                   name="name"
+                   value="{% if form_data.name %}{{ form_data.name }}{% elif session and session.name %}{{ session.name }}{% endif %}"
+                   required
+                   placeholder="e.g., Midterm Examination - Form 2 - Term 1 2024">
+            {% if errors.name %}
+                <div class="invalid-feedback">{{ errors.name.0 }}</div>
+            {% endif %}
+            <div class="form-text">A descriptive name for this exam session. Auto-generated when all fields are filled.</div>
+        </div>
+
+        <div class="row">
+            <!-- Exam Type -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exam_type" class="form-label">
+                        Exam Type <span class="required">*</span>
+                    </label>
+                    <select class="form-select {% if errors.exam_type %}is-invalid{% endif %}"
+                            id="exam_type"
+                            name="exam_type"
+                            required>
+                        <option value="">Select Exam Type</option>
+                        {% for exam_type in exam_types %}
+                        <option value="{{ exam_type.pk }}"
+                            {% if form_data.exam_type|stringformat:"s" == exam_type.pk|stringformat:"s" %}selected
+                            {% elif session and session.exam_type.pk|stringformat:"s" == exam_type.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ exam_type.name }} ({{ exam_type.weight }}%)
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.exam_type %}
+                        <div class="invalid-feedback">{{ errors.exam_type.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">The type of examination being conducted.</div>
+                </div>
+            </div>
+
+            <!-- Academic Year -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="academic_year" class="form-label">
+                        Academic Year <span class="required">*</span>
+                    </label>
+                    <select class="form-select {% if errors.academic_year %}is-invalid{% endif %}"
+                            id="academic_year"
+                            name="academic_year"
+                            required>
+                        <option value="">Select Academic Year</option>
+                        {% for year in academic_years %}
+                        <option value="{{ year.pk }}"
+                            data-year-id="{{ year.pk }}"
+                            {% if form_data.academic_year|stringformat:"s" == year.pk|stringformat:"s" %}selected
+                            {% elif session and session.academic_year.pk|stringformat:"s" == year.pk|stringformat:"s" %}selected
+                            {% elif year.is_active %}selected{% endif %}>
+                            {{ year.name }}{% if year.is_active %} (Active){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.academic_year %}
+                        <div class="invalid-feedback">{{ errors.academic_year.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">The academic year when this exam takes place.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Term — populated dynamically -->
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="term" class="form-label">
+                        Term <span class="required">*</span>
+                    </label>
+                    <!--
+                        The select is always enabled in HTML.
+                        JS disables it only while waiting for data,
+                        and re-enables once options are populated.
+                    -->
+                    <select class="form-select {% if errors.term %}is-invalid{% endif %}"
+                            id="term"
+                            name="term"
+                            required>
+                        <option value="">Select Academic Year First</option>
+                    </select>
+                    <!-- Inline loading indicator — shown while fetching terms -->
+                    <div id="term-loading-indicator">
+                        <span class="spinner-border text-primary" role="status"></span>
+                        <span>Loading terms…</span>
+                    </div>
+                    {% if errors.term %}
+                        <div class="invalid-feedback">{{ errors.term.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Select an academic year to load available terms.</div>
+                </div>
+            </div>
+
+            <!-- Class Level -->
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="class_level" class="form-label">
+                        Class Level <span class="required">*</span>
+                    </label>
+                    <select class="form-select {% if errors.class_level %}is-invalid{% endif %}"
+                            id="class_level"
+                            name="class_level"
+                            required>
+                        <option value="">Select Class Level</option>
+                        {% for class in class_levels %}
+                        <option value="{{ class.pk }}"
+                            data-level-type="{{ class.educational_level.level_type }}"
+                            {% if form_data.class_level|stringformat:"s" == class.pk|stringformat:"s" %}selected
+                            {% elif session and session.class_level.pk|stringformat:"s" == class.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ class.name }} ({{ class.educational_level.name }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.class_level %}
+                        <div class="invalid-feedback">{{ errors.class_level.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">The class level taking this exam.</div>
+                </div>
+            </div>
+
+            <!-- Stream Class (Optional) -->
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="stream_class" class="form-label">Stream Class (Optional)</label>
+                    <select class="form-select" id="stream_class" name="stream_class">
+                        <option value="">All Streams</option>
+                        {% for stream in stream_classes %}
+                        <option value="{{ stream.pk }}"
+                            data-class-level="{{ stream.class_level.pk }}"
+                            {% if form_data.stream_class|stringformat:"s" == stream.pk|stringformat:"s" %}selected
+                            {% elif session and session.stream_class and session.stream_class.pk|stringformat:"s" == stream.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ stream.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.stream_class %}
+                        <div class="invalid-feedback">{{ errors.stream_class.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Leave blank to apply to the whole class level.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Exam Date -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exam_date" class="form-label">
+                        Exam Date <span class="required">*</span>
+                    </label>
+                    <input type="date"
+                           class="form-control {% if errors.exam_date %}is-invalid{% endif %}"
+                           id="exam_date"
+                           name="exam_date"
+                           value="{% if form_data.exam_date %}{{ form_data.exam_date }}{% elif session and session.exam_date %}{{ session.exam_date|date:'Y-m-d' }}{% endif %}"
+                           required>
+                    {% if errors.exam_date %}
+                        <div class="invalid-feedback">{{ errors.exam_date.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">The date when this examination will be conducted.</div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="status" class="form-label">
+                        Status <span class="required">*</span>
+                    </label>
+                    <select class="form-select {% if errors.status %}is-invalid{% endif %}"
+                            id="status"
+                            name="status"
+                            required>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}"
+                            {% if form_data.status == value %}selected
+                            {% elif session and session.status == value %}selected
+                            {% elif value == 'draft' %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.status %}
+                        <div class="invalid-feedback">{{ errors.status.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">
+                        <span class="badge bg-warning text-dark">Draft</span> Not finalized &nbsp;|&nbsp;
+                        <span class="badge bg-info">Submitted</span> Ready for review &nbsp;|&nbsp;
+                        <span class="badge bg-primary">Verified</span> Approved &nbsp;|&nbsp;
+                        <span class="badge bg-success">Published</span> Results available
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Preview -->
+        <div class="preview-card">
+            <h4>
+                <i class="bi bi-eye"></i>
+                Session Preview
+            </h4>
+            <div class="preview-content">
+                <div class="preview-badge">
+                    <i class="bi bi-tag"></i>
+                    <span id="preview-name">{% if session and session.name %}{{ session.name }}{% else %}Session Name{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-file-text"></i>
+                    <span id="preview-type">{% if session and session.exam_type %}{{ session.exam_type.name }}{% else %}Exam Type{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-people"></i>
+                    <span id="preview-class">{% if session and session.class_level %}{{ session.class_level.name }}{% else %}Class Level{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-calendar"></i>
+                    <span id="preview-date">{% if session and session.exam_date %}{{ session.exam_date|date:"M d, Y" }}{% else %}Date{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-check-circle"></i>
+                    <span id="preview-status" class="status-badge draft">Draft</span>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Terms data injected from Django view — available before any JS runs -->
+<script>
+    /*
+     * termsData is a plain object keyed by academic-year PK (as a string).
+     * Example: { "3": [{id:7, name:"Term 1", start_date:"2025-01-15", end_date:"2025-04-30"}, ...], ... }
+     */
+    var TERMS_DATA = {{ terms_data|safe }};
+
+    /*
+     * Pre-selected IDs passed from the view so JS can restore them
+     * after dynamically rebuilding the <select>.
+     */
+    var INITIAL_TERM_ID      = "{% if session and session.term %}{{ session.term.pk }}{% elif form_data.term %}{{ form_data.term }}{% endif %}";
+    var INITIAL_ACADEMIC_YEAR = "{% if session and session.academic_year %}{{ session.academic_year.pk }}{% elif form_data.academic_year %}{{ form_data.academic_year }}{% endif %}";
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    'use strict';
+
+    // ================================================================
+    // HELPERS
+    // ================================================================
+
+    function escapeHtml(text) {
+        var d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function showNotification(message, type) {
+        type = type || 'success';
+        var iconMap = { success: 'check-circle', error: 'x-circle', info: 'info-circle' };
+        var toast = document.createElement('div');
+        toast.className = 'toast-notification ' + type;
+        toast.innerHTML = [
+            '<div class="toast-icon ' + type + '"><i class="bi bi-' + (iconMap[type] || 'info-circle') + '"></i></div>',
+            '<div class="flex-grow-1"><div class="fw-semibold">' + escapeHtml(message) + '</div></div>',
+            '<button class="btn-close" onclick="this.parentElement.remove()"></button>'
+        ].join('');
+
+        var container = document.getElementById('toast-container') || document.body;
+        container.appendChild(toast);
+        setTimeout(function () { if (toast.parentElement) toast.remove(); }, 5000);
+    }
+
+    function showFieldError(fieldId, message) {
+        var $field = $('#' + fieldId);
+        $field.addClass('is-invalid');
+        $field.parent().find('.invalid-feedback').remove();
+        $field.after('<div class="invalid-feedback">' + escapeHtml(message) + '</div>');
+    }
+
+    // ================================================================
+    // SELECT2 INITIALISATION
+    // ================================================================
+    /*
+     * IMPORTANT — each field gets its own .select2() call so we can
+     * reference them individually later (e.g. destroy & re-init #term).
+     * We do NOT use dropdownAutoWidth — that was causing mobile overflow.
+     */
+    function initSelect2(selector, placeholder) {
+        $(selector).select2({
+            width: '100%',
+            placeholder: placeholder || 'Select an option',
+            allowClear: true
+        });
+    }
+
+    initSelect2('#exam_type',     'Select Exam Type');
+    initSelect2('#academic_year', 'Select Academic Year');
+    initSelect2('#class_level',   'Select Class Level');
+    initSelect2('#stream_class',  'All Streams');
+    initSelect2('#status',        'Select Status');
+    // #term is initialised AFTER we populate its options (see populateTermSelect)
+
+    // ================================================================
+    // TERM LOADING
+    // ================================================================
+
+    var $term              = $('#term');
+    var $termLoadingIndicator = $('#term-loading-indicator');
+
+    /**
+     * Destroy any existing Select2 on #term, repopulate <option> elements,
+     * then re-initialise Select2. This is the only reliable way to refresh
+     * Select2 after completely replacing the underlying <option> set.
+     */
+    function populateTermSelect(academicYearId, selectedTermId) {
+        // 1. Tear down Select2 if it was already initialised on #term
+        if ($term.hasClass('select2-hidden-accessible')) {
+            $term.select2('destroy');
+        }
+
+        var terms = (TERMS_DATA && TERMS_DATA[String(academicYearId)]) ? TERMS_DATA[String(academicYearId)] : [];
+
+        // 2. Rebuild raw <option> list
+        $term.empty();
+
+        if (terms.length === 0) {
+            $term.append('<option value="">No terms available for this year</option>');
+            $term.prop('disabled', true);
+        } else {
+            $term.append('<option value="">Select Term</option>');
+            $.each(terms, function (i, t) {
+                var isSelected = (selectedTermId && String(t.id) === String(selectedTermId)) ? 'selected' : '';
+                $term.append(
+                    '<option value="' + t.id + '" ' + isSelected + '>' +
+                    escapeHtml(t.name) + ' (' + t.start_date + ' – ' + t.end_date + ')' +
+                    '</option>'
+                );
+            });
+            $term.prop('disabled', false);
+        }
+
+        // 3. Re-initialise Select2 on the freshly populated select
+        initSelect2('#term', 'Select Term');
+
+        // 4. Bind term→preview+autoName only once per init (use namespace)
+        $term.off('change.termHandler').on('change.termHandler', function () {
+            updatePreview();
+            autoGenerateName();
+        });
+
+        // 5. Trigger preview & auto-name with the now-correct value
+        updatePreview();
+        autoGenerateName();
+    }
+
+    /**
+     * Fetch terms from the server when they are not pre-loaded in TERMS_DATA.
+     */
+    function fetchAndLoadTerms(academicYearId, selectedTermId) {
+        // Show spinner, disable term select while fetching
+        if ($term.hasClass('select2-hidden-accessible')) {
+            $term.select2('destroy');
+        }
+        $term.empty().append('<option value="">Loading terms…</option>').prop('disabled', true);
+        initSelect2('#term', 'Loading terms…');
+        $termLoadingIndicator.addClass('show');
+
+        $.ajax({
+            url: '/management/api/terms-by-academic-year/',
+            method: 'GET',
+            data: { academic_year_id: academicYearId },
+            success: function (response) {
+                $termLoadingIndicator.removeClass('show');
+
+                if (response.terms && response.terms.length > 0) {
+                    // Cache fetched terms so switching back doesn't re-fetch
+                    TERMS_DATA[String(academicYearId)] = response.terms;
+                    populateTermSelect(academicYearId, selectedTermId);
+                } else {
+                    if ($term.hasClass('select2-hidden-accessible')) { $term.select2('destroy'); }
+                    $term.empty()
+                         .append('<option value="">No terms available for this year</option>')
+                         .prop('disabled', true);
+                    initSelect2('#term', 'No terms available');
+                    showNotification('No terms found for the selected academic year.', 'info');
+                }
+            },
+            error: function () {
+                $termLoadingIndicator.removeClass('show');
+                if ($term.hasClass('select2-hidden-accessible')) { $term.select2('destroy'); }
+                $term.empty()
+                     .append('<option value="">Error loading terms</option>')
+                     .prop('disabled', true);
+                initSelect2('#term', 'Error loading terms');
+                showNotification('Failed to load terms. Please refresh and try again.', 'error');
+            }
+        });
+    }
+
+    /**
+     * Main entry point called whenever the academic year changes OR on page load.
+     */
+    function loadTermsForYear(academicYearId, selectedTermId) {
+        if (!academicYearId) {
+            // No year selected — reset term select
+            if ($term.hasClass('select2-hidden-accessible')) { $term.select2('destroy'); }
+            $term.empty()
+                 .append('<option value="">Select Academic Year First</option>')
+                 .prop('disabled', true);
+            initSelect2('#term', 'Select Academic Year First');
+            return;
+        }
+
+        var cached = TERMS_DATA && TERMS_DATA[String(academicYearId)];
+
+        if (cached && cached.length > 0) {
+            // Data already available — populate immediately, no AJAX
+            $termLoadingIndicator.removeClass('show');
+            populateTermSelect(academicYearId, selectedTermId);
+        } else {
+            // Need to fetch from server
+            fetchAndLoadTerms(academicYearId, selectedTermId);
+        }
+    }
+
+    // ================================================================
+    // ACADEMIC YEAR — CHANGE HANDLER
+    // ================================================================
+    /*
+     * THE KEY FIX:
+     * Select2 fires 'select2:select' and 'select2:clear' events reliably.
+     * Listening on the native 'change' event works too, but to be safe we
+     * listen on BOTH — whichever fires first wins (the second is a no-op
+     * because the value will already have been processed).
+     *
+     * We do NOT rely on Select2's internal change propagation alone.
+     */
+    var _lastProcessedYear = null;
+
+    function onAcademicYearChanged() {
+        var yearId = $('#academic_year').val();
+
+        // Guard: only act when the value actually changed
+        if (yearId === _lastProcessedYear) return;
+        _lastProcessedYear = yearId;
+
+        // Reset term selection when year changes
+        loadTermsForYear(yearId, '');
+        updatePreview();
+    }
+
+    // Listen on both events for maximum reliability
+    $('#academic_year')
+        .on('change',         onAcademicYearChanged)   // native + jQuery
+        .on('select2:select', onAcademicYearChanged)   // Select2 selection
+        .on('select2:clear',  onAcademicYearChanged);  // Select2 clear button
+
+    // ================================================================
+    // STREAM FILTERING BY CLASS LEVEL
+    // ================================================================
+    function filterStreams() {
+        var selectedClassLevel = $('#class_level').val();
+        var $streamSelect = $('#stream_class');
+
+        $streamSelect.find('option').each(function () {
+            var $opt = $(this);
+            var optLevel = $opt.data('class-level');
+
+            if (!optLevel) {
+                // "All Streams" placeholder — always keep
+                return;
+            }
+
+            if (selectedClassLevel && String(optLevel) === String(selectedClassLevel)) {
+                $opt.prop('disabled', false);
+            } else {
+                $opt.prop('disabled', true);
+            }
+        });
+
+        // If the currently selected stream is now disabled, clear it
+        var $selected = $streamSelect.find('option:selected');
+        if ($selected.val() && $selected.prop('disabled')) {
+            $streamSelect.val('').trigger('change');
+        }
+
+        // Refresh Select2 display
+        if ($streamSelect.hasClass('select2-hidden-accessible')) {
+            $streamSelect.trigger('change.select2');
+        }
+    }
+
+    $('#class_level')
+        .on('change',         filterStreams)
+        .on('select2:select', filterStreams)
+        .on('select2:clear',  filterStreams);
+
+    // ================================================================
+    // LIVE PREVIEW
+    // ================================================================
+    function updatePreview() {
+        var name       = $('#name').val().trim();
+        var examType   = $('#exam_type  option:selected').text();
+        var classLevel = $('#class_level option:selected').text();
+        var examDate   = $('#exam_date').val();
+        var status     = $('#status').val();
+
+        $('#preview-name').text(name      || 'Session Name');
+        $('#preview-type').text(examType  || 'Exam Type');
+        $('#preview-class').text(classLevel || 'Class Level');
+
+        if (examDate) {
+            var d = new Date(examDate);
+            $('#preview-date').text(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+        } else {
+            $('#preview-date').text('Date');
+        }
+
+        var statusMap = {
+            draft:     { cls: 'draft',     label: 'Draft',     icon: 'circle' },
+            submitted: { cls: 'submitted', label: 'Submitted', icon: 'circle' },
+            verified:  { cls: 'verified',  label: 'Verified',  icon: 'circle' },
+            published: { cls: 'published', label: 'Published', icon: 'check-circle-fill' }
+        };
+        var s = statusMap[status] || statusMap.draft;
+
+        $('#preview-status')
+            .removeClass('draft submitted verified published')
+            .addClass(s.cls)
+            .html('<i class="bi bi-' + s.icon + '"></i> ' + s.label);
+    }
+
+    // Wire preview to all fields — use both events for Select2 fields
+    $('#name, #exam_date').on('input change', updatePreview);
+    $('#exam_type, #class_level, #status').on('change select2:select select2:clear', updatePreview);
+
+    // ================================================================
+    // AUTO-GENERATE SESSION NAME
+    // ================================================================
+    var isNameAutoGenerated = true;
+
+    function autoGenerateName() {
+        var examType   = $.trim($('#exam_type   option:selected').text());
+        var classLevel = $.trim($('#class_level option:selected').text());
+        var termText   = $.trim($('#term        option:selected').text());
+        var acadYear   = $.trim($('#academic_year option:selected').text());
+
+        var hasExamType   = examType   && examType   !== 'Select Exam Type';
+        var hasClassLevel = classLevel && classLevel !== 'Select Class Level';
+        var hasTerm       = termText   && termText   !== 'Select Term'
+                                       && termText   !== 'Select Academic Year First'
+                                       && termText   !== 'Loading terms…'
+                                       && termText   !== 'No terms available for this year'
+                                       && termText   !== '';
+        var hasAcadYear   = acadYear   && acadYear   !== 'Select Academic Year';
+
+        if (hasExamType && hasClassLevel && hasTerm && hasAcadYear) {
+            // Strip date range from term display text
+            var cleanTerm   = termText.split(' (')[0];
+            // Strip "(Active)" from year
+            var cleanYear   = acadYear.replace(/\s*\(Active\)\s*/i, '').trim();
+            var generated   = examType + ' – ' + classLevel + ' – ' + cleanTerm + ' ' + cleanYear;
+            var currentName = $('#name').val().trim();
+
+            if (!currentName || isNameAutoGenerated) {
+                $('#name').val(generated);
+                updatePreview();
+                isNameAutoGenerated = true;
+            }
+        }
+    }
+
+    // Auto-name triggers
+    $('#exam_type, #class_level, #academic_year').on('select2:select select2:clear change', autoGenerateName);
+    // #term change is bound inside populateTermSelect (with .termHandler namespace)
+
+    // Manual edit cancels auto-generation
+    $('#name').on('input', function () { isNameAutoGenerated = false; });
+
+    // ================================================================
+    // FORM SUBMISSION VIA AJAX
+    // ================================================================
+    $('#exam-session-form').on('submit', function (e) {
+        e.preventDefault();
+
+        var $form     = $(this);
+        var $submitBtn = $('#submit-btn');
+        var $spinner   = $submitBtn.find('.spinner-border');
+        var $btnText   = $submitBtn.find('.btn-text');
+
+        // Clear previous errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+
+        // Client-side validation
+        var hasErrors = false;
+        var required = {
+            exam_type:    'Exam type is required.',
+            academic_year:'Academic year is required.',
+            term:         'Term is required.',
+            class_level:  'Class level is required.',
+            exam_date:    'Exam date is required.'
+        };
+
+        $.each(required, function (fieldId, msg) {
+            if (!$('#' + fieldId).val()) {
+                showFieldError(fieldId, msg);
+                hasErrors = true;
+            }
+        });
+
+        if (hasErrors) {
+            showNotification('Please correct the errors above.', 'error');
+            return false;
+        }
+
+        // Disable button & show spinner
+        $submitBtn.prop('disabled', true);
+        $spinner.removeClass('d-none');
+        $btnText.text('Saving…');
+
+        $.ajax({
+            url:  $form.attr('action'),
+            method: 'POST',
+            data: $form.serialize(),
+            success: function (response) {
+                showNotification(response.message, 'success');
+                formChanged = false;
+                setTimeout(function () {
+                    window.location.href = response.redirect_url || "{% url 'management:exam_session_list' %}";
+                }, 1500);
+            },
+            error: function (xhr) {
+                $submitBtn.prop('disabled', false);
+                $spinner.addClass('d-none');
+                $btnText.text('{% if is_edit %}Update Session{% else %}Create Session{% endif %}');
+
+                var resp = xhr.responseJSON;
+                if (resp && resp.errors) {
+                    $.each(resp.errors, function (field, errs) {
+                        showFieldError(field, errs[0]);
+                    });
+                    showNotification(resp.message || 'Please correct the errors below.', 'error');
+                } else {
+                    showNotification((resp && resp.message) || 'An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ================================================================
+    // UNSAVED-CHANGES GUARD
+    // ================================================================
+    var formChanged = false;
+
+    $('#exam-session-form :input').on('change input', function () { formChanged = true; });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+
+    $('#exam-session-form').on('submit',  function () { formChanged = false; });
+    $('.btn-cancel').on('click',          function () { formChanged = false; });
+
+    // ================================================================
+    // INITIAL PAGE LOAD — restore state
+    // ================================================================
+    /*
+     * Run AFTER all handlers are bound.
+     * If an academic year is pre-selected (edit mode or form-error redisplay),
+     * load its terms and restore the previously selected term.
+     */
+    var initYear = INITIAL_ACADEMIC_YEAR || $('#academic_year').val();
+
+    if (initYear) {
+        _lastProcessedYear = initYear; // Prevent the change handler firing again
+        loadTermsForYear(initYear, INITIAL_TERM_ID);
+    } else {
+        // No year yet — just disable term
+        $term.prop('disabled', true);
+        initSelect2('#term', 'Select Academic Year First');
+    }
+
+    // Seed preview & filter streams with whatever is already selected
+    setTimeout(function () {
+        filterStreams();
+        updatePreview();
+        autoGenerateName();
+    }, 300);
+
+}); // end $(document).ready
+</script>
+{% endblock %}

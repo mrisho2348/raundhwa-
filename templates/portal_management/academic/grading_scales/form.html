@@ -1,0 +1,1164 @@
+<!-- templates/portal_management/academics/grading_scales/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM GRADING SCALE FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Grade Selector */
+    .grade-selector {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .grade-option {
+        flex: 1;
+        min-width: 70px;
+        cursor: pointer;
+    }
+
+    .grade-option input {
+        display: none;
+    }
+
+    .grade-option-card {
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .grade-option-card:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .grade-option input:checked + .grade-option-card {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+    }
+
+    .grade-letter-large {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .grade-description {
+        font-size: 0.7rem;
+        color: var(--gray-600);
+    }
+
+    /* Mark Range Inputs */
+    .mark-range-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .mark-range-group .form-control {
+        flex: 1;
+    }
+
+    .mark-separator {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-500);
+    }
+
+    /* Preview Card */
+    .preview-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .preview-card h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .preview-grade {
+        text-align: center;
+    }
+
+    .preview-grade-badge {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-range {
+        text-align: center;
+        padding: 0 1rem;
+        border-left: 1px solid var(--gray-300);
+        border-right: 1px solid var(--gray-300);
+    }
+
+    .preview-range-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+    }
+
+    .preview-points {
+        text-align: center;
+    }
+
+    .preview-points-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--warning);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+    }
+
+    .alert-general-error .error-content {
+        flex: 1;
+    }
+
+    .alert-general-error ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .alert-general-error li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .toast-icon.warning {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .grade-selector {
+            flex-direction: column;
+        }
+
+        .mark-range-group {
+            flex-direction: column;
+        }
+
+        .mark-separator {
+            display: none;
+        }
+
+        .preview-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .preview-range {
+            border-left: none;
+            border-right: none;
+            border-top: 1px solid var(--gray-300);
+            border-bottom: 1px solid var(--gray-300);
+            padding: 1rem 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-star-fill me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if scale %}
+                    Update grading scale for {{ scale.education_level.name }} - Grade {{ scale.grade }}
+                {% else %}
+                    Create a new grading scale for an educational level
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:grading_scale_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Grading Scales</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Grading Scale Details
+        </h5>
+        {% if scale %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Created: {{ scale.created_at|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="grading-scale-form" method="POST" 
+          {% if scale %}action="{% url 'management:grading_scale_update' scale.pk %}"{% else %}action="{% url 'management:grading_scale_create' %}"{% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <div class="row g-4">
+            <!-- Educational Level Selection -->
+            <div class="col-md-12">
+                <label for="education_level" class="form-label required-field">Educational Level</label>
+                <select name="education_level" id="education_level" class="form-select select2-filter" required>
+                    <option value="">Select Educational Level</option>
+                    {% for level in educational_levels %}
+                    <option value="{{ level.pk }}" 
+                            {% if scale and scale.education_level.pk == level.pk %}selected{% endif %}>
+                        {{ level.name }} ({{ level.get_level_type_display }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the educational level this grading scale applies to
+                </small>
+            </div>
+
+            <!-- Grade Selection -->
+            <div class="col-md-12">
+                <label class="form-label required-field">Grade</label>
+                <div class="grade-selector" id="grade-selector">
+                    {% for grade_code, grade_name in grade_choices %}
+                    <label class="grade-option">
+                        <input type="radio" name="grade" value="{{ grade_code }}" 
+                               {% if scale and scale.grade == grade_code %}checked{% endif %} required>
+                        <div class="grade-option-card">
+                            <div class="grade-letter-large">{{ grade_code }}</div>
+                            <div class="grade-description">{{ grade_name|truncatechars:20 }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the grade letter (A, B, C, D, E, F, S)
+                </small>
+            </div>
+
+            <!-- Mark Range -->
+            <div class="col-md-6">
+                <label for="min_mark" class="form-label required-field">Minimum Mark (%)</label>
+                <input type="number" class="form-control" id="min_mark" name="min_mark" 
+                       step="0.01" min="0" max="100"
+                       value="{% if scale %}{{ scale.min_mark }}{% endif %}" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Lowest percentage to achieve this grade (0-100)
+                </small>
+            </div>
+
+            <div class="col-md-6">
+                <label for="max_mark" class="form-label required-field">Maximum Mark (%)</label>
+                <input type="number" class="form-control" id="max_mark" name="max_mark" 
+                       step="0.01" min="0" max="100"
+                       value="{% if scale %}{{ scale.max_mark }}{% endif %}" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Highest percentage to achieve this grade (0-100)
+                </small>
+            </div>
+
+            <!-- Points -->
+            <div class="col-md-12">
+                <label for="points" class="form-label required-field">Grade Points</label>
+                <input type="number" class="form-control" id="points" name="points" 
+                       step="0.1" min="0" max="12"
+                       value="{% if scale %}{{ scale.points }}{% else %}0{% endif %}" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Points assigned to this grade (0-12, typically 0 for Primary, 1-12 for Secondary)
+                </small>
+            </div>
+
+            <!-- Description -->
+            <div class="col-md-12">
+                <label for="description" class="form-label">Description (Optional)</label>
+                <textarea class="form-control" id="description" name="description" 
+                          rows="3" placeholder="Additional notes about this grading scale...">{% if scale %}{{ scale.description }}{% endif %}</textarea>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Optional description or notes about this grading scale
+                </small>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="col-12" id="preview-card" style="display: none;">
+                <div class="preview-card">
+                    <h6>
+                        <i class="bi bi-eye"></i>
+                        Grading Scale Preview
+                    </h6>
+                    <div class="preview-content">
+                        <div class="preview-grade">
+                            <div class="preview-grade-badge" id="preview-grade-letter">A</div>
+                            <div class="text-muted">Grade</div>
+                        </div>
+                        <div class="preview-range">
+                            <div class="preview-range-value" id="preview-range">0% - 100%</div>
+                            <div class="text-muted">Mark Range</div>
+                        </div>
+                        <div class="preview-points">
+                            <div class="preview-points-value" id="preview-points">0.0</div>
+                            <div class="text-muted">Grade Points</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validation Warnings -->
+            <div class="col-12" id="range-warning" style="display: none;">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> <span id="range-warning-text"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if scale %}Update Grading Scale{% else %}Create Grading Scale{% endif %}
+                </span>
+            </button>
+
+            <a href="{% url 'management:grading_scale_list' %}" class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let scaleId = {% if scale %}{{ scale.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR EDUCATIONAL LEVEL
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Select Educational Level'
+    });
+
+    // ============================================
+    // PREVIEW FUNCTION
+    // ============================================
+    function updatePreview() {
+        const selectedGrade = $('input[name="grade"]:checked').val();
+        const minMark = parseFloat($('#min_mark').val());
+        const maxMark = parseFloat($('#max_mark').val());
+        const points = parseFloat($('#points').val());
+        
+        if (selectedGrade) {
+            $('#preview-grade-letter').text(selectedGrade);
+            $('#preview-card').show();
+        } else {
+            $('#preview-card').hide();
+            return;
+        }
+        
+        if (!isNaN(minMark) && !isNaN(maxMark)) {
+            $('#preview-range').text(`${minMark}% - ${maxMark}%`);
+        } else {
+            $('#preview-range').text('0% - 100%');
+        }
+        
+        if (!isNaN(points)) {
+            $('#preview-points').text(points.toFixed(1));
+        }
+        
+        // Check for valid range
+        if (!isNaN(minMark) && !isNaN(maxMark)) {
+            if (minMark >= maxMark) {
+                $('#range-warning').show();
+                $('#range-warning-text').text('Minimum mark must be less than maximum mark.');
+                $('#range-warning').removeClass('alert-warning').addClass('alert-danger');
+            } else if (minMark < 0 || maxMark > 100) {
+                $('#range-warning').show();
+                $('#range-warning-text').text('Marks must be between 0 and 100.');
+                $('#range-warning').removeClass('alert-warning').addClass('alert-danger');
+            } else if (maxMark - minMark < 5) {
+                $('#range-warning').show();
+                $('#range-warning-text').text('Mark range is very narrow (less than 5%). Consider widening the range.');
+                $('#range-warning').removeClass('alert-danger').addClass('alert-warning');
+            } else {
+                $('#range-warning').hide();
+            }
+        } else {
+            $('#range-warning').hide();
+        }
+    }
+    
+    // ============================================
+    // INPUT VALIDATION
+    // ============================================
+    function validateInputs() {
+        let isValid = true;
+        const minMark = parseFloat($('#min_mark').val());
+        const maxMark = parseFloat($('#max_mark').val());
+        const points = parseFloat($('#points').val());
+        
+        // Clear previous inline errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        // Validate min mark
+        if (isNaN(minMark) || minMark < 0 || minMark > 100) {
+            $('#min_mark').addClass('is-invalid');
+            $('#min_mark').after('<div class="invalid-feedback">Minimum mark must be between 0 and 100.</div>');
+            isValid = false;
+        }
+        
+        // Validate max mark
+        if (isNaN(maxMark) || maxMark < 0 || maxMark > 100) {
+            $('#max_mark').addClass('is-invalid');
+            $('#max_mark').after('<div class="invalid-feedback">Maximum mark must be between 0 and 100.</div>');
+            isValid = false;
+        }
+        
+        // Validate min < max
+        if (!isNaN(minMark) && !isNaN(maxMark) && minMark >= maxMark) {
+            $('#min_mark, #max_mark').addClass('is-invalid');
+            $('#max_mark').after('<div class="invalid-feedback">Minimum mark must be less than maximum mark.</div>');
+            isValid = false;
+        }
+        
+        // Validate points
+        if (isNaN(points) || points < 0 || points > 12) {
+            $('#points').addClass('is-invalid');
+            $('#points').after('<div class="invalid-feedback">Points must be between 0 and 12.</div>');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    // ============================================
+    // AUTO-GENERATE DESCRIPTION
+    // ============================================
+    function updateDescription() {
+        const selectedGrade = $('input[name="grade"]:checked').val();
+        const minMark = $('#min_mark').val();
+        const maxMark = $('#max_mark').val();
+        const points = $('#points').val();
+        const currentDesc = $('#description').val().trim();
+        
+        // Only auto-generate if description is empty
+        if (!currentDesc && selectedGrade && minMark && maxMark && points) {
+            const gradeName = $('input[name="grade"]:checked').closest('.grade-option').find('.grade-description').text();
+            $('#description').val(`${selectedGrade} - ${gradeName}: ${minMark}% to ${maxMark}% (${points} points)`);
+        }
+    }
+    
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    $('input[name="grade"]').on('change', function() {
+        updatePreview();
+        updateDescription();
+    });
+    
+    $('#min_mark, #max_mark, #points').on('input', function() {
+        updatePreview();
+        validateInputs();
+        updateDescription();
+    });
+    
+    // Initialize preview on load
+    updatePreview();
+    validateInputs();
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    $('#grading-scale-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate inputs
+        if (!validateInputs()) {
+            showNotification('Please correct the errors before submitting.', 'error');
+            return;
+        }
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = form.serialize();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = "{% url 'management:grading_scale_list' %}";
+                        }
+                    }, 1500);
+                } else {
+                    displayErrors(data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if scale %}Update Grading Scale{% else %}Create Grading Scale{% endif %}');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    displayErrors(response);
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if scale %}Update Grading Scale{% else %}Create Grading Scale{% endif %}');
+            }
+        });
+    });
+
+    // ============================================
+    // ERROR HANDLING FUNCTIONS
+    // ============================================
+    
+    function clearErrors() {
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    }
+    
+    function displayErrors(data) {
+        let hasGeneralErrors = false;
+        let errorContent = '<div class="error-content">';
+        
+        // Handle main message
+        if (data.message && data.message !== 'Please correct the errors below.') {
+            errorContent += `<div class="fw-semibold mb-2">${escapeHtml(data.message)}</div>`;
+            hasGeneralErrors = true;
+        }
+        
+        // Handle field-specific errors
+        if (data.errors) {
+            $.each(data.errors, function(fieldName, fieldErrors) {
+                // Handle __all__ errors (non-field errors)
+                if (fieldName === '__all__') {
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += '<ul>';
+                        fieldErrors.forEach(function(error) {
+                            errorContent += `<li>${escapeHtml(error)}</li>`;
+                        });
+                        errorContent += '</ul>';
+                    } else {
+                        errorContent += `<div class="mt-1">${escapeHtml(fieldErrors)}</div>`;
+                    }
+                    return;
+                }
+                
+                // Try to find the field
+                let field = $(`[name="${fieldName}"]`);
+                if (field.length === 0) {
+                    field = $(`#${fieldName}`);
+                }
+                
+                if (field.length) {
+                    field.addClass('is-invalid');
+                    
+                    let errorText = '';
+                    if (Array.isArray(fieldErrors)) {
+                        errorText = fieldErrors.join('<br>');
+                    } else if (typeof fieldErrors === 'string') {
+                        errorText = fieldErrors;
+                    } else {
+                        errorText = 'Invalid value';
+                    }
+                    
+                    // Check if it's a Select2 field
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        const select2Container = field.next('.select2-container');
+                        if (select2Container.length) {
+                            select2Container.after(`<div class="invalid-feedback d-block">${escapeHtml(errorText)}</div>`);
+                        } else {
+                            field.after(`<div class="invalid-feedback">${escapeHtml(errorText)}</div>`);
+                        }
+                    } else {
+                        const errorHtml = `<div class="invalid-feedback">${escapeHtml(errorText)}</div>`;
+                        field.next('.invalid-feedback').remove();
+                        field.after(errorHtml);
+                    }
+                } else {
+                    // Field not found, treat as general error
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors.join(', '))}</div>`;
+                    } else {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors)}</div>`;
+                    }
+                }
+            });
+        }
+        
+        errorContent += '</div>';
+        
+        // Display general errors if any
+        if (hasGeneralErrors) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill"></i>${errorContent}`).show();
+            
+            // Scroll to error message
+            $('html, body').animate({
+                scrollTop: generalErrorDiv.offset().top - 100
+            }, 500);
+        }
+        
+        // If there's only a message and no errors, show it as notification
+        if (!data.errors && data.message && !hasGeneralErrors) {
+            showNotification(data.message, 'error');
+        }
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

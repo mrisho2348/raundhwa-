@@ -1,0 +1,1345 @@
+<!-- templates/portal_management/hr/department_assignments/list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Staff Department Assignments — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Department Assignments{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF DEPARTMENT ASSIGNMENT MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.active { background: var(--success-light); color: var(--success); }
+    .stat-icon.inactive { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.heads { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .btn-filter {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-filter:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-reset {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        height: 45px;
+    }
+
+    .btn-reset:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        min-width: 90px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        flex-shrink: 0;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.end:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+        width: 100%;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gray-400) var(--gray-200);
+    }
+
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--gray-400);
+        border-radius: var(--radius-full);
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 1000px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        background-color: white;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    /* Staff Info */
+    .staff-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .staff-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 180px;
+    }
+
+    .staff-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .staff-id {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        font-family: monospace;
+        white-space: nowrap;
+    }
+
+    /* Department Badge */
+    .department-badge {
+        display: inline-block;
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .head-badge {
+        display: inline-block;
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        white-space: nowrap;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.inactive {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .status-badge.expired {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Date Range */
+    .date-range {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        white-space: nowrap;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .page-link {
+        border-radius: var(--radius-md);
+        margin: 0 0.25rem;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .page-link:hover {
+        background-color: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .staff-info {
+            min-width: 160px;
+        }
+        
+        .staff-name {
+            white-space: normal;
+        }
+        
+        .date-range {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-building me-2"></i>
+                Staff Department Assignments
+            </h1>
+            <p class="mb-0">Manage staff assignments to academic departments</p>
+        </div>
+        <div>
+            <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-building me-2"></i>
+                Total Assignments: {{ total_assignments }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-building"></i>
+        </div>
+        <div class="stat-value">{{ total_assignments }}</div>
+        <div class="stat-label">Total Assignments</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon active">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-value">{{ active_assignments }}</div>
+        <div class="stat-label">Active Assignments</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon inactive">
+            <i class="bi bi-pause-circle"></i>
+        </div>
+        <div class="stat-value">{{ inactive_assignments }}</div>
+        <div class="stat-label">Inactive Assignments</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon heads">
+            <i class="bi bi-star-fill"></i>
+        </div>
+        <div class="stat-value">{{ heads_of_department }}</div>
+        <div class="stat-label">Heads of Department</div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form method="GET" action="" id="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="search" class="filter-label">Search</label>
+                <input type="text" class="filter-input" id="search" name="search" 
+                       placeholder="Staff name, employee ID, or department..." 
+                       value="{{ search_query }}">
+            </div>
+            
+            <div class="filter-group">
+                <label for="staff" class="filter-label">Staff Member</label>
+                <select name="staff" id="staff" class="filter-select select2-filter">
+                    <option value="">All Staff</option>
+                    {% for staff in staff_members %}
+                    <option value="{{ staff.pk }}" {% if selected_staff == staff.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ staff.get_full_name }} ({{ staff.employee_id }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+          <!-- Fix the department filter select - remove extra braces -->
+            <div class="filter-group">
+                <label for="department" class="filter-label">Department</label>
+                <select name="department" id="department" class="filter-select select2-filter">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.pk }}" {% if selected_department == dept.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ dept.name }} ({{ dept.code }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="is_head" class="filter-label">Head of Department</label>
+                <select name="is_head" id="is_head" class="filter-select select2-filter">
+                    <option value="">All</option>
+                    <option value="yes" {% if selected_is_head == 'yes' %}selected{% endif %}>Heads of Department</option>
+                    <option value="no" {% if selected_is_head == 'no' %}selected{% endif %}>Regular Staff</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="status" class="filter-label">Status</label>
+                <select name="status" id="status" class="filter-select select2-filter">
+                    <option value="">All Status</option>
+                    <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            
+            <div class="filter-group d-flex gap-2">
+                <button type="submit" class="btn-filter flex-grow-1" id="apply-filters">
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+                </button>
+                <a href="{% url 'management:staff_department_assignment_list' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Assignments List Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-list-columns-reverse"></i>
+            Department Assignments
+        </h5>
+        <a href="{% url 'management:staff_department_assignment_create' %}" class="btn-add">
+            <i class="bi bi-plus-lg"></i>
+            <span>New Assignment</span>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="assignmentsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>Department</th>
+                    <th>Assignment Period</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                 </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                <tr id="assignment-row-{{ assignment.pk }}">
+                    <td>
+                        <div class="staff-info">
+                            <div class="staff-avatar">
+                                {{ assignment.staff.first_name|first|upper }}{{ assignment.staff.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="staff-name">{{ assignment.staff.get_full_name }}</div>
+                                <div class="staff-id">{{ assignment.staff.employee_id }}</div>
+                            </div>
+                        </div>
+                     </div>
+                     <td>
+                        <span class="department-badge">
+                            <i class="bi bi-building"></i>
+                            {{ assignment.department.name }}
+                        </span>
+                        {% if assignment.is_head %}
+                        <span class="head-badge">
+                            <i class="bi bi-star-fill"></i>
+                            Head of Department
+                        </span>
+                        {% endif %}
+                     </td>
+                     <td>
+                        <div class="date-range">
+                            <i class="bi bi-calendar-check"></i>
+                            {{ assignment.start_date|date:"M d, Y" }}
+                            {% if assignment.end_date %}
+                            → {{ assignment.end_date|date:"M d, Y" }}
+                            {% else %}
+                            → Present
+                            {% endif %}
+                        </div>
+                     </td>
+                     <td>
+                        {% if assignment.is_active and not assignment.end_date %}
+                        <span class="status-badge active">
+                            <i class="bi bi-check-circle-fill"></i> Active
+                        </span>
+                        {% elif assignment.end_date and assignment.end_date < now %}
+                        <span class="status-badge expired">
+                            <i class="bi bi-calendar-x"></i> Expired
+                        </span>
+                        {% else %}
+                        <span class="status-badge inactive">
+                            <i class="bi bi-pause-circle"></i> Inactive
+                        </span>
+                        {% endif %}
+                     </td>
+                     <td>
+                        <div class="action-buttons">
+                            <!-- View Details Button -->
+                            <a href="{% url 'management:staff_department_assignment_detail' assignment.pk %}" 
+                               class="btn-action view" 
+                               title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <!-- Edit Button -->
+                            <a href="{% url 'management:staff_department_assignment_update' assignment.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            
+                            {% if assignment.is_active and not assignment.end_date %}
+                            <!-- End Assignment Button -->
+                            <button type="button"
+                                    class="btn-action end"
+                                    title="End Assignment"
+                                    onclick="endAssignment({{ assignment.pk }}, '{{ assignment.staff.get_full_name|escapejs }}', '{{ assignment.department.name|escapejs }}')">
+                                <i class="bi bi-stop-circle"></i>
+                            </button>
+                            {% endif %}
+                            
+                            <!-- Delete Button -->
+                            <button type="button"
+                                    class="btn-action delete"
+                                    title="Delete"
+                                    onclick="showDeleteModal({{ assignment.pk }}, '{{ assignment.staff.get_full_name|escapejs }}', '{{ assignment.department.name|escapejs }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                     </td>
+                 </tr>
+                {% empty %}
+                 <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <h5 class="text-muted mb-2">No department assignments found</h5>
+                            <p class="text-muted mb-3">
+                                {% if search_query or selected_staff or selected_department or selected_is_head or selected_status %}
+                                    Try adjusting your search filters or
+                                {% endif %}
+                                create your first department assignment
+                            </p>
+                            <a href="{% url 'management:staff_department_assignment_create' %}" class="btn-add">
+                                <i class="bi bi-plus-lg"></i>
+                                Create Assignment
+                            </a>
+                        </div>
+                     </td>
+                 </tr>
+                {% endfor %}
+            </tbody>
+         </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ previous_page }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_staff %}&staff={{ selected_staff }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_is_head %}&is_head={{ selected_is_head }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in total_pages|make_list %}
+                {% if forloop.counter == current_page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ current_page }}</span>
+                </li>
+                {% elif forloop.counter <= 5 or forloop.counter > total_pages|add:-5 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ forloop.counter }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_staff %}&staff={{ selected_staff }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_is_head %}&is_head={{ selected_is_head }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+                        {{ forloop.counter }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ next_page }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_staff %}&staff={{ selected_staff }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_is_head %}&is_head={{ selected_is_head }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- End Assignment Confirmation Modal -->
+<div class="modal fade" id="endModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-stop-circle-fill me-2"></i>
+                    Confirm End Assignment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="end-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to end the department assignment for <strong id="end-staff-name"></strong>?</p>
+                    <p><strong>Department:</strong> <span id="end-department-name"></span></p>
+                    <p class="text-muted mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This will set the end date to today and mark the assignment as inactive.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="confirm-end-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span class="btn-text">End Assignment</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the department assignment for <strong id="delete-staff-name"></strong>?</p>
+                    <p><strong>Department:</strong> <span id="delete-department-name"></span></p>
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Assignment</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let assignmentToEnd = null;
+let assignmentToDelete = null;
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR FILTERS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function() {
+            return $(this).data('placeholder') || 'Select option';
+        }
+    });
+
+    // ============================================
+    // FILTER FORM SUBMIT - ONLY ON BUTTON CLICK
+    // ============================================
+    $('#apply-filters').on('click', function(e) {
+        e.preventDefault();
+        
+        // Show loading indicator
+        $('#loadingOverlay').addClass('show');
+        
+        // Get form data
+        const form = $('#filter-form');
+        const formData = form.serialize();
+        
+        // Submit the form
+        window.location.href = `${window.location.pathname}?${formData}`;
+    });
+
+    // ============================================
+    // ENTER KEY IN SEARCH FIELD - SUBMIT FILTERS
+    // ============================================
+    $('#search').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#apply-filters').click();
+        }
+    });
+});
+
+// ============================================
+// END ASSIGNMENT FUNCTIONS
+// ============================================
+
+window.endAssignment = function(assignmentId, staffName, departmentName) {
+    assignmentToEnd = assignmentId;
+    $('#end-staff-name').text(staffName);
+    $('#end-department-name').text(departmentName);
+    
+    // Set form action URL
+    $('#end-form').attr('action', `/management/hr/department-assignments/${assignmentId}/end/`);
+    
+    const modal = new bootstrap.Modal(document.getElementById('endModal'));
+    modal.show();
+};
+
+$('#end-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const endBtn = $('#confirm-end-btn');
+    const spinner = endBtn.find('.spinner-border');
+    const btnText = endBtn.find('.btn-text');
+    
+    endBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Ending...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#endModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.reload();
+            }, 1500);
+        },
+        error: function(xhr) {
+            endBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('End Assignment');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error ending assignment', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#endModal').on('hidden.bs.modal', function() {
+    const endBtn = $('#confirm-end-btn');
+    endBtn.prop('disabled', false);
+    endBtn.find('.spinner-border').addClass('d-none');
+    endBtn.find('.btn-text').text('End Assignment');
+    assignmentToEnd = null;
+});
+
+// ============================================
+// DELETE ASSIGNMENT FUNCTIONS
+// ============================================
+
+window.showDeleteModal = function(assignmentId, staffName, departmentName) {
+    assignmentToDelete = assignmentId;
+    $('#delete-staff-name').text(staffName);
+    $('#delete-department-name').text(departmentName);
+    
+    // Set form action URL
+    $('#delete-form').attr('action', `/management/hr/department-assignments/${assignmentId}/delete/`);
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+};
+
+$('#delete-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deleteBtn = $('#confirm-delete-btn');
+    const spinner = deleteBtn.find('.spinner-border');
+    const btnText = deleteBtn.find('.btn-text');
+    
+    deleteBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deleting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:staff_department_assignment_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deleteBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Delete Assignment');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deleting assignment', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deleteModal').on('hidden.bs.modal', function() {
+    const deleteBtn = $('#confirm-delete-btn');
+    deleteBtn.prop('disabled', false);
+    deleteBtn.find('.spinner-border').addClass('d-none');
+    deleteBtn.find('.btn-text').text('Delete Assignment');
+    assignmentToDelete = null;
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

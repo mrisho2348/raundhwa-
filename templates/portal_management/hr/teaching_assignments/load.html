@@ -1,0 +1,972 @@
+<!-- templates/portal_management/hr/teaching_assignments/load.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Staff Teaching Load Summary — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Teaching Load Summary{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF TEACHING LOAD SUMMARY STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--success));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.assignments { background: var(--info-light); color: var(--info); }
+    .stat-icon.staff { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.periods { background: var(--success-light); color: var(--success); }
+    .stat-icon.average { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .year-selector {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .year-selector label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .year-selector select {
+        flex: 1;
+        min-width: 200px;
+        max-width: 300px;
+    }
+
+    .summary-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* Select2 Customization */
+    .select2-container {
+        width: 100% !important;
+        max-width: 300px;
+    }
+    
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+        background-color: white;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 9999;
+    }
+
+    .select2-results__option {
+        padding: 8px 12px;
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Staff Cards Grid */
+    .staff-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .staff-load-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+
+    .staff-load-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .staff-card-header {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        padding: 1.25rem;
+        border-bottom: 2px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .staff-avatar-large {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .staff-info {
+        flex: 1;
+    }
+
+    .staff-name {
+        font-weight: 700;
+        color: var(--gray-800);
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .staff-id {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        font-family: monospace;
+    }
+
+    .staff-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .staff-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--gray-600);
+    }
+
+    .staff-stat i {
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+
+    .staff-card-body {
+        padding: 1.25rem;
+    }
+
+    .assignment-item {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        transition: var(--transition);
+    }
+
+    .assignment-item:hover {
+        background: var(--primary-light);
+        transform: translateX(5px);
+    }
+
+    .assignment-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .assignment-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .assignment-title i {
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+
+    .subject-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .class-badge {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .stream-badge {
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .periods-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .assignment-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .assignment-periods {
+        font-weight: 600;
+        color: var(--success);
+    }
+
+    .total-periods {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 2px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+    }
+
+    .total-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .total-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .year-selector {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .year-selector label {
+            margin-bottom: 0.5rem;
+        }
+        
+        .year-selector select {
+            max-width: 100%;
+        }
+        
+        .select2-container {
+            max-width: 100% !important;
+        }
+
+        .staff-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-badge {
+            text-align: center;
+            white-space: normal;
+        }
+
+        .staff-card-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .staff-stats {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-bar-chart-line me-2"></i>
+                Staff Teaching Load Summary
+            </h1>
+            <p class="mb-0">Overview of teaching assignments and workload distribution across staff members</p>
+        </div>
+        <div>
+            <a href="{% url 'management:staff_teaching_assignment_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Assignments
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon assignments">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div class="stat-value">{{ total_assignments }}</div>
+        <div class="stat-label">Total Assignments</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon staff">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="stat-value">{{ staff_count }}</div>
+        <div class="stat-label">Staff with Teaching Load</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon periods">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-value">
+            {% with total_periods=0 %}
+                {% for staff in staff_load %}
+                    {% with total_periods=total_periods|add:staff.total_periods %}{% endwith %}
+                {% endfor %}
+                {{ total_periods }}
+            {% endwith %}
+        </div>
+        <div class="stat-label">Total Periods/Week</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon average">
+            <i class="bi bi-calculator"></i>
+        </div>
+        <div class="stat-value">
+            {% if staff_count > 0 %}
+                {% with total_periods=0 %}
+                    {% for staff in staff_load %}
+                        {% with total_periods=total_periods|add:staff.total_periods %}{% endwith %}
+                    {% endfor %}
+                    {{ total_periods|divisibleby:staff_count|floatformat:1 }}
+                {% endwith %}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="stat-label">Avg Periods/Staff/Week</div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <div class="year-selector">
+        <label for="academic_year"><i class="bi bi-calendar-range me-2"></i>Academic Year:</label>
+        <select id="academic_year" name="academic_year" class="form-select select2-filter">
+            <option value="">Select Academic Year</option>
+            {% for year in academic_years %}
+            <option value="{{ year.pk }}" {% if selected_academic_year == year.pk|stringformat:"s" %}selected{% endif %}>
+                {{ year.name }} {% if year.is_active %}(Active){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="summary-badge">
+        <i class="bi bi-info-circle me-2"></i>
+        Showing teaching load for {{ academic_year.name }}
+    </div>
+</div>
+
+<!-- Main Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-person-workspace"></i>
+            Staff Teaching Load by Staff Member
+        </h5>
+        <a href="{% url 'management:staff_teaching_assignment_create' %}" class="btn-add">
+            <i class="bi bi-plus-lg"></i>
+            New Assignment
+        </a>
+    </div>
+
+    {% if staff_load %}
+        <div class="staff-grid">
+            {% for staff_data in staff_load %}
+            <div class="staff-load-card">
+                <div class="staff-card-header">
+                    <div class="staff-avatar-large">
+                        {{ staff_data.staff.first_name|first|upper }}{{ staff_data.staff.last_name|first|upper }}
+                    </div>
+                    <div class="staff-info">
+                        <div class="staff-name">{{ staff_data.staff.get_full_name }}</div>
+                        <div class="staff-id">{{ staff_data.staff.employee_id }}</div>
+                        <div class="staff-stats">
+                            <div class="staff-stat">
+                                <i class="bi bi-journal-bookmark-fill"></i>
+                                {{ staff_data.assignments|length }} Subject{{ staff_data.assignments|length|pluralize }}
+                            </div>
+                            <div class="staff-stat">
+                                <i class="bi bi-clock"></i>
+                                {{ staff_data.total_periods }} period{{ staff_data.total_periods|pluralize }}/week
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'management:staff_detail' staff_data.staff.pk %}" 
+                       class="btn btn-sm btn-outline-primary" 
+                       title="View Staff Profile">
+                        <i class="bi bi-person"></i>
+                    </a>
+                </div>
+                <div class="staff-card-body">
+                    {% for assignment in staff_data.assignments %}
+                    <div class="assignment-item">
+                        <div class="assignment-title">
+                            <i class="bi bi-book"></i>
+                            <span class="subject-badge">{{ assignment.subject.name }}</span>
+                            <span class="class-badge">{{ assignment.class_level.name }}</span>
+                            {% if assignment.stream_class %}
+                            <span class="stream-badge">{{ assignment.stream_class.name }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="assignment-details">
+                            <span class="text-muted small">
+                                <i class="bi bi-calendar"></i> {{ assignment.academic_year.name }}
+                            </span>
+                            <span class="assignment-periods">
+                                <i class="bi bi-clock"></i> {{ assignment.periods_per_week }} periods/week
+                            </span>
+                        </div>
+                        {% if assignment.remarks %}
+                        <div class="text-muted small mt-2">
+                            <i class="bi bi-chat"></i> {{ assignment.remarks|truncatechars:60 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="total-periods">
+                        <span class="total-label">
+                            <i class="bi bi-calculator"></i> Total Weekly Load:
+                        </span>
+                        <span class="total-value">
+                            {{ staff_data.total_periods }} periods/week
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% elif no_active_year %}
+        <!-- No Active Academic Year -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-calendar-x"></i>
+            </div>
+            <h5 class="text-muted mb-2">No Active Academic Year</h5>
+            <p class="text-muted mb-3">
+                Please set an active academic year to view staff teaching load.
+            </p>
+            <a href="{% url 'management:academic_year_list' %}" class="btn btn-primary">
+                <i class="bi bi-calendar-plus me-2"></i>
+                Manage Academic Years
+            </a>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h5 class="text-muted mb-2">No Teaching Assignments</h5>
+            <p class="text-muted mb-3">
+                No teaching assignments found for {{ academic_year.name }}.
+            </p>
+            <a href="{% url 'management:staff_teaching_assignment_create' %}" class="btn-add">
+                <i class="bi bi-plus-lg"></i>
+                Create Assignment
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Legend Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-info-circle"></i>
+            Legend & Information
+        </h5>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="subject-badge">Subject</span>
+                <small class="text-muted">Subject being taught</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="class-badge">Class Level</span>
+                <small class="text-muted">Class level of the assignment</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="stream-badge">Stream</span>
+                <small class="text-muted">Specific stream (if applicable)</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="periods-badge">Periods/Week</span>
+                <small class="text-muted">Teaching periods per week</small>
+            </div>
+        </div>
+    </div>
+    <hr class="my-3">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Note:</strong> This summary shows all teaching assignments for the selected academic year. 
+                The total weekly load represents the number of teaching periods assigned to each staff member. 
+                A typical full-time teaching load is between 20-25 periods per week.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR ACADEMIC YEAR FILTER
+    // ============================================
+    if ($('#academic_year').data('select2')) {
+        $('#academic_year').select2('destroy');
+    }
+    
+    $('.select2-filter').select2({
+        width: 'resolve',
+        dropdownAutoWidth: true,
+        dropdownParent: $('.filter-bar'),
+        placeholder: 'Select Academic Year',
+        allowClear: true,
+        minimumResultsForSearch: 5,
+        dropdownCssClass: 'select2-dropdown-custom'
+    });
+
+    // ============================================
+    // ACADEMIC YEAR SELECTOR
+    // ============================================
+    $('#academic_year').on('change', function() {
+        const yearId = $(this).val();
+        if (yearId) {
+            showLoading();
+            window.location.href = `{% url 'management:staff_teaching_assignment_load' %}?academic_year=${yearId}`;
+        } else {
+            showLoading();
+            window.location.href = "{% url 'management:staff_teaching_assignment_load' %}";
+        }
+    });
+
+    // ============================================
+    // ANIMATE STATS ON LOAD
+    // ============================================
+    function animateStats() {
+        $('.stat-value').each(function() {
+            const $this = $(this);
+            const value = parseFloat($this.text());
+            if (!isNaN(value) && value > 0) {
+                let current = 0;
+                const increment = Math.ceil(value / 30);
+                const timer = setInterval(function() {
+                    current += increment;
+                    if (current >= value) {
+                        $this.text(value);
+                        clearInterval(timer);
+                    } else {
+                        $this.text(current);
+                    }
+                }, 20);
+            }
+        });
+    }
+    
+    // Animate stats on page load
+    setTimeout(animateStats, 500);
+    
+    // Fix dropdown positioning on window resize
+    $(window).on('resize', function() {
+        if ($('#academic_year').data('select2')) {
+            $('#academic_year').select2('close');
+        }
+    });
+});
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+function showLoading() {
+    $('#loadingOverlay').addClass('show');
+}
+
+function hideLoading() {
+    $('#loadingOverlay').removeClass('show');
+}
+
+
+</script>
+{% endblock %}

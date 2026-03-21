@@ -1,0 +1,1189 @@
+<!-- templates/portal_management/academics/terms/detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Term Details — {{ term.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Term Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM TERM DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Term Header Card */
+    .term-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .term-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-2xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .term-info {
+        flex: 1;
+    }
+
+    .term-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .term-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .term-number-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-badge-large {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .status-badge-large.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge-large.inactive {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        text-align: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .stat-icon.duration { background: var(--info-light); color: var(--info); }
+    .stat-icon.exams { background: var(--success-light); color: var(--success); }
+    .stat-icon.created { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.updated { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Info Rows */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .date-range-box {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .date-range-box .date {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .date-range-box .separator {
+        color: var(--gray-400);
+        margin: 0 0.5rem;
+    }
+
+    /* Sibling Terms Table */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 600px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .table tbody tr.current-term {
+        background: var(--primary-light);
+        border-left: 3px solid var(--primary);
+    }
+
+    .term-link {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .term-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-action.primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-action.warning {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-action.warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-action.danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-action.danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+    }
+
+    .btn-action.secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+    }
+
+    .btn-action.secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Timeline */
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--gray-300);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2rem;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-date {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .timeline-content {
+        background: var(--gray-50);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-lg);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .term-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .term-meta {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-calendar3 me-2"></i>
+                Term Details
+            </h1>
+            <p class="mb-0">View and manage term information</p>
+        </div>
+        <div>
+            <a href="{% url 'management:term_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Terms
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Term Header Card -->
+<div class="term-header-card">
+    <div class="term-icon">
+        <i class="bi bi-calendar-week"></i>
+    </div>
+    <div class="term-info">
+        <h2>{{ term.name }}</h2>
+        <div class="term-meta">
+            <div class="meta-item">
+                <i class="bi bi-hash"></i>
+                <span class="term-number-badge">
+                    <i class="bi bi-123"></i>
+                    Term {{ term.term_number }}
+                </span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-week"></i>
+                <span>{{ term.academic_year.name }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-plus"></i>
+                <span>Created: {{ term.created_at|date:"F d, Y" }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>Updated: {{ term.updated_at|date:"F d, Y" }}</span>
+            </div>
+            <div class="meta-item">
+                {% if term.is_active %}
+                <span class="status-badge-large active">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Active Term
+                </span>
+                {% else %}
+                <span class="status-badge-large inactive">
+                    <i class="bi bi-x-circle"></i>
+                    Inactive Term
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon duration">
+            <i class="bi bi-calendar-range"></i>
+        </div>
+        <div class="stat-value">{{ duration_days }}</div>
+        <div class="stat-label">Days Duration</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon exams">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div class="stat-value">{{ exam_count|default:"0" }}</div>
+        <div class="stat-label">Exam Sessions</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon created">
+            <i class="bi bi-calendar-plus"></i>
+        </div>
+        <div class="stat-value">{{ term.created_at|date:"M d, Y" }}</div>
+        <div class="stat-label">Created Date</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon updated">
+            <i class="bi bi-calendar-check"></i>
+        </div>
+        <div class="stat-value">{{ term.updated_at|date:"M d, Y" }}</div>
+        <div class="stat-label">Last Updated</div>
+    </div>
+</div>
+
+<!-- Term Information Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-info-circle"></i>
+            Term Information
+        </h5>
+        <div class="action-buttons">
+            <a href="{% url 'management:term_update' term.pk %}" class="btn-action warning">
+                <i class="bi bi-pencil"></i>
+                Edit Term
+            </a>
+            {% if not term.is_active %}
+            <button type="button" class="btn-action danger" onclick="showDeleteModal()">
+                <i class="bi bi-trash"></i>
+                Delete Term
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="info-grid">
+        <div class="info-row">
+            <span class="info-label">Term Name</span>
+            <span class="info-value">{{ term.name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Term Number</span>
+            <span class="info-value">Term {{ term.term_number }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Academic Year</span>
+            <span class="info-value">{{ term.academic_year.name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="info-value">
+                {% if term.is_active %}
+                <span class="status-badge active">Active</span>
+                {% else %}
+                <span class="status-badge inactive">Inactive</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Start Date</span>
+            <span class="info-value">{{ term.start_date|date:"l, F d, Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">End Date</span>
+            <span class="info-value">{{ term.end_date|date:"l, F d, Y" }}</span>
+        </div>
+    </div>
+    
+    <div class="date-range-box mt-3">
+        <i class="bi bi-calendar-range me-2 text-primary"></i>
+        <span class="date">{{ term.start_date|date:"M d, Y" }}</span>
+        <span class="separator">→</span>
+        <span class="date">{{ term.end_date|date:"M d, Y" }}</span>
+        <span class="badge bg-primary ms-2">{{ duration_days }} days</span>
+    </div>
+</div>
+
+<!-- Academic Year Timeline -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-timeline"></i>
+            Academic Year Timeline
+        </h5>
+    </div>
+    
+    <div class="timeline">
+        {% for sibling in sibling_terms %}
+        <div class="timeline-item {% if sibling.pk == term.pk %}current-term{% endif %}">
+            <div class="timeline-date">
+                {{ sibling.start_date|date:"M d" }} - {{ sibling.end_date|date:"M d, Y" }}
+            </div>
+            <div class="timeline-content">
+                <strong>
+                    {% if sibling.pk == term.pk %}
+                    <span class="text-primary">{{ sibling.name }}</span>
+                    {% else %}
+                    <a href="{% url 'management:term_detail' sibling.pk %}" class="term-link">{{ sibling.name }}</a>
+                    {% endif %}
+                </strong>
+                <span class="badge {% if sibling.is_active %}bg-success{% else %}bg-secondary{% endif %} ms-2">
+                    {% if sibling.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+                <br>
+                <small class="text-muted">Term {{ sibling.term_number }}</small>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <p class="text-muted">No other terms found in this academic year</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Exam Sessions Card (if exam sessions exist) -->
+{% if exam_sessions %}
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-journal-bookmark-fill"></i>
+            Exam Sessions
+        </h5>
+        <span class="badge bg-info">{{ exam_sessions|length }} Session{{ exam_sessions|pluralize }}</span>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Exam Name</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Class Level</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </thead>
+            <tbody>
+                {% for session in exam_sessions %}
+                <tr>
+                    <td>
+                        <strong>{{ session.name }}</strong>
+                    </td>
+                    <td>{{ session.exam_type.name }}</td>
+                    <td>{{ session.exam_date|date:"M d, Y" }}</td>
+                    <td>{{ session.class_level.name }}</td>
+                    <td>
+                        <span class="status-badge {% if session.status == 'published' %}active{% elif session.status == 'draft' %}inactive{% else %}warning{% endif %}">
+                            {{ session.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'management:exam_session_detail' session.pk %}" class="btn-action secondary" style="padding: 0.25rem 0.5rem;">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-lightning-charge"></i>
+            Quick Actions
+        </h5>
+    </div>
+    <div class="action-buttons">
+        <a href="{% url 'management:term_update' term.pk %}" class="btn-action warning">
+            <i class="bi bi-pencil"></i>
+            Edit Term
+        </a>
+        {% if term.is_active %}
+        <button type="button" class="btn-action secondary" onclick="deactivateTerm()">
+            <i class="bi bi-pause-circle"></i>
+            Deactivate Term
+        </button>
+        {% endif %}
+        <a href="{% url 'management:exam_session_create' %}?term={{ term.pk }}" class="btn-action primary">
+            <i class="bi bi-plus-lg"></i>
+            Add Exam Session
+        </a>
+        {% if not term.is_active and not exam_sessions %}
+        <button type="button" class="btn-action danger" onclick="showDeleteModal()">
+            <i class="bi bi-trash"></i>
+            Delete Term
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST" action="{% url 'management:term_delete' term.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the term <strong>{{ term.name }}</strong>?</p>
+                    
+                    {% if exam_sessions %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This term has {{ exam_sessions|length }} associated exam session{{ exam_sessions|pluralize }}. 
+                        Deleting it will also remove these sessions and all related data.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Term</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Confirmation Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Deactivation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deactivate-form" method="POST" action="{% url 'management:term_deactivate' term.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate <strong>{{ term.name }}</strong>?</p>
+                    <p class="text-muted mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This term will be marked as inactive. No other term will be automatically activated.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="confirm-deactivate-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Deactivate Term</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+});
+
+// ============================================
+// DELETE TERM FUNCTIONS
+// ============================================
+
+function showDeleteModal() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+$('#delete-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deleteBtn = $('#confirm-delete-btn');
+    const spinner = deleteBtn.find('.spinner-border');
+    const btnText = deleteBtn.find('.btn-text');
+    
+    deleteBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deleting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:term_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deleteBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Delete Term');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deleting term', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deleteModal').on('hidden.bs.modal', function() {
+    const deleteBtn = $('#confirm-delete-btn');
+    deleteBtn.prop('disabled', false);
+    deleteBtn.find('.spinner-border').addClass('d-none');
+    deleteBtn.find('.btn-text').text('Delete Term');
+});
+
+// ============================================
+// DEACTIVATE TERM FUNCTIONS
+// ============================================
+
+function deactivateTerm() {
+    const modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+    modal.show();
+}
+
+$('#deactivate-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deactivateBtn = $('#confirm-deactivate-btn');
+    const spinner = deactivateBtn.find('.spinner-border');
+    const btnText = deactivateBtn.find('.btn-text');
+    
+    deactivateBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deactivating...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deactivateModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:term_detail' term.pk %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deactivateBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Deactivate Term');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deactivating term', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deactivateModal').on('hidden.bs.modal', function() {
+    const deactivateBtn = $('#confirm-deactivate-btn');
+    deactivateBtn.prop('disabled', false);
+    deactivateBtn.find('.spinner-border').addClass('d-none');
+    deactivateBtn.find('.btn-text').text('Deactivate Term');
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

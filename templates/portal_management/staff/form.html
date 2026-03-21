@@ -1,79 +1,1295 @@
+<!-- templates/portal_management/hr/staff/form.html -->
 {% extends 'portal_management/base.html' %}
+{% load static %}
+
 {% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Section Card */
+    .section-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    /* Department Checkboxes */
+    .department-checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .department-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: var(--radius-lg);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .department-checkbox:hover {
+        background: var(--gray-100);
+    }
+
+    .department-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .department-checkbox label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: normal;
+        color: var(--gray-700);
+    }
+
+    /* Switch Toggle */
+    .form-switch {
+        padding-left: 2.5rem;
+    }
+
+    .form-switch .form-check-input {
+        width: 2rem;
+        height: 1rem;
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-label {
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+    }
+
+    .alert-general-error .error-content {
+        flex: 1;
+    }
+
+    .alert-general-error ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .alert-general-error li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Password Strength Indicator */
+    .password-strength {
+        margin-top: 0.5rem;
+        height: 4px;
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        background: var(--gray-200);
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .password-strength-bar.weak { background: var(--danger); width: 25%; }
+    .password-strength-bar.fair { background: var(--warning); width: 50%; }
+    .password-strength-bar.good { background: var(--info); width: 75%; }
+    .password-strength-bar.strong { background: var(--success); width: 100%; }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .department-checkbox-group {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-9">
-    <div class="form-card">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0 fw-semibold"><i class="bi bi-person-badge me-2 text-primary"></i>{{ title }}</h5>
-        <a href="{% url 'management:staff_list' %}" class="btn btn-sm btn-outline-secondary">
-          <i class="bi bi-arrow-left me-1"></i>Back
-        </a>
-      </div>
-      <form method="post" enctype="multipart/form-data" novalidate>
-        {% csrf_token %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
 
-        <!-- Personal Info -->
-        <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">Personal Information</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-4"><label class="form-label fw-semibold">First Name *</label>{{ form.first_name }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Middle Name</label>{{ form.middle_name }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Last Name *</label>{{ form.last_name }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Gender</label>{{ form.gender }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Date of Birth</label>{{ form.date_of_birth }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Phone</label>{{ form.phone_number }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Marital Status</label>{{ form.marital_status }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Profile Picture</label>{{ form.profile_picture }}</div>
-        </div>
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
-        <!-- Employment -->
-        <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">Employment Information</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-4"><label class="form-label fw-semibold">Employment Type</label>{{ form.employment_type }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Work Place</label>{{ form.work_place }}</div>
-          <div class="col-md-4"><label class="form-label fw-semibold">Joining Date</label>{{ form.joining_date }}</div>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-person-plus-fill me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if staff %}
+                    Update staff details for {{ staff.get_full_name }}
+                {% else %}
+                    Add a new staff member to the school
+                {% endif %}
+            </p>
         </div>
-
-        <!-- System Account -->
-        <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">System Login Account</h6>
-        <div class="mb-3">
-          <div class="form-check">
-            {{ form.create_user }}
-            <label class="form-check-label fw-semibold" for="createUserCheck">
-              Create system login account for this staff member
-            </label>
-          </div>
-          <small class="text-muted">Leave unchecked for non-system staff (cook, driver with no portal access, etc.)</small>
+        <div>
+            <a href="{% url 'management:staff_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Staff List</span>
+            </a>
         </div>
-        <div id="userFields" class="row g-3">
-          <div class="col-md-3"><label class="form-label">Username</label>{{ form.username }}</div>
-          <div class="col-md-3"><label class="form-label">Email</label>{{ form.email }}</div>
-          <div class="col-md-3"><label class="form-label">First Name</label>{{ form.user_first_name }}</div>
-          <div class="col-md-3"><label class="form-label">Last Name</label>{{ form.user_last_name }}</div>
-        </div>
-
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="d-flex gap-2 mt-4">
-          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ action }}</button>
-          <a href="{% url 'management:staff_list' %}" class="btn btn-outline-secondary">Cancel</a>
-        </div>
-      </form>
     </div>
-  </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Staff Information
+        </h5>
+        {% if staff and staff.employee_id %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            <i class="bi bi-upc-scan"></i> Employee ID: {{ staff.employee_id }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="staff-form" method="POST" 
+          {% if staff %}action="{% url 'management:staff_update' staff.pk %}"{% else %}action="{% url 'management:staff_create' %}"{% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <!-- Personal Information Section -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-person-badge"></i>
+                Personal Information
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                           value="{% if staff %}{{ staff.first_name }}{% endif %}" 
+                           placeholder="First name">
+                    <small class="field-hint">At least one name required</small>
+                </div>
+                <div class="col-md-4">
+                    <label for="middle_name" class="form-label">Middle Name</label>
+                    <input type="text" class="form-control" id="middle_name" name="middle_name" 
+                           value="{% if staff %}{{ staff.middle_name }}{% endif %}" 
+                           placeholder="Middle name (optional)">
+                </div>
+                <div class="col-md-4">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                           value="{% if staff %}{{ staff.last_name }}{% endif %}" 
+                           placeholder="Last name">
+                    <small class="field-hint">At least one name required</small>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select name="gender" id="gender" class="form-select select2-filter">
+                        <option value="">Select Gender</option>
+                        {% for gender_code, gender_name in gender_choices %}
+                        <option value="{{ gender_code }}" {% if staff and staff.gender == gender_code %}selected{% endif %}>
+                            {{ gender_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="date_of_birth" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                           value="{% if staff and staff.date_of_birth %}{{ staff.date_of_birth|date:'Y-m-d' }}{% endif %}">
+                    <small class="field-hint">Staff must be between 18-70 years old</small>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="phone_number" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                           value="{% if staff %}{{ staff.phone_number }}{% endif %}" 
+                           placeholder="e.g., 0712345678">
+                    <small class="field-hint">Must be unique</small>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="marital_status" class="form-label">Marital Status</label>
+                    <select name="marital_status" id="marital_status" class="form-select select2-filter">
+                        <option value="">Select Status</option>
+                        {% for status_code, status_name in marital_status_choices %}
+                        <option value="{{ status_code }}" {% if staff and staff.marital_status == status_code %}selected{% endif %}>
+                            {{ status_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Information Section -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-briefcase"></i>
+                Employment Information
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="employment_type" class="form-label required-field">Employment Type</label>
+                    <select name="employment_type" id="employment_type" class="form-select" required>
+                        <option value="">Select Employment Type</option>
+                        {% for type_code, type_name in employment_type_choices %}
+                        <option value="{{ type_code }}" {% if staff and staff.employment_type == type_code %}selected{% endif %}>
+                            {{ type_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="joining_date" class="form-label">Joining Date</label>
+                    <input type="date" class="form-control" id="joining_date" name="joining_date" 
+                           value="{% if staff and staff.joining_date %}{{ staff.joining_date|date:'Y-m-d' }}{% endif %}">
+                </div>
+                
+                <div class="col-md-12">
+                    <label for="work_place" class="form-label">Work Place / Location</label>
+                    <input type="text" class="form-control" id="work_place" name="work_place" 
+                           value="{% if staff %}{{ staff.work_place }}{% endif %}" 
+                           placeholder="e.g., Main Campus, Secondary Section">
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Assignment Section -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-building"></i>
+                Department Assignment
+            </div>
+            <div class="department-checkbox-group" id="department-checkbox-group">
+                {% for dept in departments %}
+                <div class="department-checkbox">
+                    <input type="checkbox" name="departments" value="{{ dept.pk }}" 
+                           id="dept_{{ dept.pk }}"
+                           {% if staff and dept.pk in current_departments %}checked{% endif %}>
+                    <label for="dept_{{ dept.pk }}">{{ dept.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            <small class="field-hint mt-2 d-block">
+                <i class="bi bi-info-circle"></i>
+                Select at least one department for this staff member
+            </small>
+        </div>
+
+        <!-- User Account Section -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-person-circle"></i>
+                User Account Access
+            </div>
+            
+            {% if staff and staff.user %}
+                <!-- Existing user account info (for update view) -->
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Existing User Account:</strong><br>
+                    Username: <strong>{{ staff.user.username }}</strong><br>
+                    Email: {{ staff.user.email|default:"Not set" }}<br>
+                    Status: {% if staff.user.is_active %}<span class="text-success">Active</span>{% else %}<span class="text-danger">Inactive</span>{% endif %}
+                </div>
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="update_user_account" name="update_user_account" value="true">
+                    <label class="form-check-label" for="update_user_account">
+                        <i class="bi bi-pencil-square text-warning me-1"></i>
+                        Update user account details
+                    </label>
+                </div>
+                <div id="user-account-update-fields" style="display: none;">
+                    <hr class="my-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{{ staff.user.username }}" 
+                                   placeholder="Username for login">
+                            <small class="field-hint">Required for login. Must be unique.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ staff.user.email }}" 
+                                   placeholder="staff@school.ac.tz">
+                            <small class="field-hint">Used for notifications and password recovery</small>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="new_password" class="form-label">New Password (leave blank to keep current)</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" 
+                                   placeholder="Enter new password">
+                            <div class="password-strength mt-2" id="password-strength-meter" style="display: none;">
+                                <div class="password-strength-bar" id="password-strength-bar"></div>
+                            </div>
+                            <small class="field-hint">Password must be at least 8 characters</small>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Create new user account (for create view) -->
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="create_user_account" name="create_user_account" value="true">
+                    <label class="form-check-label" for="create_user_account">
+                        <i class="bi bi-person-plus-fill text-primary me-1"></i>
+                        Create user account for this staff member
+                    </label>
+                </div>
+                <div id="user-account-fields" style="display: none;">
+                    <hr class="my-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label required-field">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Username for login">
+                            <small class="field-hint">Required for login. Must be unique.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="staff@school.ac.tz">
+                            <small class="field-hint">Used for notifications and password recovery</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="form-label required-field">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Enter password">
+                            <div class="password-strength mt-2" id="password-strength-meter" style="display: none;">
+                                <div class="password-strength-bar" id="password-strength-bar"></div>
+                            </div>
+                            <small class="field-hint">Password must be at least 8 characters</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="confirm_password" class="form-label required-field">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                   placeholder="Confirm password">
+                        </div>
+                    </div>
+                </div>
+                <small class="field-hint mt-2 d-block">
+                    <i class="bi bi-info-circle"></i>
+                    System-facing staff (teachers, secretary, etc.) need user accounts. Support staff may not.
+                </small>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if staff %}Update Staff Member{% else %}Create Staff Member{% endif %}
+                </span>
+            </button>
+
+            <a href="{% url 'management:staff_list' %}" class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const check = document.getElementById('createUserCheck');
-const fields = document.getElementById('userFields');
-function toggleFields() { fields.style.display = check.checked ? 'flex' : 'none'; }
-check.addEventListener('change', toggleFields);
-toggleFields();
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let staffId = {% if staff %}{{ staff.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR DROPDOWNS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Select option'
+    });
+
+    // ============================================
+    // USER ACCOUNT TOGGLE (Create Mode)
+    // ============================================
+    {% if not staff %}
+    $('#create_user_account').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#user-account-fields').slideDown();
+            $('#username, #password, #confirm_password').prop('required', true);
+        } else {
+            $('#user-account-fields').slideUp();
+            $('#username, #password, #confirm_password').prop('required', false);
+            // Clear any password validation errors when hiding
+            clearPasswordErrors();
+        }
+    });
+    {% endif %}
+
+    // ============================================
+    // USER ACCOUNT TOGGLE (Update Mode)
+    // ============================================
+    {% if staff and staff.user %}
+    $('#update_user_account').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#user-account-update-fields').slideDown();
+            $('#username').prop('required', true);
+        } else {
+            $('#user-account-update-fields').slideUp();
+            $('#username').prop('required', false);
+        }
+    });
+    {% endif %}
+
+    // ============================================
+    // PASSWORD STRENGTH METER
+    // ============================================
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]+/)) strength++;
+        if (password.match(/[A-Z]+/)) strength++;
+        if (password.match(/[0-9]+/)) strength++;
+        if (password.match(/[$@#&!]+/)) strength++;
+        
+        return strength;
+    }
+
+    function updatePasswordStrength(passwordField) {
+        const password = $(passwordField).val();
+        const meter = $('#password-strength-meter');
+        const bar = $('#password-strength-bar');
+        
+        if (password.length > 0) {
+            meter.show();
+            const strength = checkPasswordStrength(password);
+            
+            if (strength <= 2) {
+                bar.removeClass().addClass('password-strength-bar weak');
+            } else if (strength === 3) {
+                bar.removeClass().addClass('password-strength-bar fair');
+            } else if (strength === 4) {
+                bar.removeClass().addClass('password-strength-bar good');
+            } else {
+                bar.removeClass().addClass('password-strength-bar strong');
+            }
+        } else {
+            meter.hide();
+        }
+    }
+
+    $('#password, #new_password').on('input', function() {
+        updatePasswordStrength(this);
+        // Also validate confirm password when password changes
+        if ($('#confirm_password').val()) {
+            validatePasswords();
+        }
+    });
+
+    // ============================================
+    // PASSWORD CONFIRMATION VALIDATION (Fixed)
+    // ============================================
+    function clearPasswordErrors() {
+        $('#confirm_password').removeClass('is-invalid');
+        $('#confirm_password').next('.invalid-feedback').remove();
+        $('#password').removeClass('is-invalid');
+        $('#password').next('.invalid-feedback').remove();
+    }
+
+    function validatePasswords() {
+        const password = $('#password').val();
+        const confirmPassword = $('#confirm_password').val();
+        
+        // Clear previous errors first
+        $('#confirm_password').removeClass('is-invalid');
+        $('#confirm_password').next('.invalid-feedback').remove();
+        
+        // Only validate if both fields have values OR if confirm field has value
+        if (confirmPassword.length > 0) {
+            if (password !== confirmPassword) {
+                $('#confirm_password').addClass('is-invalid');
+                $('#confirm_password').after('<div class="invalid-feedback">Passwords do not match.</div>');
+                return false;
+            } else {
+                $('#confirm_password').removeClass('is-invalid');
+                $('#confirm_password').next('.invalid-feedback').remove();
+                return true;
+            }
+        }
+        return true;
+    }
+
+    // Only validate confirm password on input (not on password field change)
+    $('#confirm_password').on('input', function() {
+        validatePasswords();
+    });
+
+    // ============================================
+    // AGE VALIDATION
+    // ============================================
+    function calculateAge(birthDate) {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
+    $('#date_of_birth').on('change', function() {
+        const dob = $(this).val();
+        if (dob) {
+            const age = calculateAge(dob);
+            if (age < 18) {
+                showNotification('Staff member must be at least 18 years old.', 'warning');
+                $(this).addClass('is-invalid');
+            } else if (age > 70) {
+                showNotification('Staff member cannot be older than 70 years.', 'warning');
+                $(this).addClass('is-invalid');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        }
+    });
+
+    // ============================================
+    // DATE VALIDATION
+    // ============================================
+    $('#joining_date').on('change', function() {
+        const joiningDate = $(this).val();
+        if (joiningDate && new Date(joiningDate) > new Date()) {
+            showNotification('Joining date cannot be in the future.', 'warning');
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // ============================================
+    // DEPARTMENT VALIDATION
+    // ============================================
+    function validateDepartments() {
+        const selectedDepts = $('input[name="departments"]:checked').length;
+        if (selectedDepts === 0) {
+            $('#department-checkbox-group').addClass('border-danger');
+            return false;
+        } else {
+            $('#department-checkbox-group').removeClass('border-danger');
+            return true;
+        }
+    }
+
+    $('input[name="departments"]').on('change', validateDepartments);
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    $('#staff-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate departments
+        if (!validateDepartments()) {
+            showNotification('Please select at least one department.', 'error');
+            return;
+        }
+        
+        // Validate passwords for new account
+        {% if not staff %}
+        if ($('#create_user_account').is(':checked')) {
+            // Validate password is not empty
+            const password = $('#password').val();
+            const confirmPassword = $('#confirm_password').val();
+            
+            if (!password) {
+                showNotification('Password is required.', 'error');
+                $('#password').addClass('is-invalid');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showNotification('Password must be at least 8 characters long.', 'error');
+                $('#password').addClass('is-invalid');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match.', 'error');
+                $('#confirm_password').addClass('is-invalid');
+                return;
+            }
+        }
+        {% endif %}
+        
+        // Validate username for update mode
+        {% if staff and staff.user %}
+        if ($('#update_user_account').is(':checked')) {
+            const username = $('#username').val();
+            if (!username) {
+                showNotification('Username is required when updating user account.', 'error');
+                $('#username').addClass('is-invalid');
+                return;
+            }
+            
+            // Validate new password if provided
+            const newPassword = $('#new_password').val();
+            if (newPassword && newPassword.length < 8) {
+                showNotification('Password must be at least 8 characters long.', 'error');
+                $('#new_password').addClass('is-invalid');
+                return;
+            }
+        }
+        {% endif %}
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = form.serialize();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = "{% url 'management:staff_list' %}";
+                        }
+                    }, 1500);
+                } else {
+                    displayErrors(data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if staff %}Update Staff Member{% else %}Create Staff Member{% endif %}');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    displayErrors(response);
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if staff %}Update Staff Member{% else %}Create Staff Member{% endif %}');
+            }
+        });
+    });
+
+    // ============================================
+    // ERROR HANDLING FUNCTIONS
+    // ============================================
+    
+    function clearErrors() {
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        // Also clear password field errors specifically
+        clearPasswordErrors();
+    }
+    
+    function displayErrors(data) {
+        let hasGeneralErrors = false;
+        let errorContent = '<div class="error-content">';
+        
+        // Handle main message
+        if (data.message && data.message !== 'Please correct the errors below.') {
+            errorContent += `<div class="fw-semibold mb-2">${escapeHtml(data.message)}</div>`;
+            hasGeneralErrors = true;
+        }
+        
+        // Handle field-specific errors
+        if (data.errors) {
+            $.each(data.errors, function(fieldName, fieldErrors) {
+                // Handle __all__ errors (non-field errors)
+                if (fieldName === '__all__') {
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += '<ul>';
+                        fieldErrors.forEach(function(error) {
+                            errorContent += `<li>${escapeHtml(error)}</li>`;
+                        });
+                        errorContent += '</ul>';
+                    } else {
+                        errorContent += `<div class="mt-1">${escapeHtml(fieldErrors)}</div>`;
+                    }
+                    return;
+                }
+                
+                // Try to find the field
+                let field = $(`[name="${fieldName}"]`);
+                if (field.length === 0) {
+                    field = $(`#${fieldName}`);
+                }
+                
+                if (field.length) {
+                    field.addClass('is-invalid');
+                    
+                    let errorText = '';
+                    if (Array.isArray(fieldErrors)) {
+                        errorText = fieldErrors.join('<br>');
+                    } else if (typeof fieldErrors === 'string') {
+                        errorText = fieldErrors;
+                    } else {
+                        errorText = 'Invalid value';
+                    }
+                    
+                    // Check if it's a Select2 field
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        const select2Container = field.next('.select2-container');
+                        if (select2Container.length) {
+                            select2Container.after(`<div class="invalid-feedback d-block">${escapeHtml(errorText)}</div>`);
+                        } else {
+                            field.after(`<div class="invalid-feedback">${escapeHtml(errorText)}</div>`);
+                        }
+                    } else {
+                        const errorHtml = `<div class="invalid-feedback">${escapeHtml(errorText)}</div>`;
+                        field.next('.invalid-feedback').remove();
+                        field.after(errorHtml);
+                    }
+                } else {
+                    // Field not found, treat as general error
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors.join(', '))}</div>`;
+                    } else {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors)}</div>`;
+                    }
+                }
+            });
+        }
+        
+        errorContent += '</div>';
+        
+        // Display general errors if any
+        if (hasGeneralErrors) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill"></i>${errorContent}`).show();
+            
+            // Scroll to error message
+            $('html, body').animate({
+                scrollTop: generalErrorDiv.offset().top - 100
+            }, 500);
+        }
+        
+        // If there's only a message and no errors, show it as notification
+        if (!data.errors && data.message && !hasGeneralErrors) {
+            showNotification(data.message, 'error');
+        }
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
 </script>
 {% endblock %}

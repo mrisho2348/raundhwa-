@@ -1,0 +1,856 @@
+<!-- templates/portal_management/exams/exam_type_form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM EXAM TYPE FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .form-header h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-header h3 i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-label .required {
+        color: var(--danger);
+        margin-left: 0.25rem;
+    }
+
+    .form-control {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--danger);
+    }
+
+    .form-control.is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(220,53,69,0.15);
+    }
+
+    .form-text {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .invalid-feedback {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Input Groups */
+    .input-group {
+        position: relative;
+    }
+
+    .input-group-text {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        pointer-events: none;
+    }
+
+    /* Buttons */
+    .btn-save {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-save:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-cancel {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-300);
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-cancel:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Preview Card */
+    .preview-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .preview-card h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-card h4 i {
+        color: var(--primary);
+    }
+
+    .preview-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .preview-badge {
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            width: 100%;
+        }
+
+        .btn-save, .btn-cancel {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .preview-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-file-text me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">Configure examination type details, weight, and scoring parameters</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_type_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-header">
+        <h3>
+            <i class="bi bi-{% if is_edit %}pencil-square{% else %}plus-circle{% endif %}"></i>
+            {{ title }}
+        </h3>
+        <div class="action-buttons">
+            <a href="{% url 'management:exam_type_list' %}" class="btn-cancel">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+            <button type="submit" form="exam-type-form" class="btn-save" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <i class="bi bi-{% if is_edit %}check-lg{% else %}plus-lg{% endif %}"></i>
+                <span class="btn-text">{% if is_edit %}Update Exam Type{% else %}Create Exam Type{% endif %}</span>
+            </button>
+        </div>
+    </div>
+
+    <form id="exam-type-form" method="POST" action="{% if is_edit %}{% url 'management:exam_type_update' exam_type.pk %}{% else %}{% url 'management:exam_type_create' %}{% endif %}">
+        {% csrf_token %}
+        
+        <!-- Name Field -->
+        <div class="form-group">
+            <label for="name" class="form-label">
+                Name <span class="required">*</span>
+            </label>
+            <input type="text" 
+                   class="form-control {% if errors.name %}is-invalid{% endif %}" 
+                   id="name" 
+                   name="name" 
+                   value="{% if form_data.name %}{{ form_data.name }}{% elif exam_type and exam_type.name %}{{ exam_type.name }}{% endif %}"
+                   required
+                   placeholder="e.g., Midterm Examination">
+            {% if errors.name %}
+                <div class="invalid-feedback">{{ errors.name.0 }}</div>
+            {% endif %}
+            <div class="form-text">A descriptive name for this examination type.</div>
+        </div>
+
+        <!-- Code Field -->
+        <div class="form-group">
+            <label for="code" class="form-label">
+                Code <span class="required">*</span>
+            </label>
+            <div class="input-group">
+                <input type="text" 
+                       class="form-control {% if errors.code %}is-invalid{% endif %}" 
+                       id="code" 
+                       name="code" 
+                       value="{% if form_data.code %}{{ form_data.code|upper }}{% elif exam_type and exam_type.code %}{{ exam_type.code|upper }}{% endif %}"
+                       required
+                       placeholder="e.g., MIDTERM"
+                       maxlength="20"
+                       style="text-transform: uppercase;">
+            </div>
+            {% if errors.code %}
+                <div class="invalid-feedback">{{ errors.code.0 }}</div>
+            {% endif %}
+            <div class="form-text">Unique identifier (uppercase letters, numbers, underscores). Will be automatically converted to uppercase.</div>
+        </div>
+
+        <div class="row">
+            <!-- Weight Field -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="weight" class="form-label">
+                        Weight (%) <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" 
+                               class="form-control {% if errors.weight %}is-invalid{% endif %}" 
+                               id="weight" 
+                               name="weight" 
+                               value="{% if form_data.weight %}{{ form_data.weight }}{% elif exam_type and exam_type.weight %}{{ exam_type.weight }}{% endif %}"
+                               step="0.01" 
+                               min="0" 
+                               max="100" 
+                               required
+                               placeholder="e.g., 30">
+                    </div>
+                    {% if errors.weight %}
+                        <div class="invalid-feedback">{{ errors.weight.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Contribution to final score (0-100%).</div>
+                </div>
+            </div>
+
+            <!-- Max Score Field -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="max_score" class="form-label">
+                        Max Score <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" 
+                               class="form-control {% if errors.max_score %}is-invalid{% endif %}" 
+                               id="max_score" 
+                               name="max_score" 
+                               value="{% if form_data.max_score %}{{ form_data.max_score }}{% elif exam_type and exam_type.max_score %}{{ exam_type.max_score }}{% else %}100{% endif %}"
+                               step="1" 
+                               min="1" 
+                               required
+                               placeholder="e.g., 100">
+                    </div>
+                    {% if errors.max_score %}
+                        <div class="invalid-feedback">{{ errors.max_score.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Maximum achievable score for this exam type.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control {% if errors.description %}is-invalid{% endif %}" 
+                      id="description" 
+                      name="description" 
+                      rows="4"
+                      placeholder="Enter a description for this exam type...">{% if form_data.description %}{{ form_data.description }}{% elif exam_type and exam_type.description %}{{ exam_type.description }}{% endif %}</textarea>
+            {% if errors.description %}
+                <div class="invalid-feedback">{{ errors.description.0 }}</div>
+            {% endif %}
+            <div class="form-text">Optional description explaining the purpose and characteristics of this exam type.</div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-card">
+            <h4>
+                <i class="bi bi-eye"></i>
+                Preview
+            </h4>
+            <div class="preview-content">
+                <div class="preview-badge">
+                    <i class="bi bi-tag"></i>
+                    <span id="preview-name">{% if exam_type and exam_type.name %}{{ exam_type.name }}{% else %}Exam Name{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-upc-scan"></i>
+                    <code id="preview-code">{% if exam_type and exam_type.code %}{{ exam_type.code }}{% else %}CODE{% endif %}</code>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-percent"></i>
+                    <span id="preview-weight">{% if exam_type and exam_type.weight %}{{ exam_type.weight|floatformat:0 }}{% else %}0{% endif %}</span>%
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-trophy"></i>
+                    <span id="preview-max-score">{% if exam_type and exam_type.max_score %}{{ exam_type.max_score|floatformat:0 }}{% else %}100{% endif %}</span> marks
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // LIVE PREVIEW UPDATE
+    // ============================================
+    function updatePreview() {
+        const name = $('#name').val().trim();
+        const code = $('#code').val().trim().toUpperCase();
+        const weight = $('#weight').val();
+        const maxScore = $('#max_score').val();
+        
+        $('#preview-name').text(name || 'Exam Name');
+        $('#preview-code').text(code || 'CODE');
+        $('#preview-weight').text(weight && !isNaN(weight) ? Math.round(weight) : '0');
+        $('#preview-max-score').text(maxScore && !isNaN(maxScore) ? Math.round(maxScore) : '100');
+    }
+
+    // Update preview on input changes
+    $('#name, #code, #weight, #max_score').on('input', updatePreview);
+    
+    // Initial preview update
+    updatePreview();
+
+    // ============================================
+    // CODE AUTO-UPPERCASE
+    // ============================================
+    $('#code').on('input', function() {
+        $(this).val($(this).val().toUpperCase());
+        updatePreview();
+    });
+
+    // ============================================
+    // FORM VALIDATION
+    // ============================================
+    $('#exam-type-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Clear previous errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        // Validate form
+        let hasErrors = false;
+        const name = $('#name').val().trim();
+        const code = $('#code').val().trim().toUpperCase();
+        const weight = parseFloat($('#weight').val());
+        const maxScore = parseInt($('#max_score').val());
+        
+        if (!name) {
+            showFieldError('name', 'Name is required.');
+            hasErrors = true;
+        }
+        
+        if (!code) {
+            showFieldError('code', 'Code is required.');
+            hasErrors = true;
+        } else if (!/^[A-Z0-9_]+$/.test(code)) {
+            showFieldError('code', 'Code must contain only uppercase letters, numbers, and underscores.');
+            hasErrors = true;
+        }
+        
+        if (isNaN(weight)) {
+            showFieldError('weight', 'Weight is required.');
+            hasErrors = true;
+        } else if (weight < 0 || weight > 100) {
+            showFieldError('weight', 'Weight must be between 0 and 100.');
+            hasErrors = true;
+        }
+        
+        if (isNaN(maxScore)) {
+            showFieldError('max_score', 'Max score is required.');
+            hasErrors = true;
+        } else if (maxScore < 1) {
+            showFieldError('max_score', 'Max score must be at least 1.');
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            showNotification('Please correct the errors above.', 'error');
+            return false;
+        }
+        
+        // Update button state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        // Submit form via AJAX
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                showNotification(response.message, 'success');
+                setTimeout(function() {
+                    window.location.href = response.redirect_url || "{% url 'management:exam_type_list' %}";
+                }, 1500);
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if is_edit %}Update Exam Type{% else %}Create Exam Type{% endif %}');
+                
+                try {
+                    const response = xhr.responseJSON;
+                    if (response && response.errors) {
+                        // Display field errors
+                        for (const [field, errors] of Object.entries(response.errors)) {
+                            showFieldError(field, errors[0]);
+                        }
+                        showNotification(response.message || 'Please correct the errors below.', 'error');
+                    } else if (response && response.message) {
+                        showNotification(response.message, 'error');
+                    } else {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+    
+    // Helper function to show field errors
+    function showFieldError(fieldId, message) {
+        const field = $(`#${fieldId}`);
+        field.addClass('is-invalid');
+        
+        // Remove existing feedback if any
+        field.parent().find('.invalid-feedback').remove();
+        
+        // Add new feedback
+        const feedback = $(`<div class="invalid-feedback">${escapeHtml(message)}</div>`);
+        field.after(feedback);
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else icon = 'x-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('show');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('show');
+}
+
+// ============================================
+// PREVENT ACCIDENTAL NAVIGATION
+// ============================================
+let formChanged = false;
+
+$('#exam-type-form :input').on('change input', function() {
+    formChanged = true;
+});
+
+window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+    }
+});
+
+$('#exam-type-form').on('submit', function() {
+    formChanged = false;
+});
+
+$('.btn-cancel').on('click', function() {
+    formChanged = false;
+});
+</script>
+{% endblock %}

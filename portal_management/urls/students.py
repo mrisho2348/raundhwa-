@@ -16,6 +16,9 @@ Student URL patterns — one URL per view, grouped by section.
 """
 from django.urls import path
 from portal_management.views.class_level import ClassLevelDetailView
+from portal_management.views.division_scale_views import DivisionScaleCheckDependenciesView, DivisionScaleCreateView, DivisionScaleDeleteView, DivisionScaleDetailView, DivisionScaleListView, DivisionScaleSearchView, DivisionScaleUpdateView
+
+from portal_management.views.grading_scale_views import GradingScaleCheckDependenciesView, GradingScaleCreateView, GradingScaleDeleteView, GradingScaleDetailView, GradingScaleListView, GradingScaleSearchView, GradingScaleUpdateView
 from portal_management.views.promotion_views import PromotionBulkView, PromotionListView, PromotionProcessView, PromotionRevertView
 from portal_management.views.stream_assignment import StreamAssignStudentsView, StreamRemoveStudentView
 from portal_management.views.stream_class import *
@@ -24,6 +27,7 @@ from portal_management.views.student_enrollment import *
 from portal_management.views.student_transfer import *
 from portal_management.views.students import *
 from portal_management.views.subject_views import SubjectAssignStudentsView, SubjectRemoveStudentView
+from portal_management.views.term_views import *
 
 urlpatterns = [
 
@@ -161,6 +165,43 @@ urlpatterns = [
     path('students/promotions/process/', PromotionProcessView.as_view(), name='promotion_process'),
     path('students/promotions/bulk/', PromotionBulkView.as_view(), name='promotion_bulk'),
     path('students/promotions/<int:enrollment_id>/revert/', PromotionRevertView.as_view(), name='promotion_revert'),
+
+       # Term URLs
+    path('terms/', TermListView.as_view(), name='term_list'),
+    path('terms/create/', TermCreateView.as_view(), name='term_create'),
+    path('terms/<int:pk>/', TermDetailView.as_view(), name='term_detail'),
+    path('terms/<int:pk>/update/', TermUpdateView.as_view(), name='term_update'),
+    path('terms/<int:pk>/delete/', TermDeleteView.as_view(), name='term_delete'),
+    path('terms/<int:pk>/check-dependencies/', TermCheckDependenciesView.as_view(), name='term_check_dependencies'),
+    path('terms/search/', TermSearchView.as_view(), name='term_search'),
+    path('terms/<int:pk>/deactivate/', TermDeactivateView.as_view(), name='term_deactivate'),
+
+
+        # Main CRUD URLs
+    path('grading-scales/', GradingScaleListView.as_view(), name='grading_scale_list'),
+    path('grading-scales/create/', GradingScaleCreateView.as_view(), name='grading_scale_create'),
+    path('grading-scales/<int:pk>/', GradingScaleDetailView.as_view(), name='grading_scale_detail'),
+    path('grading-scales/<int:pk>/update/', GradingScaleUpdateView.as_view(), name='grading_scale_update'),
+    path('grading-scales/<int:pk>/delete/', GradingScaleDeleteView.as_view(), name='grading_scale_delete'),
+    
+    # AJAX helper URLs
+    path('grading-scales/<int:pk>/check-dependencies/', GradingScaleCheckDependenciesView.as_view(), name='grading_scale_check_dependencies'),
+    path('grading-scales/search/', GradingScaleSearchView.as_view(), name='grading_scale_search'),
+
+
+     # Main CRUD URLs
+    path('division-scales/', DivisionScaleListView.as_view(), name='division_scale_list'),
+    path('division-scales/create/', DivisionScaleCreateView.as_view(), name='division_scale_create'),
+    path('division-scales/<int:pk>/', DivisionScaleDetailView.as_view(), name='division_scale_detail'),
+    path('division-scales/<int:pk>/update/', DivisionScaleUpdateView.as_view(), name='division_scale_update'),
+    path('division-scales/<int:pk>/delete/', DivisionScaleDeleteView.as_view(), name='division_scale_delete'),
+    
+    # AJAX helper URLs
+    path('division-scales/<int:pk>/check-dependencies/', DivisionScaleCheckDependenciesView.as_view(), name='division_scale_check_dependencies'),
+    path('division-scales/search/', DivisionScaleSearchView.as_view(), name='division_scale_search'),
+
+
+    
 
         # Parent URLs
 

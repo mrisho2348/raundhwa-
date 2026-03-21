@@ -1,0 +1,1253 @@
+<!-- templates/portal_management/academics/terms/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM TERM FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Date Range Preview */
+    .date-range-preview {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .date-range-preview h6 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-dates {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .preview-date {
+        flex: 1;
+    }
+
+    .preview-date-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .preview-date-value {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.9rem;
+    }
+
+    .duration-badge {
+        display: inline-block;
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Term Number Selector */
+    .term-number-selector {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .term-option {
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .term-option input {
+        display: none;
+    }
+
+    .term-option-card {
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .term-option-card:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .term-option input:checked + .term-option-card {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+    }
+
+    .term-number-badge-lg {
+        width: 40px;
+        height: 40px;
+        background: var(--gray-100);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin: 0 auto 0.5rem;
+    }
+
+    .term-option input:checked + .term-option-card .term-number-badge-lg {
+        background: var(--primary);
+        color: white;
+    }
+
+    .term-name-preview {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+    }
+
+    .alert-general-error .error-content {
+        flex: 1;
+    }
+
+    .alert-general-error ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .alert-general-error li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .toast-icon.warning {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .term-number-selector {
+            flex-direction: column;
+        }
+
+        .preview-dates {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-calendar-plus me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if term %}
+                    Update term details for {{ term.name }}
+                {% else %}
+                    Create a new academic term
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:term_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Terms</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Term Details
+        </h5>
+        {% if term %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Created: {{ term.created_at|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="term-form" method="POST" 
+          {% if term %}action="{% url 'management:term_update' term.pk %}"{% else %}action="{% url 'management:term_create' %}"{% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <div class="row g-4">
+            <!-- Academic Year Selection -->
+            <div class="col-md-6">
+                <label for="academic_year" class="form-label required-field">Academic Year</label>
+                <select name="academic_year" id="academic_year" class="form-select select2-filter" required>
+                    <option value="">Select Academic Year</option>
+                    {% for year in academic_years %}
+                    <option value="{{ year.pk }}" 
+                            data-start="{{ year.start_date|date:'Y-m-d' }}"
+                            data-end="{{ year.end_date|date:'Y-m-d' }}"
+                            {% if term and term.academic_year.pk == year.pk %}selected{% endif %}>
+                        {{ year.name }} ({{ year.start_date|date:"M d, Y" }} - {{ year.end_date|date:"M d, Y" }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the academic year this term belongs to
+                </small>
+            </div>
+
+            <!-- Term Number Selection -->
+            <div class="col-md-6">
+                <label class="form-label required-field">Term Number</label>
+                <div class="term-number-selector" id="term-number-selector">
+                    <label class="term-option">
+                        <input type="radio" name="term_number" value="1" {% if term and term.term_number == 1 %}checked{% endif %} required>
+                        <div class="term-option-card">
+                            <div class="term-number-badge-lg">1</div>
+                            <div class="term-name-preview">Term 1</div>
+                            <small class="text-muted">January - March</small>
+                        </div>
+                    </label>
+                    <label class="term-option">
+                        <input type="radio" name="term_number" value="2" {% if term and term.term_number == 2 %}checked{% endif %} required>
+                        <div class="term-option-card">
+                            <div class="term-number-badge-lg">2</div>
+                            <div class="term-name-preview">Term 2</div>
+                            <small class="text-muted">April - August</small>
+                        </div>
+                    </label>
+                    <label class="term-option">
+                        <input type="radio" name="term_number" value="3" {% if term and term.term_number == 3 %}checked{% endif %} required>
+                        <div class="term-option-card">
+                            <div class="term-number-badge-lg">3</div>
+                            <div class="term-name-preview">Term 3</div>
+                            <small class="text-muted">September - November</small>
+                        </div>
+                    </label>
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the term number (1, 2, or 3)
+                </small>
+            </div>
+
+            <!-- Term Name -->
+            <div class="col-md-12">
+                <label for="name" class="form-label">Term Name (Optional)</label>
+                <input type="text" class="form-control" id="name" name="name" 
+                       placeholder="e.g., First Term, Michaelmas Term, etc."
+                       value="{% if term %}{{ term.name }}{% endif %}">
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    If left blank, the name will be auto-generated as "Term X"
+                </small>
+            </div>
+
+            <!-- Start Date -->
+            <div class="col-md-6">
+                <label for="start_date" class="form-label required-field">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{% if term %}{{ term.start_date|date:'Y-m-d' }}{% endif %}" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    First day of the term (minimum 60 days, maximum 150 days)
+                </small>
+            </div>
+
+            <!-- End Date -->
+            <div class="col-md-6">
+                <label for="end_date" class="form-label required-field">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{% if term %}{{ term.end_date|date:'Y-m-d' }}{% endif %}" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Last day of the term (minimum 60 days, maximum 150 days)
+                </small>
+            </div>
+
+            <!-- Date Range Preview -->
+            <div class="col-12" id="date-range-preview" style="display: none;">
+                <div class="date-range-preview">
+                    <h6>
+                        <i class="bi bi-calendar-range"></i>
+                        Date Range Preview
+                    </h6>
+                    <div class="preview-dates">
+                        <div class="preview-date">
+                            <div class="preview-date-label">Start Date</div>
+                            <div class="preview-date-value" id="preview-start"></div>
+                        </div>
+                        <div class="preview-date">
+                            <div class="preview-date-label">End Date</div>
+                            <div class="preview-date-value" id="preview-end"></div>
+                        </div>
+                        <div class="preview-date">
+                            <div class="preview-date-label">Duration</div>
+                            <div class="preview-date-value">
+                                <span class="duration-badge" id="preview-duration"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Status -->
+            <div class="col-md-12">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" 
+                           value="true" {% if term and term.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+                        Active Term
+                    </label>
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Only one term per academic year can be active. Enabling this will automatically deactivate other terms in the same academic year.
+                </small>
+            </div>
+
+            <!-- Warning for active term deactivation -->
+            {% if term and term.is_active %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Note:</strong> This term is currently active. If you change the active status, the system will automatically update accordingly.
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if term %}Update Term{% else %}Create Term{% endif %}
+                </span>
+            </button>
+
+            <a href="{% url 'management:term_list' %}" class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+
+            {% if term and term.is_active %}
+            <button type="button" class="btn-secondary" onclick="deactivateTerm()" style="background: var(--warning); color: white; border: none;">
+                <i class="bi bi-pause-circle"></i>
+                Deactivate Term
+            </button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Deactivation Confirmation Modal -->
+{% if term %}
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Deactivation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deactivate-form" method="POST" action="{% url 'management:term_deactivate' term.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate <strong>{{ term.name }}</strong>?</p>
+                    <p class="text-muted mt-2">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This term will be marked as inactive. No other term will be automatically activated.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="confirm-deactivate-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Deactivate Term</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let termId = {% if term %}{{ term.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR ACADEMIC YEAR
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Select Academic Year'
+    });
+
+    // ============================================
+    // AUTO-GENERATE TERM NAME
+    // ============================================
+    function updateTermName() {
+        const termNumber = $('input[name="term_number"]:checked').val();
+        const customName = $('#name').val().trim();
+        
+        if (!customName && termNumber) {
+            $('#name').val(`Term ${termNumber}`);
+        }
+    }
+    
+    $('input[name="term_number"]').on('change', updateTermName);
+    $('#name').on('input', function() {
+        // User has entered custom name, we don't override
+    });
+    
+    // Initial update
+    updateTermName();
+
+    // ============================================
+    // DATE RANGE PREVIEW AND VALIDATION
+    // ============================================
+    function calculateDuration(startDate, endDate) {
+        if (!startDate || !endDate) return null;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return diffDays;
+    }
+    
+    function updateDatePreview() {
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (start <= end) {
+                const duration = calculateDuration(startDate, endDate);
+                
+                $('#preview-start').text(start.toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }));
+                $('#preview-end').text(end.toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }));
+                $('#preview-duration').text(`${duration} day${duration !== 1 ? 's' : ''}`);
+                
+                // Add warning for duration outside 60-150 days
+                if (duration < 60) {
+                    $('#preview-duration').addClass('text-danger');
+                    $('#preview-duration').attr('title', 'Term duration is too short (minimum 60 days)');
+                } else if (duration > 150) {
+                    $('#preview-duration').addClass('text-danger');
+                    $('#preview-duration').attr('title', 'Term duration is too long (maximum 150 days)');
+                } else {
+                    $('#preview-duration').removeClass('text-danger');
+                    $('#preview-duration').removeAttr('title');
+                }
+                
+                $('#date-range-preview').show();
+                return;
+            }
+        }
+        $('#date-range-preview').hide();
+    }
+    
+    $('#start_date, #end_date').on('change', updateDatePreview);
+    updateDatePreview();
+
+    // ============================================
+    // ACADEMIC YEAR VALIDATION
+    // ============================================
+    function validateDatesWithinAcademicYear() {
+        const academicYearSelect = $('#academic_year');
+        const selectedOption = academicYearSelect.find('option:selected');
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        
+        if (!selectedOption.val() || !startDate || !endDate) return true;
+        
+        const ayStart = selectedOption.data('start');
+        const ayEnd = selectedOption.data('end');
+        
+        if (ayStart && ayEnd) {
+            if (startDate < ayStart) {
+                showNotification(`Start date cannot be before academic year start (${new Date(ayStart).toLocaleDateString()})`, 'warning');
+                return false;
+            }
+            if (endDate > ayEnd) {
+                showNotification(`End date cannot be after academic year end (${new Date(ayEnd).toLocaleDateString()})`, 'warning');
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    $('#academic_year, #start_date, #end_date').on('change', validateDatesWithinAcademicYear);
+
+    // ============================================
+    // DURATION VALIDATION
+    // ============================================
+    function validateDuration() {
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        
+        if (startDate && endDate) {
+            const duration = calculateDuration(startDate, endDate);
+            if (duration < 60) {
+                showNotification('Term duration must be at least 60 days.', 'warning');
+                return false;
+            }
+            if (duration > 150) {
+                showNotification('Term duration cannot exceed 150 days.', 'warning');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    $('#term-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate dates
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        
+        if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
+            showNotification('Start date must be before end date', 'error');
+            return;
+        }
+        
+        // Validate duration
+        if (!validateDuration()) {
+            return;
+        }
+        
+        if (!validateDatesWithinAcademicYear()) {
+            return;
+        }
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = form.serialize();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = "{% url 'management:term_list' %}";
+                        }
+                    }, 1500);
+                } else {
+                    displayErrors(data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if term %}Update Term{% else %}Create Term{% endif %}');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    displayErrors(response);
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if term %}Update Term{% else %}Create Term{% endif %}');
+            }
+        });
+    });
+
+    // ============================================
+    // ERROR HANDLING FUNCTIONS
+    // ============================================
+    
+    function clearErrors() {
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    }
+    
+    function displayErrors(data) {
+        let hasGeneralErrors = false;
+        let errorContent = '<div class="error-content">';
+        
+        // Handle main message
+        if (data.message && data.message !== 'Please correct the errors below.') {
+            errorContent += `<div class="fw-semibold mb-2">${escapeHtml(data.message)}</div>`;
+            hasGeneralErrors = true;
+        }
+        
+        // Handle field-specific errors
+        if (data.errors) {
+            $.each(data.errors, function(fieldName, fieldErrors) {
+                // Handle __all__ errors (non-field errors)
+                if (fieldName === '__all__') {
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += '<ul>';
+                        fieldErrors.forEach(function(error) {
+                            errorContent += `<li>${escapeHtml(error)}</li>`;
+                        });
+                        errorContent += '</ul>';
+                    } else {
+                        errorContent += `<div class="mt-1">${escapeHtml(fieldErrors)}</div>`;
+                    }
+                    return;
+                }
+                
+                // Try to find the field
+                let field = $(`[name="${fieldName}"]`);
+                if (field.length === 0) {
+                    field = $(`#${fieldName}`);
+                }
+                
+                if (field.length) {
+                    field.addClass('is-invalid');
+                    
+                    let errorText = '';
+                    if (Array.isArray(fieldErrors)) {
+                        errorText = fieldErrors.join('<br>');
+                    } else if (typeof fieldErrors === 'string') {
+                        errorText = fieldErrors;
+                    } else {
+                        errorText = 'Invalid value';
+                    }
+                    
+                    // Check if it's a Select2 field
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        const select2Container = field.next('.select2-container');
+                        if (select2Container.length) {
+                            select2Container.after(`<div class="invalid-feedback d-block">${escapeHtml(errorText)}</div>`);
+                        } else {
+                            field.after(`<div class="invalid-feedback">${escapeHtml(errorText)}</div>`);
+                        }
+                    } else {
+                        const errorHtml = `<div class="invalid-feedback">${escapeHtml(errorText)}</div>`;
+                        field.next('.invalid-feedback').remove();
+                        field.after(errorHtml);
+                    }
+                } else {
+                    // Field not found, treat as general error
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors.join(', '))}</div>`;
+                    } else {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors)}</div>`;
+                    }
+                }
+            });
+        }
+        
+        errorContent += '</div>';
+        
+        // Display general errors if any
+        if (hasGeneralErrors) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill"></i>${errorContent}`).show();
+            
+            // Scroll to error message
+            $('html, body').animate({
+                scrollTop: generalErrorDiv.offset().top - 100
+            }, 500);
+        }
+        
+        // If there's only a message and no errors, show it as notification
+        if (!data.errors && data.message && !hasGeneralErrors) {
+            showNotification(data.message, 'error');
+        }
+    }
+});
+
+// ============================================
+// DEACTIVATE TERM FUNCTION
+// ============================================
+
+{% if term %}
+function deactivateTerm() {
+    const modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+    modal.show();
+}
+
+$('#deactivate-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deactivateBtn = $('#confirm-deactivate-btn');
+    const spinner = deactivateBtn.find('.spinner-border');
+    const btnText = deactivateBtn.find('.btn-text');
+    
+    deactivateBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deactivating...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deactivateModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:term_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deactivateBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Deactivate Term');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deactivating term', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deactivateModal').on('hidden.bs.modal', function() {
+    const deactivateBtn = $('#confirm-deactivate-btn');
+    deactivateBtn.prop('disabled', false);
+    deactivateBtn.find('.spinner-border').addClass('d-none');
+    deactivateBtn.find('.btn-text').text('Deactivate Term');
+});
+{% endif %}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

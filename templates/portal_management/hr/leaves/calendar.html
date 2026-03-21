@@ -1,0 +1,1006 @@
+<!-- templates/portal_management/hr/leaves/calendar.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Staff Leave Calendar — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Leave Calendar{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF LEAVE CALENDAR STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Calendar Navigation */
+    .calendar-nav {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .month-nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .month-nav a {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        color: var(--gray-600);
+        background: var(--gray-100);
+        text-decoration: none;
+    }
+
+    .month-nav a:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .month-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin: 0;
+        min-width: 200px;
+        text-align: center;
+    }
+
+    .today-btn {
+        background: var(--primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .today-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Legend */
+    .legend {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: var(--radius-sm);
+    }
+
+    .legend-color.annual { background: var(--info-light); border: 1px solid var(--info); }
+    .legend-color.sick { background: var(--success-light); border: 1px solid var(--success); }
+    .legend-color.maternity { background: var(--warning-light); border: 1px solid var(--warning); }
+    .legend-color.paternity { background: var(--primary-light); border: 1px solid var(--primary); }
+    .legend-color.study { background: var(--info-light); border: 1px solid var(--info); }
+    .legend-color.compassionate { background: var(--danger-light); border: 1px solid var(--danger); }
+    .legend-color.unpaid { background: var(--gray-100); border: 1px solid var(--gray-400); }
+    .legend-color.other { background: var(--gray-100); border: 1px solid var(--gray-400); }
+
+    /* Calendar Grid */
+    .calendar-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        overflow-x: auto;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        min-width: 700px;
+    }
+
+    .calendar-weekday {
+        background: var(--gray-50);
+        padding: 1rem;
+        text-align: center;
+        font-weight: 600;
+        color: var(--gray-600);
+        border-bottom: 2px solid var(--gray-200);
+        border-right: 1px solid var(--gray-200);
+    }
+
+    .calendar-weekday:last-child {
+        border-right: none;
+    }
+
+    .calendar-day {
+        min-height: 120px;
+        padding: 0.75rem;
+        border-right: 1px solid var(--gray-200);
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        background: white;
+    }
+
+    .calendar-day:hover {
+        background: var(--gray-50);
+    }
+
+    .calendar-day.today {
+        background: var(--primary-light);
+    }
+
+    .calendar-day.other-month {
+        background: var(--gray-50);
+        opacity: 0.6;
+    }
+
+    .day-number {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        text-align: center;
+        line-height: 28px;
+        border-radius: var(--radius-full);
+    }
+
+    .today .day-number {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* Leave Items */
+    .leave-item {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        margin-bottom: 0.25rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+    }
+
+    .leave-item:hover {
+        transform: translateX(2px);
+        filter: brightness(0.95);
+    }
+
+    .leave-item.annual { background: var(--info-light); color: var(--info); border-left: 3px solid var(--info); }
+    .leave-item.sick { background: var(--success-light); color: var(--success); border-left: 3px solid var(--success); }
+    .leave-item.maternity { background: var(--warning-light); color: var(--warning); border-left: 3px solid var(--warning); }
+    .leave-item.paternity { background: var(--primary-light); color: var(--primary); border-left: 3px solid var(--primary); }
+    .leave-item.study { background: var(--info-light); color: var(--info); border-left: 3px solid var(--info); }
+    .leave-item.compassionate { background: var(--danger-light); color: var(--danger); border-left: 3px solid var(--danger); }
+    .leave-item.unpaid { background: var(--gray-100); color: var(--gray-600); border-left: 3px solid var(--gray-400); }
+    .leave-item.other { background: var(--gray-100); color: var(--gray-600); border-left: 3px solid var(--gray-400); }
+
+    .leave-count {
+        font-size: 0.65rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    /* Status Badge Styles */
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-badge.pending {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.approved {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .status-badge.rejected {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .status-badge.cancelled {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    /* Staff List Sidebar */
+    .staff-sidebar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .staff-sidebar h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .staff-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .staff-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .staff-item:hover {
+        background: var(--gray-50);
+        transform: translateX(5px);
+    }
+
+    .staff-item.active {
+        background: var(--primary-light);
+        border-left: 3px solid var(--primary);
+    }
+
+    .staff-avatar-small {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    .staff-info-small {
+        flex: 1;
+    }
+
+    .staff-name-small {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--gray-800);
+    }
+
+    .staff-id-small {
+        font-size: 0.65rem;
+        color: var(--gray-500);
+    }
+
+    .staff-leave-count {
+        font-size: 0.7rem;
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-full);
+        color: var(--gray-600);
+    }
+
+    /* Modal Styles */
+    .modal-leave-details {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .modal-header-custom {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .modal-body-custom {
+        padding: 1.5rem;
+    }
+
+    .leave-detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .leave-detail-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification.info {
+        border-left: 4px solid var(--info);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .toast-icon.info {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .calendar-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .month-nav {
+            justify-content: center;
+        }
+
+        .legend {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .calendar-grid {
+            min-width: 600px;
+        }
+
+        .calendar-day {
+            min-height: 100px;
+        }
+
+        .leave-item {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-calendar-week me-2"></i>
+                Staff Leave Calendar
+            </h1>
+            <p class="mb-0">Visual overview of staff leave schedules and availability</p>
+        </div>
+        <div>
+            <a href="{% url 'management:staff_leave_list' %}" class="btn btn-light">
+                <i class="bi bi-list-ul me-2"></i>
+                List View
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Navigation -->
+<div class="calendar-nav">
+    <div class="month-nav">
+        <a href="?year={{ previous_month.year }}&month={{ previous_month.month }}" title="Previous Month">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <h3 class="month-title">{{ current_month|date:"F Y" }}</h3>
+        <a href="?year={{ next_month.year }}&month={{ next_month.month }}" title="Next Month">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+    <div>
+        <a href="{% url 'management:staff_leave_calendar' %}" class="today-btn">
+            <i class="bi bi-calendar2-day"></i>
+            Today
+        </a>
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+    <div class="legend-item">
+        <div class="legend-color annual"></div>
+        <span>Annual Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color sick"></div>
+        <span>Sick Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color maternity"></div>
+        <span>Maternity Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color paternity"></div>
+        <span>Paternity Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color study"></div>
+        <span>Study Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color compassionate"></div>
+        <span>Compassionate Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color unpaid"></div>
+        <span>Unpaid Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color other"></div>
+        <span>Other</span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Calendar Grid -->
+    <div class="col-lg-9">
+        <div class="calendar-card">
+            <div class="calendar-grid">
+                <!-- Weekday Headers -->
+                <div class="calendar-weekday">Sun</div>
+                <div class="calendar-weekday">Mon</div>
+                <div class="calendar-weekday">Tue</div>
+                <div class="calendar-weekday">Wed</div>
+                <div class="calendar-weekday">Thu</div>
+                <div class="calendar-weekday">Fri</div>
+                <div class="calendar-weekday">Sat</div>
+                
+                <!-- Calendar Days -->
+                {% for week in calendar_weeks %}
+                    {% for day in week %}
+                        <div class="calendar-day {% if day.is_today %}today{% endif %} {% if not day.is_current_month %}other-month{% endif %}"
+                             data-date="{{ day.date|date:'Y-m-d' }}">
+                            <div class="day-number">{{ day.day }}</div>
+                            {% if day.leaves %}
+                                {% for leave in day.leaves %}
+                                    <div class="leave-item {{ leave.leave_type }}"
+                                         data-leave-id="{{ leave.id }}"
+                                         data-staff="{{ leave.staff.get_full_name }}"
+                                         data-type="{{ leave.get_leave_type_display }}"
+                                         data-period="{{ leave.start_date|date:'M d' }} - {{ leave.end_date|date:'M d' }}"
+                                         data-reason="{{ leave.reason|truncatechars:100 }}"
+                                         data-status="{{ leave.get_status_display }}"
+                                         title="{{ leave.staff.get_full_name }} - {{ leave.get_leave_type_display }}">
+                                        <i class="bi bi-{% if leave.leave_type == 'annual' %}calendar-check{% elif leave.leave_type == 'sick' %}heart-pulse{% elif leave.leave_type == 'maternity' %}baby{% elif leave.leave_type == 'paternity' %}person-standing{% elif leave.leave_type == 'study' %}book{% elif leave.leave_type == 'compassionate' %}heart{% else %}calendar{% endif %}"></i>
+                                        {{ leave.staff.first_name }} {{ leave.staff.last_name|first }}.
+                                    </div>
+                                {% endfor %}
+                                {% if day.leaves|length > 2 %}
+                                    <div class="leave-count">
+                                        +{{ day.leaves|length|add:"-2" }} more
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Staff Sidebar -->
+    <div class="col-lg-3">
+        <div class="staff-sidebar">
+            <h5>
+                <i class="bi bi-people"></i>
+                Staff on Leave
+            </h5>
+            <div class="staff-list">
+                {% if staff_leaves %}
+                    {% for staff_data in staff_leaves %}
+                        <div class="staff-item" data-staff-id="{{ staff_data.staff.pk }}" data-staff-name="{{ staff_data.staff.get_full_name }}">
+                            <div class="staff-avatar-small">
+                                {{ staff_data.staff.first_name|first|upper }}{{ staff_data.staff.last_name|first|upper }}
+                            </div>
+                            <div class="staff-info-small">
+                                <div class="staff-name-small">{{ staff_data.staff.get_full_name }}</div>
+                                <div class="staff-id-small">{{ staff_data.staff.employee_id|default:"No ID" }}</div>
+                            </div>
+                            <div class="staff-leave-count">
+                                {{ staff_data.leaves|length }} leave{{ staff_data.leaves|length|pluralize }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-calendar-check display-6"></i>
+                        <p class="mt-2 mb-0">No staff on leave this month</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Details Modal -->
+<div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Leave Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Staff Member:</strong>
+                    <p id="modal-staff" class="mt-1 mb-0 fw-semibold"></p>
+                </div>
+                <div class="mb-3">
+                    <strong>Leave Type:</strong>
+                    <p id="modal-type" class="mt-1 mb-0"></p>
+                </div>
+                <div class="mb-3">
+                    <strong>Period:</strong>
+                    <p id="modal-period" class="mt-1 mb-0"></p>
+                </div>
+                <div class="mb-3">
+                    <strong>Reason:</strong>
+                    <p id="modal-reason" class="mt-1 mb-0 text-muted" style="white-space: pre-wrap;"></p>
+                </div>
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    <p id="modal-status" class="mt-1 mb-0"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Close
+                </button>
+                <a href="#" id="modal-view-link" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-eye me-2"></i>
+                    View Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // LEAVE ITEM CLICK HANDLER
+    // ============================================
+    $('.leave-item').on('click', function(e) {
+        e.stopPropagation();
+        
+        const leaveId = $(this).data('leave-id');
+        const staffName = $(this).data('staff');
+        const leaveType = $(this).data('type');
+        const period = $(this).data('period');
+        const reason = $(this).data('reason');
+        const status = $(this).data('status');
+        
+        // Populate modal
+        $('#modal-staff').text(staffName);
+        $('#modal-type').html(`<span class="badge ${getBadgeClass($(this).attr('class'))}">${escapeHtml(leaveType)}</span>`);
+        $('#modal-period').text(period);
+        $('#modal-reason').text(reason || 'No reason provided');
+        
+        // Create status badge
+        let statusClass = '';
+        if (status.toLowerCase() === 'approved') statusClass = 'approved';
+        else if (status.toLowerCase() === 'pending') statusClass = 'pending';
+        else if (status.toLowerCase() === 'rejected') statusClass = 'rejected';
+        else if (status.toLowerCase() === 'cancelled') statusClass = 'cancelled';
+        
+        $('#modal-status').html(`<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>`);
+        
+        // Set view link with correct URL pattern (matches your URL config)
+        $('#modal-view-link').attr('href', `/management/leaves/${leaveId}/`);
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('leaveModal'));
+        modal.show();
+    });
+    
+    // ============================================
+    // STAFF ITEM CLICK HANDLER - Highlight staff's leaves
+    // ============================================
+    $('.staff-item').on('click', function() {
+        const staffName = $(this).data('staff-name');
+        
+        // Remove active class from all staff items
+        $('.staff-item').removeClass('active');
+        $(this).addClass('active');
+        
+        // Reset all leave items styling first
+        $('.leave-item').css({
+            'transform': '',
+            'box-shadow': '',
+            'opacity': ''
+        });
+        
+        // First, dim all leave items
+        $('.leave-item').css('opacity', '0.5');
+        
+        // Then highlight only those for this staff member
+        let highlightedCount = 0;
+        $('.leave-item').each(function() {
+            const leaveStaff = $(this).data('staff');
+            if (leaveStaff === staffName) {
+                $(this).css({
+                    'transform': 'scale(1.02)',
+                    'box-shadow': '0 2px 8px rgba(0,0,0,0.15)',
+                    'opacity': '1',
+                    'z-index': '10'
+                });
+                highlightedCount++;
+            }
+        });
+        
+        // Show notification with count
+        if (highlightedCount > 0) {
+            showNotification(`Showing ${highlightedCount} leave record${highlightedCount !== 1 ? 's' : ''} for ${staffName}`, 'info');
+        } else {
+            showNotification(`No leave records found for ${staffName} in this month`, 'info');
+            // Restore all items if none found
+            $('.leave-item').css('opacity', '1');
+        }
+    });
+    
+    // ============================================
+    // CLEAR HIGHLIGHT ON CALENDAR DAY CLICK
+    // ============================================
+    $('.calendar-day').on('click', function() {
+        // Remove active class from staff items
+        $('.staff-item').removeClass('active');
+        
+        // Restore all leave items
+        $('.leave-item').css({
+            'transform': '',
+            'box-shadow': '',
+            'opacity': '1'
+        });
+    });
+    
+    // ============================================
+    // HELPER FUNCTION: Get badge class
+    // ============================================
+    function getBadgeClass(className) {
+        if (className.includes('annual')) return 'bg-info';
+        if (className.includes('sick')) return 'bg-success';
+        if (className.includes('maternity')) return 'bg-warning';
+        if (className.includes('paternity')) return 'bg-primary';
+        if (className.includes('study')) return 'bg-info';
+        if (className.includes('compassionate')) return 'bg-danger';
+        if (className.includes('unpaid')) return 'bg-secondary';
+        return 'bg-secondary';
+    }
+    
+    // ============================================
+    // CALENDAR DAY HOVER EFFECT
+    // ============================================
+    $('.calendar-day').on('mouseenter', function() {
+        const leaveCount = $(this).find('.leave-item').length;
+        if (leaveCount > 0) {
+            $(this).css('background', 'var(--gray-50)');
+        }
+    }).on('mouseleave', function() {
+        if (!$(this).hasClass('today')) {
+            $(this).css('background', '');
+        }
+    });
+    
+    // ============================================
+    // TOOLTIP INITIALIZATION
+    // ============================================
+    $('.leave-item').each(function() {
+        const staffName = $(this).data('staff');
+        const leaveType = $(this).data('type');
+        $(this).attr('title', `${staffName} - ${leaveType}`);
+    });
+    
+    // ============================================
+    // DOUBLE-CLICK ON EMPTY DAY TO ADD LEAVE (Optional)
+    // ============================================
+    $('.calendar-day').on('dblclick', function() {
+        const date = $(this).data('date');
+        if (date) {
+            // Optional: Redirect to create leave with pre-filled date
+            window.location.href = `/management/leaves/create/?start_date=${date}`;
+        }
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'info') icon = 'info-circle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('show');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('show');
+}
+</script>
+{% endblock %}

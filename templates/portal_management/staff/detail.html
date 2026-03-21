@@ -1,166 +1,1169 @@
+<!-- templates/portal_management/hr/staff/detail.html -->
 {% extends 'portal_management/base.html' %}
-{% block title %}{{ staff.get_full_name }} — {{ SCHOOL_NAME }}{% endblock %}
-{% block page_title %}Staff Profile{% endblock %}
+{% load static %}
+
+{% block title %}Staff Details — {{ staff.get_full_name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Staff Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Staff Header Card */
+    .staff-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .staff-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .staff-info {
+        flex: 1;
+    }
+
+    .staff-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .staff-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .meta-item i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .employee-id-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        text-align: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .stat-icon.departments { background: var(--info-light); color: var(--info); }
+    .stat-icon.roles { background: var(--success-light); color: var(--success); }
+    .stat-icon.teaching { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.age { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Info Rows */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--gray-600);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* Badges */
+    .badge-permanent {
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-contract {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-part-time {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-temporary {
+        background: var(--danger-light);
+        color: var(--danger);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .role-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        border: 1px solid var(--gray-200);
+    }
+
+    .table {
+        margin-bottom: 0;
+        min-width: 600px;
+        width: 100%;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-action.primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-action.warning {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-action.warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+    }
+
+    .btn-action.danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-action.danger:hover {
+        background: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+    }
+
+    .btn-action.secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+    }
+
+    .btn-action.secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .staff-header-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .staff-meta {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row g-4">
-  <!-- Left card -->
-  <div class="col-md-3">
-    <div class="form-card text-center">
-      {% if staff.profile_picture %}
-        <img src="{{ staff.profile_picture.url }}" class="rounded-circle mb-3"
-             style="width:100px;height:100px;object-fit:cover;">
-      {% else %}
-        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-3"
-             style="width:100px;height:100px;font-size:2rem;font-weight:700;">
-          {{ staff.first_name|first }}{{ staff.last_name|first }}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-person-badge me-2"></i>
+                Staff Details
+            </h1>
+            <p class="mb-0">View and manage staff member information</p>
         </div>
-      {% endif %}
-      <h5 class="fw-bold mb-1">{{ staff.get_full_name }}</h5>
-      <code class="text-muted small">{{ staff.employee_id|default:"No ID" }}</code>
-      <div class="mt-2">
-        <span class="badge bg-{% if staff.employment_type == 'permanent' %}success{% else %}warning text-dark{% endif %}">
-          {{ staff.get_employment_type_display }}
-        </span>
-      </div>
-      {% if staff.user %}
-      <div class="mt-2">
-        <span class="badge bg-info-subtle text-info border border-info-subtle">
-          <i class="bi bi-person-check me-1"></i>{{ staff.user.username }}
-        </span>
-      </div>
-      {% endif %}
-      <div class="mt-3 d-grid">
-        <a href="{% url 'management:staff_update' staff.pk %}" class="btn btn-sm btn-outline-primary">
-          <i class="bi bi-pencil me-1"></i>Edit Profile
+        <div>
+            <a href="{% url 'management:staff_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Staff List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Header Card -->
+<div class="staff-header-card">
+    <div class="staff-avatar-large">
+        {{ staff.first_name|first|upper }}{{ staff.last_name|first|upper }}
+    </div>
+    <div class="staff-info">
+        <h2>{{ staff.get_full_name }}</h2>
+        <div class="staff-meta">
+            <div class="meta-item">
+                <i class="bi bi-upc-scan"></i>
+                <span class="employee-id-badge">
+                    <i class="bi bi-qr-code"></i>
+                    {{ staff.employee_id }}
+                </span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-briefcase"></i>
+                <span>
+                    {% if staff.employment_type == 'permanent' %}
+                    <span class="badge-permanent"><i class="bi bi-check-circle"></i> Permanent</span>
+                    {% elif staff.employment_type == 'contract' %}
+                    <span class="badge-contract"><i class="bi bi-file-text"></i> Contract</span>
+                    {% elif staff.employment_type == 'part_time' %}
+                    <span class="badge-part-time"><i class="bi bi-clock"></i> Part Time</span>
+                    {% elif staff.employment_type == 'temporary' %}
+                    <span class="badge-temporary"><i class="bi bi-hourglass"></i> Temporary</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-plus"></i>
+                <span>Joined: {{ staff.joining_date|date:"F d, Y"|default:"Not set" }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>Updated: {{ staff.updated_at|date:"F d, Y" }}</span>
+            </div>
+        </div>
+        {% if staff.user %}
+        <div class="alert alert-success mt-3 mb-0">
+            <i class="bi bi-person-check-fill me-2"></i>
+            <strong>User Account:</strong> {{ staff.user.username }} 
+            {% if staff.user.email %} ({{ staff.user.email }}){% endif %}
+            <span class="badge bg-success ms-2">Active</span>
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="bi bi-person-x-fill me-2"></i>
+            <strong>No User Account:</strong> This staff member does not have system access.
+            <a href="{% url 'management:staff_update' staff.pk %}" class="alert-link ms-2">Create account</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon departments">
+            <i class="bi bi-building"></i>
+        </div>
+        <div class="stat-value">{{ department_assignments|length }}</div>
+        <div class="stat-label">Department{{ department_assignments|pluralize }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon roles">
+            <i class="bi bi-tag"></i>
+        </div>
+        <div class="stat-value">{{ role_assignments|length }}</div>
+        <div class="stat-label">Role{{ role_assignments|pluralize }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon teaching">
+            <i class="bi bi-book"></i>
+        </div>
+        <div class="stat-value">{{ teaching_assignments|length }}</div>
+        <div class="stat-label">Teaching Assignment{{ teaching_assignments|pluralize }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon age">
+            <i class="bi bi-cake2"></i>
+        </div>
+        <div class="stat-value">{{ age|default:"N/A" }}</div>
+        <div class="stat-label">Age</div>
+    </div>
+</div>
+
+<!-- Personal Information Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-person-badge"></i>
+            Personal Information
+        </h5>
+        <div class="action-buttons">
+            <a href="{% url 'management:staff_update' staff.pk %}" class="btn-action warning">
+                <i class="bi bi-pencil"></i>
+                Edit Staff
+            </a>
+            {% if not role_assignments and not teaching_assignments and not department_assignments %}
+            <button type="button" class="btn-action danger" onclick="showDeleteModal()">
+                <i class="bi bi-trash"></i>
+                Delete Staff
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="info-grid">
+        <div class="info-row">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{ staff.get_full_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Employee ID</span>
+            <span class="info-value">{{ staff.employee_id }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Gender</span>
+            <span class="info-value">{{ staff.get_gender_display|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Date of Birth</span>
+            <span class="info-value">{{ staff.date_of_birth|date:"F d, Y"|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Age</span>
+            <span class="info-value">{{ age|default:"N/A" }} years</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Marital Status</span>
+            <span class="info-value">{{ staff.get_marital_status_display|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Phone Number</span>
+            <span class="info-value">{{ staff.phone_number|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Work Place</span>
+            <span class="info-value">{{ staff.work_place|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Joining Date</span>
+            <span class="info-value">{{ staff.joining_date|date:"F d, Y"|default:"Not specified" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Employment Type</span>
+            <span class="info-value">{{ staff.get_employment_type_display }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Department Assignments Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-building"></i>
+            Department Assignments
+        </h5>
+        <span class="badge bg-info">{{ department_assignments|length }} Department{{ department_assignments|pluralize }}</span>
+    </div>
+    
+    {% if department_assignments %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Role</th>
+                    <th>Start Date</th>
+                    <th>Status</th>
+                </thead>
+            <tbody>
+                {% for assignment in department_assignments %}
+                <tr>
+                    <td>
+                        <strong>{{ assignment.department.name }}</strong>
+                        {% if assignment.is_head %}
+                        <span class="badge bg-primary ms-2">Head of Department</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if assignment.is_head %}
+                        Department Head
+                        {% else %}
+                        Staff Member
+                        {% endif %}
+                    </td>
+                    <td>{{ assignment.start_date|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="badge bg-success">Active</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-building"></i>
+        </div>
+        <p class="text-muted">No department assignments found</p>
+        <a href="{% url 'management:staff_update' staff.pk %}" class="btn-action primary">
+            <i class="bi bi-plus-lg"></i>
+            Assign Department
         </a>
-      </div>
     </div>
-  </div>
+    {% endif %}
+</div>
 
-  <!-- Right details -->
-  <div class="col-md-9">
-    <!-- Info -->
-    <div class="form-card mb-3">
-      <h6 class="fw-semibold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Staff Information</h6>
-      <div class="row g-2">
-        <div class="col-6 col-md-3"><small class="text-muted d-block">Gender</small>{{ staff.get_gender_display|default:"—" }}</div>
-        <div class="col-6 col-md-3"><small class="text-muted d-block">Date of Birth</small>{{ staff.date_of_birth|date:"d M Y"|default:"—" }}</div>
-        <div class="col-6 col-md-3"><small class="text-muted d-block">Phone</small>{{ staff.phone_number|default:"—" }}</div>
-        <div class="col-6 col-md-3"><small class="text-muted d-block">Joining Date</small>{{ staff.joining_date|date:"d M Y"|default:"—" }}</div>
-      </div>
+<!-- Role Assignments Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-tag"></i>
+            Role Assignments
+        </h5>
+        <span class="badge bg-info">{{ role_assignments|length }} Role{{ role_assignments|pluralize }}</span>
     </div>
+    
+    {% if role_assignments %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Portal Category</th>
+                    <th>Start Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in role_assignments %}
+                <tr>
+                    <td>
+                        <span class="role-badge">{{ assignment.role.name }}</span>
+                    </td>
+                    <td>
+                        {% if assignment.role.portal_category == 'management' %}
+                        <span class="badge bg-primary">Management Portal</span>
+                        {% elif assignment.role.portal_category == 'academic' %}
+                        <span class="badge bg-success">Academic Portal</span>
+                        {% elif assignment.role.portal_category == 'administration' %}
+                        <span class="badge bg-info">Administration Portal</span>
+                        {% elif assignment.role.portal_category == 'finance' %}
+                        <span class="badge bg-warning">Finance Portal</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ assignment.role.get_portal_category_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ assignment.start_date|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="badge bg-success">Active</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-tag"></i>
+        </div>
+        <p class="text-muted">No role assignments found</p>
+        <a href="{% url 'management:staff_update' staff.pk %}" class="btn-action primary">
+            <i class="bi bi-plus-lg"></i>
+            Assign Role
+        </a>
+    </div>
+    {% endif %}
+</div>
 
-    <!-- Roles -->
-    <div class="form-card mb-3">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-semibold mb-0"><i class="bi bi-tags me-2 text-success"></i>Role Assignments</h6>
-        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#assignRoleModal">
-          <i class="bi bi-plus-lg me-1"></i>Assign Role
+<!-- Teaching Assignments Card (if staff is a teacher) -->
+{% if teaching_assignments %}
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-book"></i>
+            Teaching Assignments
+        </h5>
+        <span class="badge bg-info">{{ teaching_assignments|length }} Subject{{ teaching_assignments|pluralize }}</span>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Class Level</th>
+                    <th>Stream</th>
+                    <th>Academic Year</th>
+                    <th>Periods/Week</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in teaching_assignments %}
+                <tr>
+                    <td>
+                        <strong>{{ assignment.subject.name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ assignment.subject.code }}</small>
+                    </td>
+                    <td>{{ assignment.class_level.name }}</td>
+                    <td>{{ assignment.stream_class.name|default:"All Streams" }}</td>
+                    <td>{{ assignment.academic_year.name }}</td>
+                    <td>
+                        <span class="badge bg-primary">{{ assignment.periods_per_week }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons Card -->
+<div class="info-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-lightning-charge"></i>
+            Quick Actions
+        </h5>
+    </div>
+    <div class="action-buttons">
+        <a href="{% url 'management:staff_update' staff.pk %}" class="btn-action warning">
+            <i class="bi bi-pencil"></i>
+            Edit Staff Information
+        </a>
+        {% if staff.user %}
+        <a href="{% url 'admin:core_customuser_change' staff.user.pk %}" class="btn-action secondary" target="_blank">
+            <i class="bi bi-person-gear"></i>
+            Manage User Account
+        </a>
+        {% else %}
+        <a href="{% url 'management:staff_update' staff.pk %}" class="btn-action primary">
+            <i class="bi bi-person-plus"></i>
+            Create User Account
+        </a>
+        {% endif %}
+        <a href="{% url 'management:staff_list' %}" class="btn-action secondary">
+            <i class="bi bi-people"></i>
+            View All Staff
+        </a>
+        {% if not role_assignments and not teaching_assignments and not department_assignments %}
+        <button type="button" class="btn-action danger" onclick="showDeleteModal()">
+            <i class="bi bi-trash"></i>
+            Delete Staff Member
         </button>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead class="table-light"><tr><th>Role</th><th>Portal</th><th>Start</th><th>End</th><th>Active</th></tr></thead>
-          <tbody>
-            {% for ra in role_assignments %}
-            <tr>
-              <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ ra.role.name }}</span></td>
-              <td><small class="text-muted">{{ ra.role.get_portal_category_display|default:"—" }}</small></td>
-              <td>{{ ra.start_date|date:"d M Y" }}</td>
-              <td>{{ ra.end_date|date:"d M Y"|default:"—" }}</td>
-              <td>{% if ra.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="text-center text-muted">No roles assigned</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+        {% endif %}
     </div>
-
-    <!-- Teaching -->
-    <div class="form-card mb-3">
-      <h6 class="fw-semibold mb-3"><i class="bi bi-book me-2 text-info"></i>Teaching Assignments</h6>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead class="table-light"><tr><th>Year</th><th>Subject</th><th>Class</th><th>Periods/Week</th></tr></thead>
-          <tbody>
-            {% for ta in teaching_assignments %}
-            <tr>
-              <td>{{ ta.academic_year }}</td>
-              <td>{{ ta.subject }}</td>
-              <td>{{ ta.class_level }}{% if ta.stream_class %} {{ ta.stream_class }}{% endif %}</td>
-              <td>{{ ta.periods_per_week }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="text-center text-muted">No teaching assignments</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Leave -->
-    <div class="form-card">
-      <h6 class="fw-semibold mb-3"><i class="bi bi-calendar-x me-2 text-warning"></i>Recent Leave</h6>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead class="table-light"><tr><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Status</th></tr></thead>
-          <tbody>
-            {% for leave in leaves %}
-            <tr>
-              <td>{{ leave.get_leave_type_display }}</td>
-              <td>{{ leave.start_date|date:"d M Y" }}</td>
-              <td>{{ leave.end_date|date:"d M Y" }}</td>
-              <td>{{ leave.duration_days }}</td>
-              <td><span class="badge bg-{% if leave.status == 'approved' %}success{% elif leave.status == 'pending' %}warning text-dark{% elif leave.status == 'rejected' %}danger{% else %}secondary{% endif %}">{{ leave.get_status_display }}</span></td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="text-center text-muted">No leave records</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </div>
 
-<!-- Assign Role Modal -->
-<div class="modal fade" id="assignRoleModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Assign Role — {{ staff.get_full_name }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="post" action="{% url 'management:staff_assign_role' staff.pk %}">
-        {% csrf_token %}
-        <div class="modal-body">
-          <input type="hidden" name="staff" value="{{ staff.pk }}">
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Role *</label>
-            {{ role_form.role }}
-          </div>
-          <div class="row g-3">
-            <div class="col-6"><label class="form-label fw-semibold">Start Date *</label>{{ role_form.start_date }}</div>
-            <div class="col-6"><label class="form-label fw-semibold">End Date</label>{{ role_form.end_date }}</div>
-          </div>
-          <div class="form-check mt-3">
-            {{ role_form.is_active }}
-            <label class="form-check-label">Active</label>
-          </div>
-          <div class="mt-3">
-            <label class="form-label fw-semibold">Remarks</label>
-            {{ role_form.remarks }}
-          </div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="delete-form" method="POST" action="{% url 'management:staff_delete' staff.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the staff member <strong>{{ staff.get_full_name }}</strong>?</p>
+                    
+                    <div id="delete-warning-dependencies" class="alert alert-warning mt-3" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This staff member has active assignments. 
+                        Deleting will also remove these associations.
+                    </div>
+                    
+                    <div id="delete-warning-no-dependencies" class="alert alert-danger mt-3" style="display: none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-trash me-2"></i>
+                        <span class="btn-text">Delete Staff Member</span>
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success">Assign Role</button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+});
+
+// ============================================
+// DELETE FUNCTIONS
+// ============================================
+
+function showDeleteModal() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    
+    // Check for dependencies via AJAX
+    $.ajax({
+        url: `/management/hr/staff/{{ staff.pk }}/check-dependencies/`,
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(data) {
+            if (data.has_dependencies) {
+                $('#delete-warning-dependencies').show();
+                $('#delete-warning-no-dependencies').hide();
+                $('#delete-warning-dependencies').html(`
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This staff member has ${data.dependencies.length} active assignment(s): ${data.dependencies.join(', ')}. 
+                    Deleting will also remove these associations.
+                `);
+            } else {
+                $('#delete-warning-dependencies').hide();
+                $('#delete-warning-no-dependencies').show();
+            }
+            modal.show();
+        },
+        error: function() {
+            // If AJAX fails, show generic warning
+            $('#delete-warning-dependencies').hide();
+            $('#delete-warning-no-dependencies').show();
+            modal.show();
+        }
+    });
+}
+
+$('#delete-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    const form = $(this);
+    const deleteBtn = $('#confirm-delete-btn');
+    const spinner = deleteBtn.find('.spinner-border');
+    const btnText = deleteBtn.find('.btn-text');
+    
+    deleteBtn.prop('disabled', true);
+    spinner.removeClass('d-none');
+    btnText.text('Deleting...');
+    
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: form.serialize(),
+        success: function(data) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            setTimeout(function() {
+                window.location.href = "{% url 'management:staff_list' %}";
+            }, 1500);
+        },
+        error: function(xhr) {
+            deleteBtn.prop('disabled', false);
+            spinner.addClass('d-none');
+            btnText.text('Delete Staff Member');
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showNotification(response.message || 'Error deleting staff member', 'error');
+            } catch (e) {
+                showNotification('An error occurred. Please try again.', 'error');
+            }
+        }
+    });
+});
+
+$('#deleteModal').on('hidden.bs.modal', function() {
+    const deleteBtn = $('#confirm-delete-btn');
+    deleteBtn.prop('disabled', false);
+    deleteBtn.find('.spinner-border').addClass('d-none');
+    deleteBtn.find('.btn-text').text('Delete Staff Member');
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
 {% endblock %}

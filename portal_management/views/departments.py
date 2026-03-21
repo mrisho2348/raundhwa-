@@ -8,9 +8,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import View
-
+from django.utils import timezone
 from core.mixins import ManagementRequiredMixin
-from core.models import Department
+from core.models import Department, StaffDepartmentAssignment
 from portal_management.forms.departments import DepartmentForm
 
 logger = logging.getLogger(__name__)
@@ -155,9 +155,80 @@ class DepartmentDetailView(ManagementRequiredMixin, View):
         """Display department details."""
         department = get_object_or_404(Department, pk=pk)
         
+        # Get all staff assignments for this department
+        staff_assignments = StaffDepartmentAssignment.objects.filter(
+            department=department
+        ).select_related(
+            'staff', 
+            'staff__user'
+        ).order_by(
+            '-is_head',      # Heads first
+            '-is_active',    # Active assignments first
+            '-start_date'    # Most recent first
+        )
+        
+        # Count statistics
+        total_assignments = staff_assignments.count()
+        active_assignments = staff_assignments.filter(is_active=True).count()
+        inactive_assignments = staff_assignments.filter(is_active=False).count()
+        
+        # Get Head of Department
+        hod = staff_assignments.filter(
+            is_head=True,
+            is_active=True
+        ).first()
+        
+        # Get active staff members (for quick access)
+        active_staff = staff_assignments.filter(is_active=True).select_related('staff')
+        
+        # Get department statistics
+        from django.db.models import Count, Q
+        
+        # Count staff by role
+        staff_by_role = staff_assignments.aggregate(
+            heads=Count('id', filter=Q(is_head=True, is_active=True)),
+            members=Count('id', filter=Q(is_head=False, is_active=True)),
+            inactive=Count('id', filter=Q(is_active=False))
+        )
+        
+        # Get recent assignments (last 6 months)
+        six_months_ago = timezone.now().date() - timezone.timedelta(days=180)
+        recent_assignments = staff_assignments.filter(
+            start_date__gte=six_months_ago
+        ).order_by('-start_date')[:5]
+        
+        # Check if department can be deleted (no active assignments)
+        can_delete = active_assignments == 0
+        
         context = {
+            # Basic department info
             'department': department,
+            
+            # Staff assignments
+            'staff_assignments': staff_assignments,
+            'active_staff': active_staff,
+            'recent_assignments': recent_assignments,
+            
+            # Statistics
+            'staff_count': active_assignments,
+            'total_assignments': total_assignments,
+            'active_assignments': active_assignments,
+            'inactive_assignments': inactive_assignments,
+            
+            # Role-based statistics
+            'heads_count': staff_by_role['heads'],
+            'members_count': staff_by_role['members'],
+            
+            # Head of Department
+            'hod': hod,
+            'has_hod': hod is not None,
+            
+            # Status flags
+            'has_staff': active_assignments > 0,
+            'can_delete': can_delete,
+            'has_inactive_staff': inactive_assignments > 0,
         }
+        
         return render(request, self.template_name, context)
 
 

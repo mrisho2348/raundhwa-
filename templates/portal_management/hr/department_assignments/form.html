@@ -1,0 +1,1219 @@
+<!-- templates/portal_management/hr/department_assignments/form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STAFF DEPARTMENT ASSIGNMENT FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .field-hint {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .field-hint i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Staff Card (for update view) */
+    .staff-info-card {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .staff-avatar-large {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .staff-details {
+        flex: 1;
+    }
+
+    .staff-details h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .staff-details .staff-meta {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+
+    /* Department Info Card (for update view) */
+    .department-info-card {
+        background: linear-gradient(135deg, var(--info-light), #ffffff);
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    /* Preview Card */
+    .preview-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .preview-card h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-content {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .preview-item {
+        text-align: center;
+        flex: 1;
+    }
+
+    .preview-label {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .preview-value {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .preview-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Switch Toggle */
+    .form-switch {
+        padding-left: 2.5rem;
+    }
+
+    .form-switch .form-check-input {
+        width: 2rem;
+        height: 1rem;
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-label {
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+    }
+
+    .alert-general-error .error-content {
+        flex: 1;
+    }
+
+    .alert-general-error ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .alert-general-error li {
+        margin-bottom: 0.25rem;
+    }
+
+    .alert-warning-box {
+        background: var(--warning-light);
+        border: 1px solid #ffeeba;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-warning-box i {
+        font-size: 1.2rem;
+        color: var(--warning);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Select2 Customization */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 45px;
+        padding: 0.3rem 1rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 28px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .preview-content {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-building-add me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if assignment %}
+                    Update department assignment for {{ assignment.staff.get_full_name }}
+                {% else %}
+                    Assign a staff member to a department
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:staff_department_assignment_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Assignments</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            Assignment Details
+        </h5>
+        {% if assignment %}
+        <span class="badge bg-info px-3 py-2" style="font-size: 0.9rem;">
+            Created: {{ assignment.created_at|date:"M d, Y" }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="assignment-form" method="POST" 
+          {% if assignment %}action="{% url 'management:staff_department_assignment_update' assignment.pk %}"{% else %}action="{% url 'management:staff_department_assignment_create' %}"{% endif %}>
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <div class="row g-4">
+            <!-- Staff Selection (only for create mode) -->
+            {% if not assignment %}
+            <div class="col-md-12">
+                <label for="staff" class="form-label required-field">Staff Member</label>
+                <select name="staff" id="staff" class="form-select select2-filter" required>
+                    <option value="">Select Staff Member</option>
+                    {% for staff in staff_members %}
+                    <option value="{{ staff.pk }}">
+                        {{ staff.get_full_name }} ({{ staff.employee_id }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the staff member to assign to a department
+                </small>
+            </div>
+            {% else %}
+            <!-- Staff Info Card (for update mode) -->
+            <div class="col-md-12">
+                <div class="staff-info-card">
+                    <div class="staff-avatar-large">
+                        {{ assignment.staff.first_name|first|upper }}{{ assignment.staff.last_name|first|upper }}
+                    </div>
+                    <div class="staff-details">
+                        <h4>{{ assignment.staff.get_full_name }}</h4>
+                        <div class="staff-meta">
+                            <span><i class="bi bi-upc-scan"></i> {{ assignment.staff.employee_id }}</span>
+                            <span class="ms-3"><i class="bi bi-telephone"></i> {{ assignment.staff.phone_number|default:"No phone" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Department Selection -->
+            <div class="col-md-12">
+                <label for="department" class="form-label required-field">Department</label>
+                <select name="department" id="department" class="form-select select2-filter" required>
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.pk }}" 
+                            data-code="{{ dept.code }}"
+                            {% if assignment and assignment.department.pk == dept.pk %}selected{% endif %}>
+                        {{ dept.name }} ({{ dept.code }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Select the department to assign the staff member to
+                </small>
+            </div>
+
+            <!-- Head of Department Toggle -->
+            <div class="col-md-12">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="is_head" name="is_head" value="true"
+                           {% if assignment and assignment.is_head %}checked{% endif %}>
+                    <label class="form-check-label" for="is_head">
+                        <i class="bi bi-star-fill text-warning me-1"></i>
+                        Head of Department
+                    </label>
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Mark this staff member as the Head of Department (only one per department)
+                </small>
+            </div>
+
+            <!-- Assignment Period -->
+            <div class="col-md-6">
+                <label for="start_date" class="form-label required-field">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{% if assignment %}{{ assignment.start_date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" required>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    The date this assignment becomes effective
+                </small>
+            </div>
+
+            <div class="col-md-6">
+                <label for="end_date" class="form-label">End Date (Optional)</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{% if assignment and assignment.end_date %}{{ assignment.end_date|date:'Y-m-d' }}{% endif %}">
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Leave blank for indefinite assignment
+                </small>
+            </div>
+
+            <!-- Active Status -->
+            <div class="col-md-12">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" 
+                           value="true" {% if assignment and assignment.is_active %}checked{% endif %} 
+                           {% if not assignment %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+                        Active Assignment
+                    </label>
+                </div>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Active assignments are currently in effect
+                </small>
+            </div>
+
+            <!-- Remarks -->
+            <div class="col-md-12">
+                <label for="remarks" class="form-label">Remarks</label>
+                <textarea class="form-control" id="remarks" name="remarks" 
+                          rows="3" placeholder="Additional notes about this assignment...">{% if assignment %}{{ assignment.remarks }}{% endif %}</textarea>
+                <small class="field-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Optional remarks or notes about this assignment
+                </small>
+            </div>
+
+            <!-- Warning Section -->
+            <div class="col-12" id="warning-section" style="display: none;">
+                <div class="alert-warning-box">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        <strong>Important Notice:</strong>
+                        <p id="warning-message" class="mb-0 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="col-12" id="preview-card" style="display: none;">
+                <div class="preview-card">
+                    <h6>
+                        <i class="bi bi-eye"></i>
+                        Assignment Preview
+                    </h6>
+                    <div class="preview-content">
+                        <div class="preview-item">
+                            <div class="preview-label">Staff Member</div>
+                            <div class="preview-value" id="preview-staff">—</div>
+                        </div>
+                        <div class="preview-item">
+                            <div class="preview-label">Department</div>
+                            <div class="preview-value" id="preview-department">—</div>
+                        </div>
+                        <div class="preview-item">
+                            <div class="preview-label">Role</div>
+                            <div class="preview-value" id="preview-role">—</div>
+                        </div>
+                        <div class="preview-item">
+                            <div class="preview-label">Assignment Period</div>
+                            <div class="preview-value" id="preview-period">—</div>
+                        </div>
+                        <div class="preview-item">
+                            <div class="preview-label">Status</div>
+                            <div class="preview-value" id="preview-status">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    {% if assignment %}Update Assignment{% else %}Create Assignment{% endif %}
+                </span>
+            </button>
+
+            <a href="{% url 'management:staff_department_assignment_list' %}" class="btn-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let assignmentId = {% if assignment %}{{ assignment.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2 FOR DROPDOWNS
+    // ============================================
+    $('.select2-filter').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Select option'
+    });
+
+    // ============================================
+    // PREVIEW FUNCTION
+    // ============================================
+    function updatePreview() {
+        // Staff preview
+        {% if not assignment %}
+        const selectedStaff = $('#staff option:selected');
+        const staffName = selectedStaff.text().split(' (')[0];
+        $('#preview-staff').text(staffName || '—');
+        {% else %}
+        $('#preview-staff').text('{{ assignment.staff.get_full_name }}');
+        {% endif %}
+        
+        // Department preview
+        const selectedDept = $('#department option:selected');
+        const deptName = selectedDept.text().split(' (')[0];
+        $('#preview-department').text(deptName || '—');
+        
+        // Role preview
+        const isHead = $('#is_head').is(':checked');
+        if (isHead) {
+            $('#preview-role').html('<span class="preview-badge" style="background: var(--success-light); color: var(--success);">Head of Department</span>');
+        } else {
+            $('#preview-role').html('<span class="preview-badge" style="background: var(--info-light); color: var(--info);">Staff Member</span>');
+        }
+        
+        // Period preview
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        if (startDate) {
+            let period = startDate;
+            if (endDate) {
+                period += ` → ${endDate}`;
+            } else {
+                period += ` → Present`;
+            }
+            $('#preview-period').text(period);
+        } else {
+            $('#preview-period').text('—');
+        }
+        
+        // Status preview
+        const isActive = $('#is_active').is(':checked');
+        if (isActive) {
+            $('#preview-status').html('<span class="preview-badge" style="background: var(--success-light); color: var(--success);">Active</span>');
+        } else {
+            $('#preview-status').html('<span class="preview-badge" style="background: var(--warning-light); color: var(--warning);">Inactive</span>');
+        }
+        
+        // Show preview if any field has value
+        if (selectedDept.val() || startDate) {
+            $('#preview-card').show();
+        } else {
+            $('#preview-card').hide();
+        }
+    }
+    
+    // ============================================
+    // VALIDATION FUNCTIONS
+    // ============================================
+    function validateDates() {
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        
+        if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+            showNotification('End date must be after start date.', 'warning');
+            $('#end_date').addClass('is-invalid');
+            return false;
+        } else {
+            $('#end_date').removeClass('is-invalid');
+            return true;
+        }
+    }
+    
+    function checkHeadOfDepartmentWarning() {
+        const selectedDept = $('#department option:selected');
+        const isHead = $('#is_head').is(':checked');
+        
+        if (selectedDept.val() && isHead) {
+            // Check if there's already a head of department (this is just a warning, actual validation happens server-side)
+            $.ajax({
+                url: `/management/hr/departments/${selectedDept.val()}/check-head/`,
+                method: 'GET',
+                async: false,
+                success: function(data) {
+                    if (data.has_head && data.head_name !== '{{ assignment.staff.get_full_name|default:"" }}') {
+                        $('#warning-message').html(`<strong>${selectedDept.text().split(' (')[0]}</strong> already has a Head of Department: <strong>${data.head_name}</strong>. Assigning another head will replace the current one.`);
+                        $('#warning-section').show();
+                    } else {
+                        $('#warning-section').hide();
+                    }
+                },
+                error: function() {
+                    $('#warning-section').hide();
+                }
+            });
+        } else {
+            $('#warning-section').hide();
+        }
+    }
+    
+    function validateAssignment() {
+        const isActive = $('#is_active').is(':checked');
+        const endDate = $('#end_date').val();
+        
+        // Active assignments cannot have an end date
+        if (isActive && endDate) {
+            showNotification('Active assignments cannot have an end date. Please set the assignment as inactive or clear the end date.', 'warning');
+            $('#end_date').addClass('is-invalid');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    $('#staff, #department, #is_head, #start_date, #end_date, #is_active').on('change', function() {
+        updatePreview();
+        validateDates();
+        if ($('#department').val()) {
+            checkHeadOfDepartmentWarning();
+        }
+    });
+    
+    $('#start_date, #end_date').on('input', updatePreview);
+    $('#department').on('change', function() {
+        updatePreview();
+        if ($(this).val()) {
+            checkHeadOfDepartmentWarning();
+        }
+    });
+    
+    // Initialize preview and warnings
+    updatePreview();
+    validateDates();
+    if ($('#department').val()) {
+        checkHeadOfDepartmentWarning();
+    }
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    $('#assignment-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Validate required fields
+        {% if not assignment %}
+        const selectedStaff = $('#staff').val();
+        if (!selectedStaff) {
+            showNotification('Please select a staff member.', 'error');
+            $('#staff').addClass('is-invalid');
+            return;
+        }
+        {% endif %}
+        
+        const selectedDept = $('#department').val();
+        if (!selectedDept) {
+            showNotification('Please select a department.', 'error');
+            $('#department').addClass('is-invalid');
+            return;
+        }
+        
+        const startDate = $('#start_date').val();
+        if (!startDate) {
+            showNotification('Start date is required.', 'error');
+            $('#start_date').addClass('is-invalid');
+            return;
+        }
+        
+        // Validate dates
+        if (!validateDates()) {
+            return;
+        }
+        
+        // Validate assignment rules
+        if (!validateAssignment()) {
+            return;
+        }
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Saving...');
+        
+        const formData = form.serialize();
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(function() {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = "{% url 'management:staff_department_assignment_list' %}";
+                        }
+                    }, 1500);
+                } else {
+                    displayErrors(data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.text('{% if assignment %}Update Assignment{% else %}Create Assignment{% endif %}');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    displayErrors(response);
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('{% if assignment %}Update Assignment{% else %}Create Assignment{% endif %}');
+            }
+        });
+    });
+
+    // ============================================
+    // ERROR HANDLING FUNCTIONS
+    // ============================================
+    
+    function clearErrors() {
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    }
+    
+    function displayErrors(data) {
+        let hasGeneralErrors = false;
+        let errorContent = '<div class="error-content">';
+        
+        // Handle main message
+        if (data.message && data.message !== 'Please correct the errors below.') {
+            errorContent += `<div class="fw-semibold mb-2">${escapeHtml(data.message)}</div>`;
+            hasGeneralErrors = true;
+        }
+        
+        // Handle field-specific errors
+        if (data.errors) {
+            $.each(data.errors, function(fieldName, fieldErrors) {
+                // Handle __all__ errors (non-field errors)
+                if (fieldName === '__all__') {
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += '<ul>';
+                        fieldErrors.forEach(function(error) {
+                            errorContent += `<li>${escapeHtml(error)}</li>`;
+                        });
+                        errorContent += '</ul>';
+                    } else {
+                        errorContent += `<div class="mt-1">${escapeHtml(fieldErrors)}</div>`;
+                    }
+                    return;
+                }
+                
+                // Try to find the field
+                let field = $(`[name="${fieldName}"]`);
+                if (field.length === 0) {
+                    field = $(`#${fieldName}`);
+                }
+                
+                if (field.length) {
+                    field.addClass('is-invalid');
+                    
+                    let errorText = '';
+                    if (Array.isArray(fieldErrors)) {
+                        errorText = fieldErrors.join('<br>');
+                    } else if (typeof fieldErrors === 'string') {
+                        errorText = fieldErrors;
+                    } else {
+                        errorText = 'Invalid value';
+                    }
+                    
+                    // Check if it's a Select2 field
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        const select2Container = field.next('.select2-container');
+                        if (select2Container.length) {
+                            select2Container.after(`<div class="invalid-feedback d-block">${escapeHtml(errorText)}</div>`);
+                        } else {
+                            field.after(`<div class="invalid-feedback">${escapeHtml(errorText)}</div>`);
+                        }
+                    } else {
+                        const errorHtml = `<div class="invalid-feedback">${escapeHtml(errorText)}</div>`;
+                        field.next('.invalid-feedback').remove();
+                        field.after(errorHtml);
+                    }
+                } else {
+                    // Field not found, treat as general error
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors.join(', '))}</div>`;
+                    } else {
+                        errorContent += `<div class="mt-1"><strong>${escapeHtml(fieldName)}:</strong> ${escapeHtml(fieldErrors)}</div>`;
+                    }
+                }
+            });
+        }
+        
+        errorContent += '</div>';
+        
+        // Display general errors if any
+        if (hasGeneralErrors) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(`<i class="bi bi-exclamation-triangle-fill"></i>${errorContent}`).show();
+            
+            // Scroll to error message
+            $('html, body').animate({
+                scrollTop: generalErrorDiv.offset().top - 100
+            }, 500);
+        }
+        
+        // If there's only a message and no errors, show it as notification
+        if (!data.errors && data.message && !hasGeneralErrors) {
+            showNotification(data.message, 'error');
+        }
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'exclamation-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}
