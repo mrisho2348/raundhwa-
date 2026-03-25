@@ -1,0 +1,552 @@
+<!-- templates/portal_management/exams/subject_results_pdf.html -->
+<!DOCTYPE html>
+{% load custom_filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject.name }} Results – {{ session.name }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1.2cm 1.4cm;
+
+            @top-left {
+                content: "{{ school_info.name }}";
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 7.5pt;
+                font-weight: bold;
+                color: #0D3349;
+            }
+            @top-right {
+                content: "{{ subject.name }}  |  {{ session.name }}";
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 7.5pt;
+                color: #555;
+            }
+            @bottom-left {
+                content: "CONFIDENTIAL – FOR SCHOOL USE ONLY";
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 6.5pt;
+                color: #aaa;
+                font-style: italic;
+            }
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 7pt;
+                color: #666;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            line-height: 1.45;
+            color: #1A252F;
+            margin: 0;
+            padding: 0;
+        }
+
+        .school-header {
+            width: 100%;
+            background: #0D3349;
+            border-bottom: 4px solid #F0B429;
+        }
+
+        .school-header-inner {
+            padding: 10px 16px 8px 16px;
+            text-align: center;
+        }
+
+        .school-name {
+            font-size: 17pt;
+            font-weight: bold;
+            color: #F0B429;
+            letter-spacing: 0.5px;
+            margin: 0 0 3px 0;
+            text-transform: uppercase;
+        }
+
+        .school-contact {
+            font-size: 8pt;
+            color: #AED6F1;
+            margin: 0 0 2px 0;
+        }
+
+        .school-motto {
+            font-size: 7.5pt;
+            color: #7FB3D3;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .doc-title-band {
+            background: #148F77;
+            padding: 6px 16px;
+            text-align: center;
+        }
+
+        .doc-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #ffffff;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .doc-subtitle {
+            font-size: 9pt;
+            color: #A9DFBF;
+            margin: 2px 0 0 0;
+        }
+
+        .meta-strip {
+            background: #EBF5FB;
+            border-bottom: 1px solid #AED6F1;
+            padding: 6px 16px;
+            display: table;
+            width: 100%;
+        }
+
+        .meta-strip-inner {
+            display: table-row;
+        }
+
+        .meta-cell {
+            display: table-cell;
+            padding: 2px 10px 2px 0;
+            font-size: 8pt;
+            color: #1A5276;
+            white-space: nowrap;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            color: #0D3349;
+        }
+
+        .meta-divider {
+            display: table-cell;
+            padding: 2px 10px;
+            color: #AED6F1;
+            font-size: 9pt;
+        }
+
+        .meta-generated {
+            text-align: right;
+            font-size: 7.5pt;
+            color: #888;
+            font-style: italic;
+            padding: 4px 16px 4px 0;
+        }
+
+        .section-header {
+            background: #1B4F72;
+            color: #ffffff;
+            font-size: 9.5pt;
+            font-weight: bold;
+            padding: 5px 10px;
+            margin: 14px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-header.teal { background: #148F77; }
+        .section-header.slate { background: #2C3E50; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin: 0 0 14px 0;
+        }
+
+        .data-table thead tr {
+            background: #1B4F72;
+        }
+
+        .data-table thead th {
+            color: #ffffff;
+            font-weight: bold;
+            padding: 6px 8px;
+            text-align: center;
+            border: 1px solid #145374;
+            font-size: 8pt;
+        }
+
+        .data-table tbody td {
+            border: 1px solid #D6EAF8;
+            padding: 5px 8px;
+            color: #1A252F;
+        }
+
+        .data-table tbody tr:nth-child(odd) td { background: #FAFCFE; }
+        .data-table tbody tr:nth-child(even) td { background: #EBF5FB; }
+
+        .data-table tfoot td {
+            background: #D6EAF8;
+            font-weight: bold;
+            border: 1px solid #AED6F1;
+            padding: 5px 8px;
+            color: #0D3349;
+        }
+
+        .tc { text-align: center; }
+        .tr { text-align: right; }
+        .tl { text-align: left; }
+        .bold { font-weight: bold; }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 8pt;
+            line-height: 1.6;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin: 0 0 14px 0;
+        }
+
+        .matrix-table th {
+            background: #1B4F72;
+            color: #fff;
+            padding: 6px 8px;
+            text-align: center;
+            border: 1px solid #145374;
+            font-size: 8pt;
+        }
+
+        .matrix-table td {
+            border: 1px solid #D6EAF8;
+            padding: 5px 8px;
+            text-align: center;
+            background: #FAFCFE;
+        }
+
+        .matrix-table .gender-lbl {
+            text-align: left;
+            font-weight: bold;
+            background: #EBF5FB;
+            color: #0D3349;
+        }
+
+        .matrix-table .total-row td {
+            background: #D6EAF8;
+            font-weight: bold;
+            color: #0D3349;
+        }
+
+        .matrix-table .total-col {
+            background: #D6EAF8 !important;
+            font-weight: bold;
+            color: #0D3349;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8pt;
+            margin: 0 0 14px 0;
+        }
+
+        .results-table thead tr {
+            background: #0D3349;
+        }
+
+        .results-table thead th {
+            color: #ffffff;
+            font-weight: bold;
+            padding: 6px 6px;
+            text-align: center;
+            border: 1px solid #145374;
+            font-size: 7.5pt;
+        }
+
+        .results-table tbody td {
+            border: 1px solid #D6EAF8;
+            padding: 4px 6px;
+        }
+
+        .results-table tbody tr:nth-child(odd) td { background: #FAFCFE; }
+        .results-table tbody tr:nth-child(even) td { background: #EBF5FB; }
+
+        .results-table .sub-header th {
+            background: #2C3E50;
+            font-size: 7pt;
+            color: #AED6F1;
+            font-weight: normal;
+            font-style: italic;
+            padding: 3px 6px;
+        }
+
+        .bar-wrap {
+            display: inline-block;
+            width: 60px;
+            height: 7px;
+            background: #E8ECF0;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+        
+        .bar-fill {
+            display: inline-block;
+            height: 7px;
+            border-radius: 4px;
+            background: #148F77;
+        }
+
+        .page-break { page-break-before: always; }
+        .avoid-break { page-break-inside: avoid; }
+
+        .doc-footer {
+            margin-top: 18px;
+            padding-top: 8px;
+            border-top: 1px solid #D6EAF8;
+            font-size: 7.5pt;
+            color: #aaa;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="school-header">
+        <div class="school-header-inner">
+            <p class="school-name">{{ school_info.name }}</p>
+            {% if school_info.address or school_info.phone or school_info.email %}
+                <p class="school-contact">
+                    {% if school_info.address %}{{ school_info.address }}{% endif %}
+                    {% if school_info.address and school_info.phone %}  &bull;  {% endif %}
+                    {% if school_info.phone %}Tel: {{ school_info.phone }}{% endif %}
+                    {% if school_info.phone and school_info.email %}  &bull;  {% endif %}
+                    {% if school_info.email %}{{ school_info.email }}{% endif %}
+                </p>
+            {% endif %}
+            {% if school_info.motto %}
+                <p class="school-motto">&ldquo;{{ school_info.motto }}&rdquo;</p>
+            {% endif %}
+            {% if school_info.reg_no %}
+                <p class="school-motto" style="font-style:normal;">Reg No: {{ school_info.reg_no }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="doc-title-band">
+        <p class="doc-title">Subject Examination Results Report</p>
+        <p class="doc-subtitle">
+            {{ subject.name|upper }} &nbsp;({{ subject.code }})
+        </p>
+    </div>
+
+    <div class="meta-strip">
+        <div class="meta-strip-inner">
+            <span class="meta-cell">
+                <span class="meta-label">Session:</span> {{ session.name }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Class:</span> {{ session.class_level.name }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Term:</span> {{ session.term }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Academic Year:</span> {{ session.academic_year }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Exam Type:</span> {{ session.exam_type.name }}
+            </span>
+        </div>
+    </div>
+    
+    <p class="meta-generated">
+        Generated: {{ generated_date|date:"l, d F Y  H:i" }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        By: {{ request.user.get_full_name|default:request.user.username }}
+    </p>
+
+    <div class="section-header slate avoid-break">Paper Statistics</div>
+
+    <table class="data-table avoid-break">
+        <thead>
+            <tr>
+                <th class="tl">Paper</th>
+                <th>Max Marks</th>
+                <th>Students Scored</th>
+                <th>Average</th>
+                <th>Highest</th>
+                <th>Lowest</th>
+                <th>Avg %</th>
+                <th>Performance</th>
+            </thead>
+        <tbody>
+            {% for ps in paper_stats %}
+            <tr>
+                <td class="tl bold">Paper {{ ps.paper.paper_number }}
+                    {% if ps.paper.paper_name %}&nbsp;<span style="font-weight:normal;color:#555;">({{ ps.paper.paper_name }})</span>{% endif %}
+                </td>
+                <td class="tc">{{ ps.max_marks|floatformat:0 }}</td>
+                <td class="tc">{{ ps.students_with_scores }}</td>
+                <td class="tr bold">{{ ps.average|floatformat:1 }}</td>
+                <td class="tr" style="color:#1B5E20;font-weight:bold;">{{ ps.highest|floatformat:0 }}</td>
+                <td class="tr" style="color:#B71C1C;font-weight:bold;">{{ ps.lowest|floatformat:0 }}</td>
+                <td class="tc">
+                    {% widthratio ps.average ps.max_marks 100 as avg_pct %}
+                    {{ avg_pct }}%
+                </td>
+                <td class="tc">
+                    {% widthratio ps.average ps.max_marks 100 as bar_pct %}
+                    <span class="bar-wrap">
+                        <span class="bar-fill" style="width:{{ bar_pct }}%;"></span>
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-header avoid-break">Grade &times; Gender Cross-Analysis</div>
+
+    <table class="matrix-table avoid-break">
+        <thead>
+            <tr>
+                <th style="text-align:left;">Gender \ Grade</th>
+                {% for gs in grading_scale %}
+                    <th>
+                        <span class="grade-badge"
+                              style="background:{{ grade_colors|get_item:gs.grade|default:'#6c757d' }};color:white;">
+                            {{ gs.grade }}
+                        </span>
+                    </th>
+                {% endfor %}
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gender, row in grade_gender_matrix.items %}
+            <tr>
+                <td class="gender-lbl">{{ gender }}</td>
+                {% for gs in grading_scale %}
+                    <td>{{ row|get_item:gs.grade|default:"–" }}</td>
+                {% endfor %}
+                <td class="total-col">{{ gender_totals|get_item:gender|default:0 }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td class="gender-lbl">TOTAL</td>
+                {% for gs in grading_scale %}
+                    <td>{{ grade_totals|get_item:gs.grade|default:0 }}</td>
+                {% endfor %}
+                <td class="total-col">{{ grand_total }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <div class="school-header" style="margin-bottom:0;">
+        <div class="school-header-inner" style="padding:6px 16px 5px;">
+            <p class="school-name" style="font-size:12pt;">{{ school_info.name }}</p>
+        </div>
+    </div>
+    
+    <div class="doc-title-band" style="padding:4px 16px;">
+        <p class="doc-title" style="font-size:10pt;">
+            Student Results — {{ subject.name }} ({{ subject.code }})
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {{ session.class_level.name }} &bull; {{ session.term }} &bull; {{ session.academic_year }}
+        </p>
+    </div>
+
+    <div class="section-header" style="margin-top:8px;">Student Results</div>
+
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th rowspan="2">#</th>
+                <th rowspan="2">Reg. No.</th>
+                <th rowspan="2" style="text-align:left;">Student Name</th>
+                <th rowspan="2">Gender</th>
+                <th rowspan="2">Total<br>Marks</th>
+                <th rowspan="2">%</th>
+                <th rowspan="2">Grade</th>
+                {% if papers %}
+                    <th colspan="{{ papers|length }}" style="background:#145374;">
+                        Paper Scores (max per paper shown below)
+                    </th>
+                {% endif %}
+            </tr>
+            <tr class="sub-header">
+                {% for paper in papers %}
+                    <th>P{{ paper.paper_number }}<br>
+                        <span style="font-style:normal;color:#F0B429;">/{{ paper.max_marks|floatformat:0 }}</span>
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in student_results %}
+            <tr>
+                <td class="tc">{{ forloop.counter }}</td>
+                <td class="tc" style="font-size:7.5pt;">{{ result.student.registration_number|default:"N/A" }}</td>
+                <td class="tl bold">{{ result.student.full_name }}</td>
+                <td class="tc">{{ result.student.get_gender_display|default:"N/A" }}</td>
+                <td class="tr bold" style="color:#1A5276;">{{ result.total_marks|floatformat:1 }}</td>
+                <td class="tr" style="color:#1A5276;">{{ result.percentage|floatformat:1 }}%</td>
+                <td class="tc">
+                    <span class="grade-badge"
+                          style="background:{{ grade_colors|get_item:result.grade|default:'#6c757d' }};color:white;">
+                        {{ result.grade }}
+                    </span>
+                </td>
+                {% for paper in papers %}
+                    <td class="tc">
+                        {% with score=result.scores|get_item:paper.pk %}
+                            {% if score is not None and score != "" %}
+                                {{ score|floatformat:1 }}
+                            {% else %}
+                                <span style="color:#ccc;">–</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="tl bold">
+                    Total: {{ overall_stats.students_with_scores }} student(s) with scores
+                    &nbsp;|&nbsp;
+                    {{ overall_stats.students_without_scores }} without scores
+                </td>
+                <td class="tr bold">{{ overall_stats.average|floatformat:1 }} avg</td>
+                <td class="tr bold">{{ overall_stats.average|floatformat:1 }}%</td>
+                <td colspan="{% if papers %}{{ papers|length|add:1 }}{% else %}1{% endif %}"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="doc-footer">
+        This report is computer-generated and is valid without a signature.
+        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &copy; {{ generated_date|date:"Y" }} {{ school_info.name }}
+        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        Printed: {{ generated_date|date:"d M Y H:i" }}
+    </div>
+
+</body>
+</html>

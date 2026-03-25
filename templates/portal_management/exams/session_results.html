@@ -1,0 +1,885 @@
+<!-- templates/portal_management/exams/session_results.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Results — {{ session.name }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Enter Results — {{ session.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM RESULTS ENTRY STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Toolbar Card */
+    .toolbar-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .session-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .session-badge.draft { background: var(--warning-light); color: #856404; }
+    .session-badge.submitted { background: var(--info-light); color: var(--info); }
+    .session-badge.verified { background: var(--primary-light); color: var(--primary); }
+    .session-badge.published { background: var(--success-light); color: var(--success); }
+
+    .action-buttons-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-premium {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-premium-primary {
+        background: var(--primary);
+        color: white;
+    }
+    .btn-premium-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-premium-success {
+        background: var(--success);
+        color: white;
+    }
+    .btn-premium-success:hover {
+        background: #0f7b3a;
+        transform: translateY(-2px);
+    }
+
+    .btn-premium-outline {
+        background: transparent;
+        border-color: var(--gray-300);
+        color: var(--gray-700);
+    }
+    .btn-premium-outline:hover {
+        background: var(--gray-100);
+        transform: translateY(-2px);
+    }
+
+    /* Subject Download Section */
+    .subject-downloads {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .subject-downloads-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .subject-badge {
+        background: white;
+        padding: 0.35rem 0.85rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .subject-badge:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Save Indicator */
+    .save-indicator {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1.25rem;
+        box-shadow: var(--shadow-xl);
+        border-left: 4px solid var(--success);
+        display: none;
+        align-items: center;
+        gap: 0.75rem;
+        z-index: 1000;
+        font-weight: 500;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .save-indicator.show {
+        display: flex;
+    }
+
+    .save-indicator.saving {
+        border-left-color: var(--primary);
+    }
+    .save-indicator.success {
+        border-left-color: var(--success);
+    }
+    .save-indicator.error {
+        border-left-color: var(--danger);
+    }
+
+    /* Table Styles */
+    .results-table-container {
+        background: white;
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+        overflow-x: auto;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .results-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .results-table th {
+        padding: 0.75rem 0.5rem;
+        text-align: center;
+        font-weight: 600;
+        border: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .subject-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-size: 0.85rem;
+    }
+
+    .subject-header a {
+        color: rgba(255,255,255,0.8);
+        transition: var(--transition);
+    }
+    .subject-header a:hover {
+        color: white;
+    }
+
+    .paper-header {
+        background: var(--gray-700);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    .paper-header small {
+        font-size: 0.65rem;
+        opacity: 0.8;
+    }
+
+    .results-table td {
+        padding: 0.6rem 0.5rem;
+        border: 1px solid var(--gray-200);
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .student-cell {
+        text-align: left;
+        font-weight: 600;
+        min-width: 180px;
+    }
+
+    .student-cell a {
+        color: var(--gray-800);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    .student-cell a:hover {
+        color: var(--primary);
+    }
+
+    .reg-cell {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        font-family: monospace;
+        white-space: nowrap;
+        min-width: 110px;
+    }
+
+    .number-cell {
+        color: var(--gray-500);
+        font-size: 0.75rem;
+        min-width: 40px;
+    }
+
+    /* Marks Input */
+    .marks-input {
+        width: 80px;
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.25rem;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+        background: white;
+    }
+
+    .marks-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .marks-input.saved {
+        border-color: var(--success);
+        background: var(--success-light);
+    }
+
+    .marks-input.error {
+        border-color: var(--danger);
+        background: var(--danger-light);
+    }
+
+    .marks-input.unsaved {
+        border-color: var(--warning);
+        background: var(--warning-light);
+    }
+
+    .marks-input:disabled {
+        background: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .score-display {
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+        .toolbar-card {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .action-buttons-group {
+            justify-content: center;
+        }
+        .marks-input {
+            width: 65px;
+            font-size: 0.7rem;
+        }
+        .student-cell {
+            min-width: 140px;
+        }
+        .reg-cell {
+            min-width: 90px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-table me-2"></i>
+                Enter Results
+            </h1>
+            <p class="mb-0">{{ session.name }} — {{ session.class_level.name }} ({{ session.academic_year.name }})</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_session_detail' session.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Session
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Toolbar Card -->
+<div class="toolbar-card">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="session-badge {{ session.status }}">
+            <i class="bi bi-{% if session.status == 'draft' %}file-earmark-text{% elif session.status == 'submitted' %}send{% elif session.status == 'verified' %}check-circle{% else %}check-circle-fill{% endif %}"></i>
+            {{ session.get_status_display }}
+        </span>
+        <span class="text-muted">
+            <i class="bi bi-people me-1"></i>
+            {{ grid|length }} Students
+        </span>
+        <span class="text-muted">
+            <i class="bi bi-file-text me-1"></i>
+            {{ papers|length }} Papers
+        </span>
+    </div>
+    <div class="action-buttons-group">
+        {% if can_edit %}
+        <a href="{% url 'management:upload_results' session.pk %}" class="btn-premium btn-premium-success">
+            <i class="bi bi-upload"></i>
+            Upload Excel
+        </a>
+        <a href="{% url 'management:download_result_template' session.pk %}?mode=full" class="btn-premium btn-premium-primary">
+            <i class="bi bi-download"></i>
+            Full Template
+        </a>
+        <a href="{% url 'management:download_result_template' session.pk %}?mode=prefilled" class="btn-premium btn-premium-outline">
+            <i class="bi bi-file-earmark-excel"></i>
+            Prefilled Template
+        </a>
+        {% endif %}
+        <a href="{% url 'management:export_session_report' session.pk %}" class="btn-premium btn-premium-outline">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            Export Results
+        </a>
+    </div>
+</div>
+
+<!-- Subject Download Section -->
+{% if papers_by_subject %}
+<div class="subject-downloads">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+        <span class="subject-downloads-label">
+            <i class="bi bi-download me-1"></i>
+            Download by Subject:
+        </span>
+        <div class="d-flex flex-wrap gap-2">
+            {% for subject, subj_papers in papers_by_subject.items %}
+            <a href="{% url 'management:download_result_template' session.pk %}?mode=subject&subject_id={{ subject.pk }}"
+               class="subject-badge">
+                <i class="bi bi-file-earmark-excel"></i>
+                {{ subject.short_name|default:subject.name }}
+                <span class="text-muted small">({{ subj_papers|length }} papers)</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Save Indicator -->
+<div id="saveIndicator" class="save-indicator">
+    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+    <span>Saving...</span>
+</div>
+
+<!-- Results Grid -->
+{% if not papers %}
+<div class="main-card text-center py-5">
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-file-text"></i>
+        </div>
+        <h5>No Exam Papers Configured</h5>
+        <p class="text-muted">Please add exam papers before entering results.</p>
+        <a href="{% url 'management:exam_session_detail' session.pk %}" class="btn-premium btn-premium-primary mt-3">
+            <i class="bi bi-plus-lg"></i>
+            Add Papers
+        </a>
+    </div>
+</div>
+{% elif not grid %}
+<div class="main-card text-center py-5">
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <h5>No Enrolled Students</h5>
+        <p class="text-muted">No students are enrolled in this class level for the selected academic year.</p>
+        <a href="{% url 'management:student_enrollment_create' %}" class="btn-premium btn-premium-primary mt-3">
+            <i class="bi bi-plus-lg"></i>
+            Enroll Students
+        </a>
+    </div>
+</div>
+{% else %}
+
+<div class="results-table-container">
+    <table class="results-table" id="resultGrid">
+        <thead>
+            <!-- Row 1: Subject group headers -->
+            <tr>
+                <th class="subject-header" rowspan="2" style="width: 50px;">#</th>
+                <th class="subject-header" rowspan="2" style="min-width: 110px;">Reg No</th>
+                <th class="subject-header" rowspan="2" style="min-width: 180px;">Student Name</th>
+                {% for subject, subj_papers in papers_by_subject.items %}
+                <th class="subject-header" colspan="{{ subj_papers|length }}" style="border-left: 3px solid rgba(255,255,255,0.3);">
+                    {{ subject.short_name|default:subject.name }}
+                    <a href="{% url 'management:export_subject_report' session.pk subject.pk %}"
+                       class="ms-1" title="Export {{ subject.name }} results">
+                        <i class="bi bi-file-earmark-arrow-down" style="font-size: 0.7rem;"></i>
+                    </a>
+                </th>
+                {% endfor %}
+            </tr>
+            <!-- Row 2: Paper number + max marks -->
+            <tr>
+                {% for subject, subj_papers in papers_by_subject.items %}
+                {% for paper in subj_papers %}
+                <th class="paper-header" style="{% if forloop.first %}border-left: 3px solid rgba(255,255,255,0.3);{% endif %}">
+                    P{{ paper.paper_number }}
+                    <small>/{{ paper.max_marks|floatformat:0 }}</small>
+                </th>
+                {% endfor %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in grid %}
+            <tr id="student-row-{{ row.student.pk }}" data-student-id="{{ row.student.pk }}">
+                <td class="number-cell">{{ forloop.counter }}</td>
+                <td class="reg-cell">{{ row.student.registration_number|default:"—" }}</td>
+                <td class="student-cell">
+                    <a href="{% url 'management:student_result_entry' session.pk row.student.pk %}">
+                        <i class="bi bi-person-circle me-1"></i>
+                        {{ row.student.full_name }}
+                    </a>
+                </td>
+                {% for item in row.papers %}
+                <td style="{% if forloop.first and not forloop.parentloop.first %}border-left: 2px solid var(--gray-300);{% endif %}">
+                    {% if can_edit %}
+                    <input type="number"
+                           class="marks-input {% if item.score %}saved{% endif %}"
+                           data-paper-id="{{ item.paper.pk }}"
+                           data-student-id="{{ row.student.pk }}"
+                           data-max="{{ item.paper.max_marks }}"
+                           value="{% if item.marks != '' %}{{ item.marks }}{% endif %}"
+                           min="0"
+                           max="{{ item.paper.max_marks }}"
+                           step="0.5"
+                           placeholder="—">
+                    {% else %}
+                    <span class="score-display">
+                        {% if item.marks != '' %}{{ item.marks }}{% else %}—{% endif %}
+                    </span>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Stats Footer -->
+<div class="d-flex justify-content-between align-items-center mt-4 pt-2">
+    <div class="text-muted small">
+        <i class="bi bi-info-circle me-1"></i>
+        {{ grid|length }} students · {{ papers|length }} papers
+        {% if not can_edit %}
+        <span class="ms-2 text-warning">(Read-only — session is published)</span>
+        {% endif %}
+    </div>
+    <div class="text-muted small">
+        <i class="bi bi-keyboard me-1"></i>
+        Use Tab/Enter to navigate between fields · Auto-saves after typing
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+const SAVE_URL = "{% url 'management:save_paper_score' %}";
+const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+let saveTimers = new Map();
+let isSaving = false;
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : '';
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// SAVE INDICATOR
+// ============================================
+const indicator = document.getElementById('saveIndicator');
+
+function showIndicator(type, message) {
+    if (!indicator) return;
+    
+    indicator.classList.remove('saving', 'success', 'error', 'show');
+    
+    if (type === 'saving') {
+        indicator.classList.add('saving', 'show');
+        indicator.innerHTML = `
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span>${escapeHtml(message || 'Saving...')}</span>
+        `;
+    } else if (type === 'success') {
+        indicator.classList.add('success', 'show');
+        indicator.innerHTML = `
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 1.2rem;"></i>
+            <span>${escapeHtml(message || 'Saved')}</span>
+        `;
+        setTimeout(() => indicator.classList.remove('show'), 2000);
+    } else if (type === 'error') {
+        indicator.classList.add('error', 'show');
+        indicator.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 1.2rem;"></i>
+            <span>${escapeHtml(message || 'Error saving')}</span>
+        `;
+        setTimeout(() => indicator.classList.remove('show'), 3000);
+    }
+}
+
+// ============================================
+// SAVE PAPER SCORE
+// ============================================
+function savePaperScore(input) {
+    const paperId = input.dataset.paperId;
+    const studentId = input.dataset.studentId;
+    const maxMarks = parseFloat(input.dataset.max);
+    const rawValue = input.value.trim();
+    
+    // Clear previous timers for this input
+    if (saveTimers.has(input)) {
+        clearTimeout(saveTimers.get(input));
+        saveTimers.delete(input);
+    }
+    
+    // Validate input
+    if (rawValue === '') {
+        input.classList.remove('saved', 'error', 'unsaved');
+        showIndicator('success', 'Cleared');
+        return;
+    }
+    
+    const marks = parseFloat(rawValue);
+    if (isNaN(marks)) {
+        input.classList.add('error');
+        input.classList.remove('saved', 'unsaved');
+        showIndicator('error', 'Invalid number');
+        return;
+    }
+    
+    if (marks < 0 || marks > maxMarks) {
+        input.classList.add('error');
+        input.classList.remove('saved', 'unsaved');
+        showIndicator('error', `Must be 0–${maxMarks}`);
+        return;
+    }
+    
+    // Update UI state
+    input.classList.remove('saved', 'error');
+    input.classList.add('unsaved');
+    showIndicator('saving', 'Saving...');
+    
+    // Prepare request
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+    formData.append('student_id', studentId);
+    formData.append('paper_id', paperId);
+    formData.append('marks', marks);
+    
+    // Send request
+    fetch(SAVE_URL, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            input.classList.remove('unsaved');
+            input.classList.add('saved');
+            showIndicator('success', 'Saved');
+            
+            // Update any related totals if returned
+            if (data.subject_total !== undefined) {
+                updateSubjectTotal(studentId, data);
+            }
+        } else {
+            input.classList.add('error');
+            input.classList.remove('saved', 'unsaved');
+            showIndicator('error', data.error || 'Error saving');
+        }
+    })
+    .catch(() => {
+        input.classList.add('error');
+        input.classList.remove('saved', 'unsaved');
+        showIndicator('error', 'Network error');
+    });
+}
+
+// ============================================
+// UPDATE SUBJECT TOTAL (optional)
+// ============================================
+function updateSubjectTotal(studentId, data) {
+    // Find the subject total cell for this student
+    const row = document.querySelector(`#student-row-${studentId}`);
+    if (!row) return;
+    
+    // Update the corresponding subject total if it exists
+    const totalCell = row.querySelector(`.subject-total-${studentId}`);
+    if (totalCell) {
+        totalCell.textContent = data.subject_total?.toFixed(2) || '—';
+    }
+}
+
+// ============================================
+// DEBOUNCED SAVE HANDLER
+// ============================================
+function debouncedSave(input) {
+    if (saveTimers.has(input)) {
+        clearTimeout(saveTimers.get(input));
+    }
+    const timer = setTimeout(() => savePaperScore(input), 800);
+    saveTimers.set(input, timer);
+}
+
+// ============================================
+// INITIALIZE ALL INPUTS
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.marks-input');
+    
+    inputs.forEach(input => {
+        // Input event with debounce
+        input.addEventListener('input', () => debouncedSave(input));
+        
+        // Blur event - save immediately
+        input.addEventListener('blur', () => {
+            if (saveTimers.has(input)) {
+                clearTimeout(saveTimers.get(input));
+                saveTimers.delete(input);
+            }
+            savePaperScore(input);
+        });
+        
+        // Keyboard navigation (Tab/Enter)
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                e.preventDefault();
+                if (saveTimers.has(input)) {
+                    clearTimeout(saveTimers.get(input));
+                    saveTimers.delete(input);
+                }
+                savePaperScore(input);
+                
+                // Find next input in the same column
+                const inputsArray = Array.from(document.querySelectorAll('.marks-input'));
+                const currentIndex = inputsArray.indexOf(input);
+                const nextInput = inputsArray[currentIndex + 1];
+                if (nextInput) {
+                    nextInput.focus();
+                }
+            }
+        });
+        
+        // Visual feedback on focus
+        input.addEventListener('focus', () => {
+            input.style.transform = 'scale(1.02)';
+        });
+        input.addEventListener('blur', () => {
+            input.style.transform = '';
+        });
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM (for any alerts)
+// ============================================
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = 'check-circle';
+    else if (type === 'warning') icon = 'exclamation-triangle';
+    else icon = 'x-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => toast.remove(), 5000);
+}
+</script>
+{% endblock %}

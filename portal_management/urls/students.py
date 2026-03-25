@@ -22,6 +22,7 @@ from portal_management.views.grading_scale_views import GradingScaleCheckDepende
 from portal_management.views.promotion_views import PromotionBulkView, PromotionListView, PromotionProcessView, PromotionRevertView
 from portal_management.views.stream_assignment import StreamAssignStudentsView, StreamRemoveStudentView
 from portal_management.views.stream_class import *
+from portal_management.views.student_academic_trend import ExportStudentAcademicTrendPDFView, StudentAcademicTrendView
 from portal_management.views.student_combination_assignment import *
 from portal_management.views.student_enrollment import *
 from portal_management.views.student_transfer import *
@@ -44,6 +45,7 @@ urlpatterns = [
     # ══════════════════════════════════════════════════════════════════════
     path('students/<int:pk>/enroll/',StudentEnrollView.as_view(),name='student_enroll',),
     path('students/<int:pk>/stream/',StudentStreamAssignView.as_view(),name='student_stream',),
+    path('enrollments/<int:enrollment_id>/stream/', EnrollmentAssignStreamView.as_view(), name='enrollment_assign_stream'),
 
     # ══════════════════════════════════════════════════════════════════════
     # DRAFTS
@@ -84,6 +86,14 @@ urlpatterns = [
     # Bulk link multiple parents
     path('students/<int:pk>/parents/bulk-add/',StudentParentBulkAddView.as_view(),name='student_parent_bulk_add',),
 
+        # Student detailed results for a specific session (you'll need to create this view)
+    path('students/<int:student_pk>/exam-sessions/<int:session_pk>/results/',  StudentResultDetailView.as_view(),  name='student_result_detail'),
+    path('students/<int:student_pk>/exam-sessions/',    StudentExamSessionsView.as_view(),   name='student_exam_sessions'),
+    path('students/<int:student_pk>/exam-sessions/<int:session_pk>/export-excel/', ExportStudentResultExcelView.as_view(), name='student_result_export_excel'),
+    path('students/<int:student_pk>/exam-sessions/<int:session_pk>/export-pdf/',  ExportStudentResultPDFView.as_view(), name='student_result_export_pdf'),
+    path('exam-sessions/<int:session_pk>/export-all-students-pdf/',  ExportSessionAllStudentsPDFView.as_view(),  name='export_session_all_students_pdf'),
+    path('students/<int:student_pk>/academic-trend/', StudentAcademicTrendView.as_view(),  name='student_academic_trend'),
+    path('students/<int:student_pk>/academic-trend/export-pdf/',   ExportStudentAcademicTrendPDFView.as_view(), name='export_student_academic_trend_pdf'),
     # ── Standalone parent records ─────────────────────────────────────────
     # path('parents/',ParentListView.as_view(),name='student_parent_list',),
     # path('parents/create/',ParentCreateView.as_view(),name='student_parent_create',),

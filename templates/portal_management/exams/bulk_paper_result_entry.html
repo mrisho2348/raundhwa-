@@ -1,0 +1,1759 @@
+<!-- templates/portal_management/exams/bulk_paper_result_entry.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Enter Results - {{ paper.subject.name }} Paper {{ paper.paper_number }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Bulk Result Entry{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       BULK RESULT ENTRY STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Paper Info Card */
+    .paper-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .paper-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .paper-details {
+        flex: 1;
+    }
+
+    .paper-details h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .paper-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .paper-meta i {
+        color: var(--primary);
+        margin-right: 0.3rem;
+    }
+
+    /* Simple Stats Grid */
+    .stats-simple {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+        max-width: 400px;
+    }
+
+    .stat-card-simple {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        text-align: center;
+    }
+
+    .stat-value-simple {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label-simple {
+        color: var(--gray-500);
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    /* Progress Bar */
+    .progress-wrapper {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+
+    .progress {
+        height: 10px;
+        border-radius: var(--radius-full);
+        background: var(--gray-200);
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, var(--primary), var(--info));
+        transition: width 0.6s ease;
+        border-radius: var(--radius-full);
+    }
+
+    /* Action Bar */
+    .action-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-success-custom {
+        background: var(--success);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-success-custom:hover {
+        background: #0f7b3a;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary-custom {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-secondary-custom:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--gray-300);
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background-color: var(--success);
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    .auto-save-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--gray-700);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .filter-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.5rem;
+        width: 100%;
+        font-size: 0.9rem;
+    }
+
+    .filter-select:focus {
+        border-color: var(--primary);
+        outline: none;
+    }
+
+    /* Results Table Container */
+    .results-table-container {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        overflow-x: auto;
+        overflow-y: visible;
+        position: relative;
+        width: 100%;
+    }
+
+    .results-table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .results-table th {
+        background: var(--gray-50);
+        padding: 0.875rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--gray-700);
+        border-bottom: 2px solid var(--gray-200);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        white-space: nowrap;
+    }
+
+    .results-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .results-table tr:hover {
+        background: var(--gray-50);
+    }
+
+    .results-table td:first-child,
+    .results-table th:first-child {
+        position: sticky;
+        left: 0;
+        background: inherit;
+        z-index: 5;
+    }
+
+    .results-table tr:hover td:first-child {
+        background: var(--gray-50);
+    }
+
+    .score-input {
+        width: 110px;
+        padding: 0.5rem;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        transition: var(--transition);
+        font-size: 0.9rem;
+    }
+
+    .score-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .score-input.saved {
+        border-color: var(--success);
+        background: var(--success-light);
+    }
+
+    .score-input.error {
+        border-color: var(--danger);
+        background: var(--danger-light);
+    }
+
+    .grade-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 700;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .grade-A { background: var(--success-light); color: var(--success); }
+    .grade-B { background: var(--primary-light); color: var(--primary); }
+    .grade-C { background: var(--warning-light); color: #856404; }
+    .grade-D { background: #ffe0b3; color: #fd7e14; }
+    .grade-E { background: var(--danger-light); color: var(--danger); }
+    .grade-F { background: #f5c6cb; color: #c82333; }
+    .grade-S { background: var(--purple-light); color: var(--purple); }
+
+    .save-status {
+        width: 24px;
+        text-align: center;
+        display: inline-block;
+        margin-left: 0.5rem;
+    }
+
+    .save-status .spinner-border {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+    }
+
+    .badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+   .bg-success {
+    background: #0f7b3a !important;
+    color: white !important;
+}
+    
+   .bg-secondary {
+    background: #6c757d !important;
+    color: white !important;
+}
+.status-cell {
+    vertical-align: middle;
+}
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-bottom: 2px solid var(--gray-200);
+        padding: 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--gray-200);
+        padding: 1.5rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        max-width: calc(100vw - 2rem);
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error { border-left: 4px solid var(--danger); }
+    .toast-notification.warning { border-left: 4px solid var(--warning); }
+    .toast-notification.info { border-left: 4px solid var(--info); }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error { background: var(--danger-light); color: var(--danger); }
+    .toast-icon.warning { background: var(--warning-light); color: #856404; }
+    .toast-icon.info { background: var(--info-light); color: var(--info); }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Search Box */
+    .search-box {
+        position: relative;
+        max-width: 300px;
+    }
+
+    .search-box input {
+        padding-left: 2.5rem;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        width: 100%;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+    }
+
+    /* Scrollbar Styling */
+    .results-table-container::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+
+    .results-table-container::-webkit-scrollbar-track {
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+    }
+
+    .results-table-container::-webkit-scrollbar-thumb {
+        background: var(--gray-400);
+        border-radius: var(--radius-full);
+    }
+
+    .results-table-container::-webkit-scrollbar-thumb:hover {
+        background: var(--gray-500);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header { padding: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; }
+
+        .stats-simple {
+            grid-template-columns: 1fr;
+            max-width: 100%;
+        }
+
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-group {
+            justify-content: center;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-box {
+            max-width: 100%;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 0.5rem;
+        }
+
+        .score-input {
+            width: 90px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-table me-2"></i>
+                Bulk Result Entry
+            </h1>
+            <p class="mb-0">Enter and manage student scores for this exam paper</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_paper_list' session.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Papers
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Paper Info Card -->
+<div class="paper-info-card">
+    <div class="paper-icon">
+        <i class="bi bi-file-text"></i>
+    </div>
+    <div class="paper-details">
+        <h2>{{ paper.subject.name }} - Paper {{ paper.paper_number }}</h2>
+        <div class="paper-meta">
+            <span><i class="bi bi-file-text"></i> {{ session.exam_type.name }}</span>
+            <span><i class="bi bi-people"></i> {{ session.class_level.name }}</span>
+            <span><i class="bi bi-calendar"></i> {{ session.exam_date|date:"M d, Y" }}</span>
+            <span><i class="bi bi-star-fill"></i> Max Marks: {{ paper.max_marks|floatformat:0 }}</span>
+        </div>
+    </div>
+    <div>
+        <span class="status-badge {{ session.status }}">
+            <i class="bi bi-{% if session.status == 'draft' %}file-earmark-text{% elif session.status == 'submitted' %}send{% elif session.status == 'verified' %}check-circle{% else %}check-circle-fill{% endif %}"></i>
+            {{ session.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Simple Statistics -->
+<div class="stats-simple">
+    <div class="stat-card-simple">
+        <div class="stat-value-simple">{{ stats.total_students }}</div>
+        <div class="stat-label-simple">Total Students</div>
+    </div>
+    <div class="stat-card-simple">
+        <div class="stat-value-simple" id="studentsWithScores">{{ stats.students_with_scores }}</div>
+        <div class="stat-label-simple">With Scores</div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-wrapper">
+    <div class="progress-header">
+        <span>Completion Progress</span>
+        <span id="completionPercentage">{{ stats.completion_percentage|floatformat:0 }}%</span>
+    </div>
+    <div class="progress">
+        <div class="progress-bar" id="progressBar" style="width: {{ stats.completion_percentage }}%"></div>
+    </div>
+</div>
+
+<!-- Action Bar (Top) -->
+<div class="action-bar">
+    <div class="action-group">
+        <div class="auto-save-label">
+            <label class="toggle-switch">
+                <input type="checkbox" id="autoSaveToggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span>Auto-Save</span>
+        </div>
+        <button type="button" class="btn-primary-custom" id="saveAllBtn" onclick="saveAllScores()">
+            <i class="bi bi-save"></i>
+            Save All
+        </button>
+        <button type="button" class="btn-secondary-custom" onclick="showExcelUploadModal()">
+            <i class="bi bi-upload"></i>
+            Upload Excel
+        </button>
+        <a href="{% url 'management:download_paper_template' paper.pk %}" class="btn-secondary-custom">
+            <i class="bi bi-download"></i>
+            Download Template
+        </a>
+    </div>
+    <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" id="searchStudent" placeholder="Search by name or registration number...">
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <div class="filter-grid">
+        <div class="filter-group">
+            <label class="filter-label">Status Filter</label>
+            <select id="statusFilter" class="filter-select">
+                <option value="all">All Students</option>
+                <option value="with_scores">With Scores</option>
+                <option value="without_scores">Without Scores</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Gender</label>
+            <select id="genderFilter" class="filter-select">
+                <option value="all">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Results Table Container -->
+<div class="results-table-container">
+    <table class="results-table" id="resultsTable">
+        <thead>
+            <tr>
+                <th style="min-width: 50px;">#</th>
+                <th style="min-width: 120px;">Registration No</th>
+                <th style="min-width: 180px;">Student Name</th>
+                <th style="min-width: 80px;">Gender</th>
+                <th style="min-width: 140px;">Marks (Max: {{ paper.max_marks|floatformat:0 }})</th>
+                <th style="min-width: 80px;">Grade</th>
+                <th style="min-width: 80px;">Status</th>
+            </thead>
+        <tbody id="scoresTableBody">
+            {% for item in student_scores %}
+            <tr data-student-id="{{ item.student.pk }}" 
+                data-student-name="{{ item.student.full_name|lower }}" 
+                data-reg-no="{{ item.student.registration_number|lower }}"
+                data-gender="{{ item.student.gender|default:'male' }}"
+                data-grade="{% if item.has_score and item.grade %}{{ item.grade }}{% else %}NONE{% endif %}"
+                data-has-score="{{ item.has_score|yesno:'true,false' }}"
+                data-marks="{% if item.has_score %}{{ item.marks }}{% endif %}">
+                <td class="row-number">{{ forloop.counter }}</td>
+                <td>{{ item.student.registration_number|default:"N/A" }}</td>
+                <td>
+                    <strong>{{ item.student.full_name }}</strong>
+                    {% if item.student.middle_name %}
+                    <br><small class="text-muted">{{ item.student.middle_name }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge {% if item.student.gender == 'male' %}bg-info{% else %}bg-warning{% endif %}">
+                        {{ item.student.get_gender_display|default:"N/A" }}
+                    </span>
+                </td>
+                <td class="marks-cell">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="number" 
+                               class="score-input" 
+                               value="{% if item.has_score %}{{ item.marks|floatformat:1 }}{% endif %}"
+                               step="0.5"
+                               min="0"
+                               max="{{ paper.max_marks }}"
+                               placeholder="Enter marks">
+                        <div class="save-status" style="display: none;">
+                            <span class="spinner-border text-primary"></span>
+                        </div>
+                    </div>
+                </td>
+                <td class="grade-cell">
+                    {% if item.has_score and item.grade %}
+                    <span class="grade-badge grade-{{ item.grade }}">{{ item.grade }}</span>
+                    {% else %}
+                    <span class="grade-badge grade-F">—</span>
+                    {% endif %}
+                </td>
+                <td class="status-cell">
+                    {% if item.has_score %}
+                    <span class="badge bg-success">Saved</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Pending</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Action Bar (Bottom) -->
+<div class="action-bar">
+    <div class="action-group">
+        <div class="auto-save-label">
+            <label class="toggle-switch">
+                <input type="checkbox" id="autoSaveToggleBottom">
+                <span class="toggle-slider"></span>
+            </label>
+            <span>Auto-Save</span>
+        </div>
+        <button type="button" class="btn-primary-custom" onclick="saveAllScores()">
+            <i class="bi bi-save"></i>
+            Save All
+        </button>
+        <button type="button" class="btn-secondary-custom" onclick="showExcelUploadModal()">
+            <i class="bi bi-upload"></i>
+            Upload Excel
+        </button>
+        <a href="{% url 'management:download_paper_template' paper.pk %}" class="btn-secondary-custom">
+            <i class="bi bi-download"></i>
+            Download Template
+        </a>
+    </div>
+    <div class="text-muted small">
+        <i class="bi bi-info-circle"></i>
+        {{ stats.students_with_scores }} of {{ stats.total_students }} students have scores
+    </div>
+</div>
+
+<!-- Excel Upload Modal -->
+<div class="modal fade" id="excelUploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-excel me-2"></i>
+                    Upload Excel File
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Upload an Excel file with student scores.</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Format:</strong> Column A = Registration Number, Column B = Marks<br>
+                    <strong>First row:</strong> Headers (will be skipped)<br>
+                    <strong>Example:</strong> REG001 | 85
+                </div>
+                <div class="form-group">
+                    <label for="excelFile" class="form-label">Excel File (.xlsx)</label>
+                    <input type="file" class="form-control" id="excelFile" accept=".xlsx, .xls">
+                </div>
+                <!-- Add progress bar here -->
+                <div class="form-group mt-3" id="uploadProgressGroup" style="display: none;">
+                    <label>Upload Progress:</label>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="uploadProgressBar" 
+                             role="progressbar" 
+                             style="width: 0%">
+                            0%
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="{% url 'management:download_paper_template' paper.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-download"></i> Download Template
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="btnUploadExcel" onclick="uploadExcel()">
+                    <span class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                    <i class="bi bi-upload me-2"></i>
+                    Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let paperId = {{ paper.pk }};
+let maxMarks = {{ paper.max_marks }};
+let autoSaveEnabled = false;
+let saveTimeout = null;
+let isSaving = false;
+
+$(document).ready(function () {
+    'use strict';
+
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", csrfToken);
+            }
+        }
+    });
+
+    // ============================================
+    // AUTO-SAVE TOGGLE - FIXED SYNC BETWEEN TOP AND BOTTOM
+    // ============================================
+    function updateAutoSaveState() {
+        autoSaveEnabled = $('#autoSaveToggle').is(':checked');
+        // Sync both toggles
+        $('#autoSaveToggle').prop('checked', autoSaveEnabled);
+        $('#autoSaveToggleBottom').prop('checked', autoSaveEnabled);
+        
+        if (autoSaveEnabled) {
+            showNotification('Auto-save enabled. Scores will be saved automatically when you finish typing.', 'info');
+        } else {
+            showNotification('Auto-save disabled. Use Save All button or press Enter to save scores.', 'info');
+        }
+    }
+    
+    // Initialize both toggles with the same state
+    const initialAutoSaveState = $('#autoSaveToggle').is(':checked');
+    $('#autoSaveToggle').prop('checked', initialAutoSaveState);
+    $('#autoSaveToggleBottom').prop('checked', initialAutoSaveState);
+    autoSaveEnabled = initialAutoSaveState;
+    
+    // Handle changes from top toggle
+    $('#autoSaveToggle').off('change').on('change', function() {
+        const newState = $(this).is(':checked');
+        $('#autoSaveToggleBottom').prop('checked', newState);
+        autoSaveEnabled = newState;
+        
+        if (autoSaveEnabled) {
+            showNotification('Auto-save enabled. Scores will be saved automatically when you finish typing.', 'info');
+        } else {
+            showNotification('Auto-save disabled. Use Save All button or press Enter to save scores.', 'info');
+        }
+    });
+    
+    // Handle changes from bottom toggle
+    $('#autoSaveToggleBottom').off('change').on('change', function() {
+        const newState = $(this).is(':checked');
+        $('#autoSaveToggle').prop('checked', newState);
+        autoSaveEnabled = newState;
+        
+        if (autoSaveEnabled) {
+            showNotification('Auto-save enabled. Scores will be saved automatically when you finish typing.', 'info');
+        } else {
+            showNotification('Auto-save disabled. Use Save All button or press Enter to save scores.', 'info');
+        }
+    });
+
+    // Search
+    $('#searchStudent').off('keyup').on('keyup', function() {
+        applyFilters();
+    });
+    
+    // Filters
+    $('#statusFilter, #genderFilter').off('change').on('change', function() {
+        applyFilters();
+    });
+    
+    // Score input handlers
+    $(document).off('keydown', '.score-input').on('keydown', '.score-input', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            const input = this;
+            const studentId = $(input).closest('tr').data('student-id');
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveScore(input, studentId, paperId);
+            return false;
+        }
+    });
+    
+    $(document).off('blur', '.score-input').on('blur', '.score-input', function() {
+        if (autoSaveEnabled) {
+            const input = this;
+            const studentId = $(input).closest('tr').data('student-id');
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveScore(input, studentId, paperId);
+        }
+    });
+    
+    $(document).off('input', '.score-input').on('input', '.score-input', function() {
+        if (autoSaveEnabled) {
+            const input = this;
+            const studentId = $(input).closest('tr').data('student-id');
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveScore(input, studentId, paperId);
+            }, 1000);
+        }
+    });
+    
+    // Initial load - update statistics from all rows
+    updateStatisticsFromVisible();
+    updateRowNumbers();
+});
+
+// ============================================
+// APPLY FILTERS
+// ============================================
+function applyFilters() {
+    const statusFilter = $('#statusFilter').val();
+    const genderFilter = $('#genderFilter').val();
+    const searchTerm = $('#searchStudent').val().toLowerCase();
+    
+    $('#scoresTableBody tr').each(function() {
+        const $row = $(this);
+        const studentName = $row.data('student-name') || '';
+        const regNo = $row.data('reg-no') || '';
+        const gender = $row.data('gender') || '';
+        const hasScore = $row.data('has-score') === 'true';
+        
+        let show = true;
+        
+        // Status filter
+        if (statusFilter === 'with_scores' && !hasScore) show = false;
+        if (statusFilter === 'without_scores' && hasScore) show = false;
+        
+        // Gender filter
+        if (genderFilter !== 'all' && gender !== genderFilter) show = false;
+        
+        // Search filter
+        if (searchTerm && !studentName.includes(searchTerm) && !regNo.includes(searchTerm)) show = false;
+        
+        if (show) {
+            $row.show();
+        } else {
+            $row.hide();
+        }
+    });
+    
+    // Update row numbers and statistics based on visible rows
+    updateRowNumbers();
+    updateStatisticsFromVisible();
+}
+
+function updateRowNumbers() {
+    let counter = 1;
+    $('#scoresTableBody tr:visible').each(function() {
+        $(this).find('.row-number').text(counter++);
+    });
+}
+
+// ============================================
+// UPDATE STATISTICS FROM VISIBLE ROWS ONLY
+// ============================================
+function updateStatisticsFromVisible() {
+    const visibleRows = $('#scoresTableBody tr:visible');
+    const totalStudents = visibleRows.length;
+    
+    let withScoresCount = 0;
+    let marksList = [];
+    
+    visibleRows.each(function() {
+        const $row = $(this);
+        const hasScore = $row.data('has-score') === 'true';
+        const marks = parseFloat($row.data('marks'));
+        
+        if (hasScore && !isNaN(marks)) {
+            withScoresCount++;
+            marksList.push(marks);
+        }
+    });
+    
+    // Calculate statistics
+    const completionPercentage = totalStudents > 0 ? (withScoresCount / totalStudents * 100) : 0;
+    
+    // Update statistics cards
+    $('#studentsWithScores').text(withScoresCount);
+    $('#completionPercentage').text(Math.round(completionPercentage) + '%');
+    $('#progressBar').css('width', completionPercentage + '%');
+}
+
+// ============================================
+// UPDATE TABLE ROW WITH NEW DATA
+// ============================================
+function updateTableRow(studentId, marks, grade, cleared) {
+    const row = $(`tr[data-student-id="${studentId}"]`);
+    if (!row.length) return;
+    
+    const input = row.find('.score-input');
+    const gradeCell = row.find('.grade-cell');
+    const statusCell = row.find('.status-cell');
+    
+    if (cleared) {
+        input.val('');
+        gradeCell.html('<span class="grade-badge grade-F">—</span>');
+        statusCell.html('<span class="badge bg-secondary">Pending</span>');
+        row.data('has-score', 'false');
+        row.data('grade', 'NONE');
+        row.data('marks', '');
+    } else {
+        input.val(marks);
+        const gradeClass = 'grade-' + grade;
+        gradeCell.html(`<span class="grade-badge ${gradeClass}">${grade}</span>`);
+        statusCell.html('<span class="badge bg-success">Saved</span>');
+        row.data('has-score', 'true');
+        row.data('grade', grade);
+        row.data('marks', marks);
+    }
+    
+    input.addClass('saved');
+    setTimeout(() => input.removeClass('saved'), 2000);
+}
+
+// ============================================
+// SAVE FUNCTIONS
+// ============================================
+function saveScore(input, studentId, paperId) {
+    if (isSaving) return;
+    
+    const marks = input.value.trim();
+    const row = $(input).closest('tr');
+    const statusDiv = row.find('.save-status');
+    const originalValue = input.value;
+    
+    if (marks !== '') {
+        const marksNum = parseFloat(marks);
+        if (isNaN(marksNum)) {
+            showNotification('Invalid marks. Please enter a valid number.', 'error');
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 2000);
+            return;
+        }
+        if (marksNum < 0 || marksNum > maxMarks) {
+            showNotification(`Marks must be between 0 and ${maxMarks}.`, 'error');
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 2000);
+            return;
+        }
+    }
+    
+    const currentMarks = row.data('marks');
+    const newMarks = marks === '' ? null : parseFloat(marks);
+    const oldMarks = currentMarks === '' ? null : parseFloat(currentMarks);
+    
+    if (newMarks === oldMarks) {
+        statusDiv.hide();
+        return;
+    }
+    
+    statusDiv.show();
+    input.disabled = true;
+    isSaving = true;
+    
+    const formData = new FormData();
+    formData.append('student_id', studentId);
+    formData.append('paper_id', paperId);
+    formData.append('marks', marks);
+    
+    fetch('/management/exam-papers/results/quick-save/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            input.classList.remove('error');
+            input.classList.add('saved');
+            
+            if (data.cleared) {
+                updateTableRow(studentId, null, null, true);
+            } else {
+                updateTableRow(studentId, data.marks, data.grade, false);
+            }
+            
+            // Update statistics based on visible rows after save
+            updateStatisticsFromVisible();
+            
+            if (!autoSaveEnabled) {
+                showNotification(data.message, 'success');
+            }
+        } else {
+            input.classList.add('error');
+            showNotification(data.message, 'error');
+            input.value = originalValue;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        input.classList.add('error');
+        showNotification('An error occurred while saving.', 'error');
+        input.value = originalValue;
+    })
+    .finally(() => {
+        statusDiv.hide();
+        input.disabled = false;
+        isSaving = false;
+        setTimeout(() => input.classList.remove('saved'), 2000);
+        applyFilters();
+    });
+}
+
+function saveAllScores() {
+    if (isSaving) {
+        showNotification('Please wait, previous save is still in progress.', 'warning');
+        return;
+    }
+    
+    const scores = [];
+    const rows = document.querySelectorAll('#scoresTableBody tr');
+    let hasChanges = false;
+    
+    rows.forEach(row => {
+        const studentId = row.dataset.studentId;
+        const input = row.querySelector('.score-input');
+        const marks = input.value.trim();
+        const currentMarks = row.dataset.marks;
+        
+        const newMarks = marks === '' ? null : parseFloat(marks);
+        const oldMarks = currentMarks === '' ? null : parseFloat(currentMarks);
+        
+        if (newMarks !== oldMarks) {
+            hasChanges = true;
+        }
+        
+        scores.push({
+            student_id: parseInt(studentId),
+            marks: marks === '' ? null : parseFloat(marks)
+        });
+    });
+    
+    if (!hasChanges) {
+        showNotification('No changes to save.', 'info');
+        return;
+    }
+    
+    showLoading();
+    isSaving = true;
+    
+    fetch(`/management/exam-papers/${paperId}/results/bulk-save/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ scores: scores })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            data.updated_scores.forEach(updated => {
+                if (updated.cleared) {
+                    updateTableRow(updated.student_id, null, null, true);
+                } else {
+                    updateTableRow(updated.student_id, updated.marks, updated.grade, false);
+                }
+            });
+            
+            // Update statistics based on visible rows after bulk save
+            updateStatisticsFromVisible();
+            showNotification(data.message, data.errors && data.errors.length ? 'warning' : 'success');
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification(error.message || 'An error occurred while saving scores.', 'error');
+    })
+    .finally(() => {
+        hideLoading();
+        isSaving = false;
+        applyFilters();
+    });
+}
+
+// ============================================
+// EXCEL UPLOAD FUNCTIONS
+// ============================================
+function downloadExcelTemplate() {
+    showLoading(true);
+    
+    const statusFilter = $('#statusFilter').val();
+    const genderFilter = $('#genderFilter').val();
+    const searchTerm = $('#searchStudent').val().trim();
+    
+    let downloadUrl = `/management/exam-papers/${paperId}/download-template/`;
+    const params = new URLSearchParams();
+    
+    if (statusFilter && statusFilter !== 'all') params.append('status_filter', statusFilter);
+    if (genderFilter && genderFilter !== 'all') params.append('gender_filter', genderFilter);
+    if (searchTerm) params.append('search', searchTerm);
+    
+    if (params.toString()) downloadUrl += '?' + params.toString();
+    
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = downloadUrl;
+    document.body.appendChild(iframe);
+    
+    setTimeout(() => {
+        document.body.removeChild(iframe);
+        showLoading(false);
+        let filterMessage = params.toString() ? ` with ${params.toString().split('&').length} filter(s) applied` : '';
+        showNotification(`Excel template download started${filterMessage}!`, 'success');
+    }, 2000);
+}
+
+function showExcelUploadModal() {
+    // Reset file input
+    const fileInput = document.getElementById('excelFile');
+    if (fileInput) fileInput.value = '';
+    
+    // Reset progress bar
+    const progressBar = document.getElementById('uploadProgressBar');
+    const progressGroup = document.getElementById('uploadProgressGroup');
+    if (progressBar) {
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+    }
+    if (progressGroup) {
+        progressGroup.style.display = 'none';
+    }
+    
+    // Reset error display
+    const errorDiv = document.getElementById('uploadError');
+    if (errorDiv) errorDiv.style.display = 'none';
+    
+    // Reset upload button
+    const uploadBtn = document.getElementById('btnUploadExcel');
+    if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm d-none me-1" role="status"></span><i class="bi bi-upload me-2"></i> Upload';
+    }
+    
+    $('#excelUploadModal').modal('show');
+}
+
+function uploadExcel() {
+    const fileInput = document.getElementById('excelFile');
+    const file = fileInput ? fileInput.files[0] : null;
+    const uploadBtn = document.getElementById('btnUploadExcel');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const progressGroup = document.getElementById('uploadProgressGroup');
+    const errorDiv = document.getElementById('uploadError');
+    const errorMessageSpan = document.getElementById('errorMessage');
+    
+    if (!file) {
+        showNotification('Please select an Excel file.', 'error');
+        return;
+    }
+    
+    // Validate file extension
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    if (!['xlsx', 'xls'].includes(fileExt)) {
+        showNotification('Invalid file format. Please upload an Excel file (.xlsx or .xls).', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('excel_file', file);
+    
+    showLoading();
+    if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Uploading...';
+    }
+    
+    // Show progress bar
+    if (progressGroup) progressGroup.style.display = 'block';
+    if (progressBar) {
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+    }
+    
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        if (progress < 90) {
+            progress += 10;
+            if (progressBar) {
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+            }
+        }
+    }, 200);
+    
+    fetch(`/management/exam-papers/${paperId}/upload-excel/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(data => {
+        clearInterval(progressInterval);
+        if (progressBar) {
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+        }
+        
+        if (data.success) {
+            // Check if the file had the wrong format
+            const hasHeaderErrors = data.errors && data.errors.some(err => 
+                err.includes('Exam Session:') || 
+                err.includes('Subject:') || 
+                err.includes('INSTRUCTIONS') ||
+                err.includes('#')
+            );
+            
+            if (hasHeaderErrors && data.saved === 0) {
+                if (errorDiv && errorMessageSpan) {
+                    errorMessageSpan.innerHTML = `
+                        <strong>The uploaded file appears to be the template file, not a data file.</strong><br><br>
+                        Please follow these steps:<br>
+                        1. Download the Excel template using the "Download Template" button<br>
+                        2. Enter student marks in the "Marks" column (Column B)<br>
+                        3. Save the file and upload it again<br><br>
+                        <strong>Example format:</strong><br>
+                        Row 2: REG001 | 85<br>
+                        Row 3: REG002 | 72<br>
+                        Row 4: REG003 | 90<br><br>
+                        <strong>Errors found:</strong><br>
+                        ${data.errors.slice(0, 5).join('<br>')}
+                    `;
+                    errorDiv.style.display = 'block';
+                }
+                showNotification('Invalid file format. Please upload a data file, not the template file.', 'error');
+                if (uploadBtn) {
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i> Upload';
+                }
+                if (progressGroup) progressGroup.style.display = 'none';
+                hideLoading();
+                return;
+            }
+            
+            // Display errors if any
+            if (data.errors && data.errors.length > 0) {
+                if (errorDiv && errorMessageSpan) {
+                    let errorHtml = '<strong>Errors found during upload:</strong><br><ul>';
+                    data.errors.slice(0, 10).forEach(err => {
+                        errorHtml += `<li>${escapeHtml(err)}</li>`;
+                    });
+                    if (data.errors.length > 10) {
+                        errorHtml += `<li>... and ${data.errors.length - 10} more errors</li>`;
+                    }
+                    errorHtml += '</ul>';
+                    errorMessageSpan.innerHTML = errorHtml;
+                    errorDiv.style.display = 'block';
+                }
+                
+                const errorSummary = data.errors.length > 3 
+                    ? `${data.errors.length} errors occurred. First 3: ${data.errors.slice(0, 3).join('; ')}`
+                    : data.errors.join('; ');
+                showNotification(`${data.message} Details: ${errorSummary}`, 'warning');
+            } else {
+                if (errorDiv) errorDiv.style.display = 'none';
+                showNotification(data.message, 'success');
+            }
+            
+            // Update all rows with the uploaded data
+            if (data.updated_scores && data.updated_scores.length > 0) {
+                data.updated_scores.forEach(updated => {
+                    if (updated.cleared) {
+                        updateTableRow(updated.student_id, null, null, true);
+                    } else {
+                        updateTableRow(updated.student_id, updated.marks, updated.grade, false);
+                    }
+                });
+            }
+            
+            // Update statistics
+            if (data.stats) {
+                updateStatisticsFromResponse(data.stats);
+            } else {
+                updateStatisticsFromVisible();
+            }
+            
+            // Only reload if there were actual changes and no errors
+            const hasErrors = data.errors && data.errors.length > 0;
+            const hasUpdates = data.saved > 0;
+            
+            if (hasUpdates && !hasErrors) {
+                setTimeout(() => {
+                    $('#excelUploadModal').modal('hide');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                }, 1500);
+            } else if (hasUpdates && hasErrors) {
+                setTimeout(() => {
+                    if (uploadBtn) {
+                        uploadBtn.disabled = false;
+                        uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i> Upload';
+                    }
+                    showNotification('Some scores were uploaded successfully. Please review the errors above.', 'warning');
+                }, 1000);
+            } else if (!hasUpdates && data.errors && data.errors.length > 0) {
+                setTimeout(() => {
+                    if (uploadBtn) {
+                        uploadBtn.disabled = false;
+                        uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i> Upload';
+                    }
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    $('#excelUploadModal').modal('hide');
+                }, 1000);
+            }
+        } else {
+            if (errorDiv && errorMessageSpan) {
+                errorMessageSpan.innerHTML = data.message || 'Upload failed. Please check the file format.';
+                errorDiv.style.display = 'block';
+            }
+            showNotification(data.message || 'Upload failed. Please check the file format.', 'error');
+            if (uploadBtn) {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i> Upload';
+            }
+            if (progressGroup) progressGroup.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        clearInterval(progressInterval);
+        if (errorDiv && errorMessageSpan) {
+            errorMessageSpan.innerHTML = error.message || 'An error occurred while uploading the file.';
+            errorDiv.style.display = 'block';
+        }
+        showNotification(error.message || 'An error occurred while uploading the file.', 'error');
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i> Upload';
+        }
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+        }
+        if (progressGroup) progressGroup.style.display = 'none';
+    })
+    .finally(() => {
+        setTimeout(() => {
+            if (uploadBtn && uploadBtn.disabled) {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="bi bi-upload me-2"></i> Upload';
+            }
+            hideLoading();
+            
+            setTimeout(() => {
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                    progressBar.textContent = '0%';
+                }
+                if (progressGroup) progressGroup.style.display = 'none';
+            }, 500);
+        }, 1000);
+    });
+}
+
+// ============================================
+// UPDATE STATISTICS FROM RESPONSE
+// ============================================
+function updateStatisticsFromResponse(stats) {
+    $('#studentsWithScores').text(stats.students_with_scores);
+    $('#completionPercentage').text(Math.round(stats.completion_percentage) + '%');
+    $('#progressBar').css('width', stats.completion_percentage + '%');
+}
+
+// ============================================
+// ESCAPE HTML FUNCTION
+// ============================================
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle',
+        error: 'x-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    const icon = icons[type] || 'info-circle';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) container.appendChild(toast);
+    else document.body.appendChild(toast);
+    
+    setTimeout(() => { if (toast.parentElement) toast.remove(); }, 5000);
+}
+
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('show');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('show');
+}
+
+// ============================================
+// KEYBOARD SHORTCUTS
+// ============================================
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveAllScores();
+    }
+    if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        downloadExcelTemplate();
+    }
+    if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        autoSaveEnabled = !autoSaveEnabled;
+        $('#autoSaveToggle, #autoSaveToggleBottom').prop('checked', autoSaveEnabled);
+        showNotification(autoSaveEnabled ? 'Auto-save enabled' : 'Auto-save disabled', 'info');
+    }
+});
+
+// ============================================
+// EXPOSE FUNCTIONS
+// ============================================
+window.saveScore = saveScore;
+window.saveAllScores = saveAllScores;
+window.showExcelUploadModal = showExcelUploadModal;
+window.uploadExcel = uploadExcel;
+window.downloadExcelTemplate = downloadExcelTemplate;
+</script>
+{% endblock %}

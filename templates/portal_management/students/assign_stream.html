@@ -1,0 +1,811 @@
+{# templates/portal_management/students/assign_stream.html #}
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Assign Stream — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}Assign Stream{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM DESIGN SYSTEM (Consistent with Enrollment)
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-dark: #0b5e2c;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ============================================
+       STUDENT PREVIEW CARD
+       ============================================ */
+    
+    .student-preview-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.4s ease-out;
+    }
+    
+    .student-preview-card::before {
+        content: '';
+        position: absolute;
+        top: -50%; right: -50%;
+        width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+    
+    .preview-avatar {
+        width: 80px; height: 80px;
+        border-radius: var(--radius-full);
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.5rem;
+        border: 3px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+    
+    .preview-avatar:hover { transform: scale(1.05); border-color: white; }
+    .preview-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-details { flex: 1; }
+    
+    .preview-badge {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        padding: 0.25rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* ============================================
+       ENROLLMENT INFO CARD
+       ============================================ */
+    
+    .enrollment-info-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .enrollment-info-card:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+    
+    .enrollment-detail-item {
+        display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+    }
+    
+    .enrollment-detail-label {
+        font-size: 0.85rem; color: var(--gray-500); font-weight: 500; min-width: 100px;
+    }
+    
+    .enrollment-detail-value { font-weight: 600; color: var(--gray-700); }
+
+    /* ============================================
+       CURRENT ASSIGNMENT ALERT
+       ============================================ */
+    
+    .current-assignment-alert {
+        background: var(--info-light);
+        border-left: 4px solid var(--info);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .assignment-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .assignment-info i {
+        font-size: 1.5rem;
+        color: var(--info);
+    }
+    
+    .stream-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--gray-800);
+    }
+    
+    .btn-remove {
+        background: transparent;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-remove:hover {
+        background: var(--danger);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* ============================================
+       STREAM GRID
+       ============================================ */
+    
+    .stream-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        animation: slideUp 0.4s ease-out;
+    }
+    
+    .stream-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 2px solid var(--gray-200);
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stream-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .stream-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-light);
+    }
+    
+    .stream-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .stream-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .stream-card.selected::before {
+        transform: scaleX(1);
+    }
+    
+    .stream-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .stream-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+    
+    .current-badge {
+        background: var(--success);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .capacity-container {
+        margin-bottom: 1rem;
+    }
+    
+    .capacity-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+    
+    .capacity-bar {
+        height: 8px;
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+    }
+    
+    .capacity-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: var(--radius-full);
+        transition: width 0.3s ease;
+    }
+    
+    .capacity-fill.warning {
+        background: var(--warning);
+    }
+    
+    .capacity-fill.danger {
+        background: var(--danger);
+    }
+    
+    .full-badge {
+        background: var(--danger-light);
+        color: var(--danger);
+        padding: 0.5rem;
+        border-radius: var(--radius-lg);
+        text-align: center;
+        font-size: 0.85rem;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    /* ============================================
+       FORM CONTROLS
+       ============================================ */
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+        outline: none;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* ============================================
+       ACTION MENU
+       ============================================ */
+    
+    .action-menu-container {
+        position: sticky;
+        bottom: 1rem;
+        z-index: 1000;
+        margin-top: 2rem;
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    .action-menu-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .action-menu-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .action-menu-title {
+        font-weight: 600;
+        color: var(--gray-700);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .action-menu-title i {
+        color: var(--primary);
+    }
+    
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+    
+    .btn i {
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(26, 115, 232, 0.4);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+    
+    .btn-outline-secondary {
+        border: 1.5px solid var(--gray-300);
+        color: var(--gray-600);
+        background: transparent;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-400);
+        transform: translateY(-2px);
+    }
+    
+    .action-shortcut {
+        margin-left: auto;
+        font-size: 0.75rem;
+        color: var(--gray-400);
+        font-family: monospace;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
+        .stream-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .student-preview-card {
+            padding: 1rem;
+        }
+        
+        .preview-avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- Student Preview Card -->
+    <div class="student-preview-card">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="preview-avatar">
+                {% if enrollment.student.profile_picture %}
+                    <img src="{{ enrollment.student.profile_picture.url }}" alt="{{ enrollment.student.full_name }}">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+            </div>
+            <div class="preview-details">
+                <h3 class="mb-2">{{ enrollment.student.full_name }}</h3>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="preview-badge">
+                        <i class="bi bi-upc-scan"></i>
+                        {{ enrollment.student.registration_number }}
+                    </span>
+                    <span class="preview-badge">
+                        <i class="bi bi-flag"></i>
+                        {{ enrollment.student.get_status_display }}
+                    </span>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <span class="preview-badge">
+                        <i class="bi bi-gender-{% if enrollment.student.gender == 'male' %}male{% else %}female{% endif %}"></i>
+                        {{ enrollment.student.get_gender_display|default:"Not specified" }}
+                    </span>
+                    <span class="preview-badge">
+                        <i class="bi bi-calendar"></i>
+                        Age: {{ enrollment.student.age|default:"N/A" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enrollment Info Card -->
+    <div class="enrollment-info-card">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h5 class="section-title">Enrollment Details</h5>
+            <span class="section-subtitle">Current enrollment information</span>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Academic Year:</span>
+                    <span class="enrollment-detail-value">{{ enrollment.academic_year.name }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Class Level:</span>
+                    <span class="enrollment-detail-value">{{ enrollment.class_level.name }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Enrolled Since:</span>
+                    <span class="enrollment-detail-value">{{ enrollment.enrollment_date|date:"d M Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Assignment Alert -->
+    {% if existing_assignment %}
+    <div class="current-assignment-alert">
+        <div class="assignment-info">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                <div class="fw-semibold mb-1">Currently Assigned</div>
+                <div class="stream-name">{{ existing_assignment.stream_class.name }}</div>
+                <small class="text-muted">Assigned on: {{ existing_assignment.assigned_date|date:"d M Y" }}</small>
+            </div>
+        </div>
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="remove">
+            <button type="submit" class="btn-remove" onclick="return confirm('Remove stream assignment?')">
+                <i class="bi bi-x-lg"></i>
+                Remove Assignment
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Stream Selection Form -->
+    <form method="post" id="streamForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign">
+        
+        <div class="stream-grid">
+            {% for item in streams %}
+            <div class="stream-card stream-option" 
+                 data-stream-id="{{ item.stream.id }}"
+                 onclick="selectStream('{{ item.stream.id }}')">
+                <div class="stream-header">
+                    <h5 class="stream-name">{{ item.stream.name }}</h5>
+                    {% if existing_assignment and existing_assignment.stream_class.id == item.stream.id %}
+                    <span class="current-badge">
+                        <i class="bi bi-check-circle"></i> Current
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="capacity-container">
+                    <div class="capacity-stats">
+                        <span>Capacity</span>
+                        <span>{{ item.current_count }} / {{ item.stream.capacity }}</span>
+                    </div>
+                    <div class="capacity-bar">
+                        {% widthratio item.current_count item.stream.capacity 100 as percentage %}
+                        <div class="capacity-fill 
+                            {% if item.current_count >= item.stream.capacity %}danger
+                            {% elif item.current_count >= item.stream.capacity|add:-10 %}warning
+                            {% endif %}"
+                            style="width: {{ percentage }}%">
+                        </div>
+                    </div>
+                </div>
+                
+                {% if not item.has_capacity %}
+                <div class="full-badge">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Stream is full
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="col-12 text-center p-5">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    No streams available for {{ enrollment.class_level.name }}. 
+                    <a href="{% url 'management:stream_create' %}" class="alert-link">Create streams first</a>.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <input type="hidden" name="stream_class" id="selectedStream" value="">
+        
+        <div class="form-group">
+            <label class="form-label">
+                <i class="bi bi-chat-text"></i>
+                Remarks (Optional)
+            </label>
+            <textarea name="remarks" id="remarks" class="form-control" rows="3" 
+                      placeholder="Any notes about this stream assignment..."></textarea>
+            <div class="field-hint mt-2">
+                <i class="bi bi-info-circle"></i>
+                <span id="remarksCount">0</span>/500 characters
+            </div>
+        </div>
+
+        <!-- Action Menu -->
+        <div class="action-menu-container">
+            <div class="action-menu-card">
+                <div class="action-menu-header">
+                    <div class="action-menu-title">
+                        <i class="bi bi-diagram-3"></i>
+                        Stream Assignment
+                    </div>
+                    <div class="action-status" id="actionStatus">
+                        <i class="bi bi-circle-fill" style="font-size: 0.5rem; color: var(--info);"></i>
+                        Select a stream to assign
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                        <i class="bi bi-check-lg"></i>
+                        Assign Stream
+                        <span class="action-shortcut">⌘S</span>
+                    </button>
+                    
+                    <a href="{% url 'management:student_detail' enrollment.student.pk %}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Cancel
+                        <span class="action-shortcut">⌘B</span>
+                    </a>
+                </div>
+                
+                <div class="mt-2 text-center text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Students can only be assigned to one stream per academic year
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+
+    // Character counter for remarks
+    const remarksField = document.getElementById('remarks');
+    const remarksCount = document.getElementById('remarksCount');
+    
+    if (remarksField && remarksCount) {
+        remarksField.addEventListener('input', function() {
+            const length = this.value.length;
+            remarksCount.textContent = length;
+            
+            if (length > 450) {
+                remarksCount.style.color = 'var(--warning)';
+            } else if (length > 500) {
+                remarksCount.style.color = 'var(--danger)';
+            } else {
+                remarksCount.style.color = 'var(--gray-500)';
+            }
+        });
+    }
+
+    // Stream selection handler
+    window.selectStream = function(streamId) {
+        const selectedInput = document.getElementById('selectedStream');
+        const submitBtn = document.getElementById('submitBtn');
+        const actionStatus = document.getElementById('actionStatus');
+        
+        selectedInput.value = streamId;
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-primary');
+        submitBtn.classList.add('btn-success');
+        submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Confirm Assignment<span class="action-shortcut">⌘S</span>';
+        
+        if (actionStatus) {
+            actionStatus.innerHTML = '<i class="bi bi-check-circle-fill" style="font-size: 0.5rem; color: var(--success);"></i> Ready to assign';
+        }
+        
+        // Highlight selected card and remove highlights from others
+        document.querySelectorAll('.stream-card').forEach(card => {
+            card.classList.remove('selected');
+            if (card.dataset.streamId === streamId) {
+                card.classList.add('selected');
+            }
+        });
+    };
+
+    // Form submission handler
+    const form = document.getElementById('streamForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', function(e) {
+        const selectedStream = document.getElementById('selectedStream').value;
+        
+        if (!selectedStream) {
+            e.preventDefault();
+            showNotification('Please select a stream to assign', 'error');
+            return;
+        }
+        
+        if (submitBtn.disabled) {
+            e.preventDefault();
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Assigning...';
+        
+        const actionStatus = document.getElementById('actionStatus');
+        if (actionStatus) {
+            actionStatus.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.target.matches('input, textarea, select')) return;
+        
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            const selectedStream = document.getElementById('selectedStream').value;
+            if (selectedStream && !submitBtn.disabled) {
+                form.submit();
+            }
+        }
+        
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+            e.preventDefault();
+            window.location.href = "{% url 'management:student_detail' enrollment.student.pk %}";
+        }
+    });
+
+    // Auto-select if there's only one available stream with capacity
+    const availableStreams = document.querySelectorAll('.stream-card:not(.full)');
+    if (availableStreams.length === 1 && !document.getElementById('selectedStream').value) {
+        const streamId = availableStreams[0].dataset.streamId;
+        selectStream(streamId);
+    }
+});
+
+// Toast notification function
+function showNotification(message, type) {
+    type = type || 'success';
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification ' + type;
+    toast.innerHTML = 
+        '<div class="toast-icon ' + type + '">' +
+            '<i class="bi bi-' + (type === 'success' ? 'check-circle' : 'exclamation-triangle') + '"></i>' +
+        '</div>' +
+        '<div class="flex-grow-1"><div class="fw-semibold">' + message + '</div></div>' +
+        '<button class="btn-close" onclick="this.parentElement.remove()"></button>';
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        if (toast.parentElement) toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

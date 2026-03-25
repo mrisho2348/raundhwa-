@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+static/
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-*
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+*.cover
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Database backups
+*.bak
+*.sql
+*.dump
+
+# Media files
+media/
+uploads/
+profile_pictures/
+staff/profile_pictures/
+students/profile_pictures/
+school/logos/
+
+# Secret key files
+secret_key.txt
+config.py
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Node modules (if any)
+node_modules/
+npm-debug.log
+
+# Docker
+.dockerignore

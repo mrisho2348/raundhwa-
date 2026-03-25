@@ -36,7 +36,6 @@ class StudentForm(forms.ModelForm):
     """
     Clean student form containing only personal and contact information.
     No enrollment or parent fields - these are handled by separate views.
-    Perfectly matches the premium template design.
     """
     
     class Meta:
@@ -120,7 +119,6 @@ class StudentForm(forms.ModelForm):
 
     def _add_custom_attributes(self):
         """Add custom CSS classes and attributes to form fields."""
-        # Add help text icons and tooltips
         help_texts = {
             'gender': ('bi bi-gender-ambiguous', 'Select student\'s gender'),
             'date_of_birth': ('bi bi-calendar', 'Student\'s date of birth'),
@@ -134,6 +132,28 @@ class StudentForm(forms.ModelForm):
             if field_name in self.fields:
                 self.fields[field_name].widget.attrs['data-icon'] = icon
                 self.fields[field_name].widget.attrs['data-hint'] = hint
+
+    def clean_first_name(self):
+        """Validate first name."""
+        first_name = self.cleaned_data.get('first_name', '').strip()
+        if not first_name:
+            raise ValidationError('First name is required.')
+        if len(first_name) < 2:
+            raise ValidationError('First name must be at least 2 characters long.')
+        if len(first_name) > 100:
+            raise ValidationError('First name must be less than 100 characters.')
+        return first_name
+
+    def clean_last_name(self):
+        """Validate last name."""
+        last_name = self.cleaned_data.get('last_name', '').strip()
+        if not last_name:
+            raise ValidationError('Last name is required.')
+        if len(last_name) < 2:
+            raise ValidationError('Last name must be at least 2 characters long.')
+        if len(last_name) > 100:
+            raise ValidationError('Last name must be less than 100 characters.')
+        return last_name
 
     def clean_national_id(self):
         """Validate national ID format if provided."""
@@ -154,16 +174,44 @@ class StudentForm(forms.ModelForm):
     def clean_date_of_birth(self):
         """Validate date of birth is not in the future."""
         dob = self.cleaned_data.get('date_of_birth')
-        if dob and dob > timezone.now().date():
-            raise ValidationError('Date of birth cannot be in the future.')
+        if dob:
+            today = timezone.now().date()
+            if dob > today:
+                raise ValidationError('Date of birth cannot be in the future.')
+            
+            # Check for reasonable age (e.g., not older than 100 years)
+            age = today.year - dob.year
+            if age > 100:
+                raise ValidationError('Date of birth appears invalid (over 100 years ago).')
+            
+            # Check for minimum age (e.g., not less than 3 years for nursery)
+            if age < 3 and self.instance and not self.instance.pk:
+                # Only show warning for new students, not for updates
+                self.add_warning('Student appears to be under 3 years old. Please verify.')
         return dob
 
     def clean_admission_date(self):
         """Validate admission date is not in the future."""
         admission_date = self.cleaned_data.get('admission_date')
-        if admission_date and admission_date > timezone.now().date():
-            raise ValidationError('Admission date cannot be in the future.')
+        if admission_date:
+            today = timezone.now().date()
+            if admission_date > today:
+                raise ValidationError('Admission date cannot be in the future.')
         return admission_date
+
+    def clean_profile_picture(self):
+        """Validate profile picture size and format."""
+        profile_picture = self.cleaned_data.get('profile_picture')
+        if profile_picture:
+            # Check file size (2MB limit)
+            if profile_picture.size > 2 * 1024 * 1024:
+                raise ValidationError('Profile picture must be less than 2MB.')
+            
+            # Check file extension
+            ext = profile_picture.name.split('.')[-1].lower()
+            if ext not in ['jpg', 'jpeg', 'png']:
+                raise ValidationError('Profile picture must be JPG, JPEG, or PNG format.')
+        return profile_picture
 
     def clean(self):
         """
@@ -175,13 +223,40 @@ class StudentForm(forms.ModelForm):
         dob = cleaned_data.get('date_of_birth')
         admission_date = cleaned_data.get('admission_date')
         
-        if dob and admission_date and admission_date < dob:
-            self.add_error(
-                'admission_date',
-                'Admission date cannot be before date of birth.'
-            )
+        if dob and admission_date:
+            if admission_date < dob:
+                self.add_error(
+                    'admission_date',
+                    ValidationError(
+                        'Admission date cannot be before date of birth.',
+                        code='admission_before_birth'
+                    )
+                )
+        
+        # Check for duplicate national ID (if provided)
+        national_id = cleaned_data.get('national_id')
+        if national_id:
+            existing_students = Student.objects.filter(
+                national_id=national_id
+            ).exclude(pk=self.instance.pk)
+            
+            if existing_students.exists():
+                self.add_error(
+                    'national_id',
+                    ValidationError(
+                        f'A student with this national ID already exists: '
+                        f'{existing_students.first().full_name} '
+                        f'(Reg: {existing_students.first().registration_number})'
+                    )
+                )
         
         return cleaned_data
+    
+    def add_warning(self, message):
+        """Add a warning message to the form."""
+        if not hasattr(self, 'warnings'):
+            self.warnings = []
+        self.warnings.append(message)
 
     def save(self, commit=True):
         """
@@ -194,7 +269,7 @@ class StudentForm(forms.ModelForm):
             try:
                 student.save()
                 
-                # Log the action (optional)
+                # Log the action
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.info(
@@ -206,22 +281,8 @@ class StudentForm(forms.ModelForm):
                 raise ValidationError(f"Error saving student: {str(e)}")
         
         return student
-
-
-class StudentDraftForm(StudentForm):
-    """
-    Extended form for draft saving - makes all fields optional.
-    Used for saving incomplete student records.
-    """
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        # Make all fields optional for drafts
-        for field in self.fields:
-            self.fields[field].required = False
-            if hasattr(self.fields[field], 'widget'):
-                self.fields[field].widget.attrs.pop('required', None)
+
 
 
 class StudentSearchForm(forms.Form):

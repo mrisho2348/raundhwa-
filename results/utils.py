@@ -16,6 +16,8 @@ import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+from core.models import GradingScale, Student, StudentEnrollment, StudentExamMetrics, StudentExamPosition, StudentSubjectResult, Subject
+
 logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -75,11 +77,7 @@ def export_student_report(student, exam_sessions) -> openpyxl.Workbook:
     Returns:
         openpyxl.Workbook
     """
-    from .models import (
-        StudentSubjectResult, StudentExamMetrics,
-        StudentExamPosition, GradingScale,
-    )
-    from students.models import StudentEnrollment
+
 
     sessions = list(exam_sessions)
     session_ids = [s.id for s in sessions]
@@ -328,10 +326,7 @@ def export_session_report(exam_session) -> openpyxl.Workbook:
 
     All DB queries issued before any Excel writing.
     """
-    from .models import (
-        StudentSubjectResult, StudentExamMetrics,
-        StudentExamPosition, Subject,
-    )
+
 
     # ── Load everything in bulk ────────────────────────────────────────────
     subjects = list(
@@ -371,8 +366,7 @@ def export_session_report(exam_session) -> openpyxl.Workbook:
         for p in StudentExamPosition.objects.filter(exam_session=exam_session)
     }
 
-    # Student names + reg numbers in ONE query
-    from students.models import Student
+
     student_info = {
         s['id']: s
         for s in Student.objects

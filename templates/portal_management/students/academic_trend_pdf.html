@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Performance Trend - {{ student.full_name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: "{{ school_info.name }}";
+                font-size: 9pt;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 8pt;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #666;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #2c3e50;
+            background: white;
+        }
+        
+        .container {
+            max-width: 100%;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #1a73e8;
+        }
+        
+        .school-name {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+        
+        .report-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0 5px;
+        }
+        
+        .report-subtitle {
+            font-size: 11pt;
+            color: #5a6c7e;
+            margin-bottom: 5px;
+        }
+        
+        .school-motto {
+            font-size: 8pt;
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        /* Student Info Card */
+        .student-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1a73e8;
+        }
+        
+        .student-name {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+        
+        .student-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 8pt;
+            color: #5a6c7e;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .stat-value {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+        
+        .stat-label {
+            font-size: 7pt;
+            color: #5a6c7e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .trend-up { color: #0f7b3a; }
+        .trend-down { color: #dc3545; }
+        
+        /* Chart Containers */
+        .chart-container {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .chart-title {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .chart-title i {
+            margin-right: 5px;
+        }
+        
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 7pt;
+        }
+        
+        .data-table th {
+            background: #1a73e8;
+            color: white;
+            padding: 6px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #1557b0;
+        }
+        
+        .data-table td {
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .data-table td:first-child {
+            text-align: left;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        
+        /* Subject Cards */
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .subject-card {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px;
+            border-left: 3px solid #1a73e8;
+        }
+        
+        .subject-name {
+            font-weight: bold;
+            font-size: 8pt;
+            margin-bottom: 3px;
+        }
+        
+        .subject-stats {
+            font-size: 7pt;
+            color: #5a6c7e;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .trend-indicator {
+            font-size: 7pt;
+            font-weight: bold;
+        }
+        
+        .trend-indicator.improving { color: #0f7b3a; }
+        .trend-indicator.declining { color: #dc3545; }
+        .trend-indicator.stable { color: #ffc107; }
+        
+        /* Grade Distribution */
+        .grade-distribution {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .grade-item {
+            text-align: center;
+            min-width: 50px;
+        }
+        
+        .grade-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        
+        .grade-A { background: #10b981; color: white; }
+        .grade-B { background: #34d399; color: white; }
+        .grade-C { background: #fbbf24; color: #92400e; }
+        .grade-D { background: #f59e0b; color: white; }
+        .grade-E { background: #ef4444; color: white; }
+        .grade-F { background: #dc2626; color: white; }
+        
+        .grade-count {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        /* Level Cards */
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .level-card {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .level-score {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+        
+        .level-name {
+            font-weight: bold;
+            font-size: 8pt;
+            margin-bottom: 3px;
+        }
+        
+        /* Best/Worst Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .best-card {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #0f7b3a;
+        }
+        
+        .worst-card {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ffc107;
+        }
+        
+        .comparison-title {
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .comparison-subject {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .comparison-score {
+            font-size: 16pt;
+            font-weight: bold;
+        }
+        
+        /* Performance Insights */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .insight-card {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px;
+            border-left: 3px solid #1a73e8;
+        }
+        
+        .insight-title {
+            font-weight: bold;
+            font-size: 8pt;
+            margin-bottom: 3px;
+        }
+        
+        .insight-text {
+            font-size: 7pt;
+            color: #5a6c7e;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 7pt;
+            color: #7f8c8d;
+        }
+        
+        /* Section Breaks */
+        .section-break {
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+        
+        /* Responsive */
+        @media print {
+            .stats-grid, .subject-grid, .level-grid, .comparison-grid, .insights-grid {
+                break-inside: avoid;
+            }
+            .data-table {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="school-name">{{ school_info.name|default:"SCHOOL MANAGEMENT SYSTEM" }}</div>
+            <div class="report-title">ACADEMIC PERFORMANCE TREND REPORT</div>
+            <div class="report-subtitle">{{ student.full_name }}</div>
+            {% if school_info.motto %}
+            <div class="school-motto">{{ school_info.motto }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Student Information -->
+        <div class="student-info">
+            <div class="student-name">{{ student.full_name }}</div>
+            <div class="student-details">
+                <span><strong>Registration No:</strong> {{ student.registration_number|default:"Not Assigned" }}</span>
+                <span><strong>Admission Date:</strong> {{ student.admission_date|date:"d M Y" }}</span>
+                <span><strong>Gender:</strong> {{ student.get_gender_display|default:"Not Specified" }}</span>
+                <span><strong>Report Date:</strong> {{ generated_date|date:"d M Y" }}</span>
+            </div>
+        </div>
+        
+        <!-- Overall Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ overall_stats.total_sessions }}</div>
+                <div class="stat-label">Total Exams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ overall_stats.average_score|floatformat:0 }}</div>
+                <div class="stat-label">Avg Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ overall_stats.average_percentage|floatformat:0 }}%</div>
+                <div class="stat-label">Avg Percentage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    {% if overall_stats.best_position %}
+                    #{{ overall_stats.best_position }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </div>
+                <div class="stat-label">Best Rank</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value {% if overall_stats.improvement_rate > 0 %}trend-up{% elif overall_stats.improvement_rate < 0 %}trend-down{% endif %}">
+                    {% if overall_stats.improvement_rate > 0 %}+{% endif %}{{ overall_stats.improvement_rate|floatformat:0 }}%
+                </div>
+                <div class="stat-label">Improvement</div>
+            </div>
+        </div>
+        
+        <!-- Performance Timeline -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i>📊</i> Performance Timeline
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Session</th>
+                        <th>Class</th>
+                        <th>Term</th>
+                        <th>Total Marks</th>
+                        <th>%</th>
+                        <th>Position</th>
+                        <th>vs Class Avg</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in session_data %}
+                    <tr>
+                        <td>{{ data.session.exam_date|date:"d M Y" }}</td>
+                        <td style="text-align: left;">{{ data.session.name|truncatechars:35 }}</td>
+                        <td>{{ data.session.class_level.name }}</td>
+                        <td>{{ data.session.term.get_term_number_display }}</td>
+                        <td><strong>{{ data.metric.total_marks|floatformat:0 }}</strong></td>
+                        <td>
+                            <strong>{{ data.metric.average_marks|floatformat:0 }}%</strong>
+                        </td>
+                        <td>
+                            {% if data.position.class_position %}
+                            #{{ data.position.class_position }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if data.vs_class_avg %}
+                                {% if data.vs_class_avg.is_above %}
+                                <span style="color: #0f7b3a;">▲ +{{ data.vs_class_avg.difference|floatformat:0 }}</span>
+                                {% else %}
+                                <span style="color: #dc3545;">▼ {{ data.vs_class_avg.difference|floatformat:0 }}</span>
+                                {% endif %}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Subject-wise Performance -->
+        <div class="section-break">
+            <div class="chart-title">
+                <i>📚</i> Subject-wise Performance Analysis
+            </div>
+            <div class="subject-grid">
+                {% for subject_name, data in subjects_performance.items %}
+                <div class="subject-card">
+                    <div class="subject-name">{{ subject_name }}</div>
+                    <div class="subject-stats">
+                        <span>Avg: {{ data.average|floatformat:0 }}</span>
+                        <span>{{ data.sessions|length }} exams</span>
+                        <span class="trend-indicator {{ data.trend }}">
+                            {% if data.trend == 'improving' %}↑ Improving
+                            {% elif data.trend == 'declining' %}↓ Declining
+                            {% else %}→ Stable{% endif %}
+                        </span>
+                    </div>
+                    <div style="font-size: 6pt; margin-top: 3px; color: #7f8c8d;">
+                        {% for session_data in data.sessions|slice:":3" %}
+                        {{ session_data.session.exam_date|date:"M Y" }}: {{ session_data.marks|floatformat:0 }}
+                        {% if not forloop.last %} | {% endif %}
+                        {% endfor %}
+                        {% if data.sessions|length > 3 %}
+                        <span> (+{{ data.sessions|length|add:"-3" }} more)</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Performance by Educational Level -->
+        <div class="section-break">
+            <div class="chart-title">
+                <i>🎓</i> Performance by Educational Level
+            </div>
+            <div class="level-grid">
+                {% for level_name, data in level_performance.items %}
+                <div class="level-card">
+                    <div class="level-name">{{ level_name }}</div>
+                    <div class="level-score">{{ data.average_score|floatformat:0 }}</div>
+                    <div style="font-size: 7pt;">
+                        <div>{{ data.session_count }} exam(s)</div>
+                        <div>Best Rank: #{{ data.best_position|default:"—" }}</div>
+                        <div>Range: {{ data.lowest_score|floatformat:0 }} - {{ data.highest_score|floatformat:0 }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Grade Distribution -->
+        <div class="section-break">
+            <div class="chart-title">
+                <i>🏆</i> Grade Distribution
+            </div>
+            <div class="grade-distribution">
+                {% for grade, count in grade_distribution.items %}
+                <div class="grade-item">
+                    <div class="grade-badge grade-{{ grade }}">{{ grade }}</div>
+                    <div class="grade-count">{{ count }}</div>
+                    <div style="font-size: 6pt; color: #7f8c8d;">{{ count|floatformat:0 }}%</div>
+                </div>
+                {% empty %}
+                <p style="text-align: center; color: #7f8c8d;">No grade data available</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Best vs Worst Subject -->
+        {% if best_subject and worst_subject %}
+        <div class="section-break">
+            <div class="comparison-grid">
+                <div class="best-card">
+                    <div class="comparison-title">🏅 STRONGEST SUBJECT</div>
+                    <div class="comparison-subject">{{ best_subject.0 }}</div>
+                    <div class="comparison-score">{{ best_subject.1.average|floatformat:0 }}</div>
+                    <div style="font-size: 7pt; margin-top: 5px;">Average Score</div>
+                    <div style="font-size: 6pt; color: #5a6c7e; margin-top: 3px;">
+                        {{ best_subject.1.sessions|length }} exam sessions
+                    </div>
+                </div>
+                <div class="worst-card">
+                    <div class="comparison-title">🎯 AREA FOR IMPROVEMENT</div>
+                    <div class="comparison-subject">{{ worst_subject.0 }}</div>
+                    <div class="comparison-score">{{ worst_subject.1.average|floatformat:0 }}</div>
+                    <div style="font-size: 7pt; margin-top: 5px;">Average Score</div>
+                    <div style="font-size: 6pt; color: #5a6c7e; margin-top: 3px;">
+                        {{ worst_subject.1.sessions|length }} exam sessions
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Performance Insights -->
+        <div class="section-break">
+            <div class="chart-title">
+                <i>💡</i> Performance Insights
+            </div>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-title">🏆 Best Performance</div>
+                    <div class="insight-text">
+                        {% if session_data %}
+                            {% with best=session_data|dictsortreversed:"metric.total_marks"|first %}
+                                <strong>{{ best.session.name }}</strong><br>
+                                {{ best.session.exam_date|date:"d M Y" }} - 
+                                {{ best.metric.total_marks|floatformat:0 }} marks
+                            {% endwith %}
+                        {% else %}
+                            No data available
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-title">📈 Most Improved</div>
+                    <div class="insight-text">
+                        {% if overall_stats.improvement_rate > 0 %}
+                            {{ overall_stats.improvement_rate|floatformat:0 }}% improvement<br>
+                            from first to last exam
+                        {% else %}
+                            Consistent performance across sessions
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-title">⭐ Strongest Subject</div>
+                    <div class="insight-text">
+                        {% if best_subject %}
+                            <strong>{{ best_subject.0 }}</strong><br>
+                            Avg: {{ best_subject.1.average|floatformat:0 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-title">⚠️ Needs Attention</div>
+                    <div class="insight-text">
+                        {% if worst_subject %}
+                            <strong>{{ worst_subject.0 }}</strong><br>
+                            Avg: {{ worst_subject.1.average|floatformat:0 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>This report is computer-generated and is valid without a signature.</p>
+            <p>© {{ generated_date|date:"Y" }} {{ school_info.name }} | Generated: {{ generated_date|date:"d M Y H:i" }}</p>
+            <p>Contact: {{ school_info.phone }} | {{ school_info.email }}</p>
+        </div>
+    </div>
+</body>
+</html>

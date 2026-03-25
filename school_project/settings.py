@@ -10,8 +10,15 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me')
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
+# School Identification
 SCHOOL_CODE = config('SCHOOL_CODE', default='S2348')
-SCHOOL_NAME = config('SCHOOL_NAME', default='School Management System')
+SCHOOL_NAME = config('SCHOOL_NAME', default='Raudhwa Modern Islamic School')
+SCHOOL_ADDRESS = config('SCHOOL_ADDRESS', default='123 School Street, City, Country')
+SCHOOL_PHONE = config('SCHOOL_PHONE', default='+255 123 456 789')
+SCHOOL_EMAIL = config('SCHOOL_EMAIL', default='info@raudhwamodern.ac.tz')
+SCHOOL_MOTTO = config('SCHOOL_MOTTO', default='Education for Excellence')
+SCHOOL_REGISTRATION_NUMBER = config('SCHOOL_REGISTRATION_NUMBER', default='S1234')
+SCHOOL_LOGO = config('SCHOOL_LOGO', default='school/logo.png')  # Optional
 
 # ─── Applications ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [

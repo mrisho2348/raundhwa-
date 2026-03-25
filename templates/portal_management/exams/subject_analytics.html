@@ -1,0 +1,1323 @@
+<!-- templates/portal_management/exams/subject_analytics.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Subject Analytics — {{ subject.name }} | {{ session.name }}{% endblock %}
+{% block page_title %}Subject Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       SUBJECT ANALYTICS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        --indigo: #6610f2;
+        --indigo-light: #e7e3fc;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-item {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-item label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--purple));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Analytics Cards */
+    .analytics-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header-custom h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header-custom h3 i {
+        color: var(--primary);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Tables */
+    .table-analytics {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .table-analytics th {
+        background: var(--gray-50);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--gray-600);
+        border-bottom: 2px solid var(--gray-200);
+        padding: 0.75rem;
+    }
+
+    .table-analytics td {
+        padding: 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table-analytics tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Progress Bars */
+    .progress-custom {
+        height: 8px;
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+    }
+
+    .progress-bar-custom {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.3s ease;
+    }
+
+    .progress-bar-custom.grade-a { background: #10b981; }
+    .progress-bar-custom.grade-b { background: #34d399; }
+    .progress-bar-custom.grade-c { background: #fbbf24; }
+    .progress-bar-custom.grade-d { background: #f59e0b; }
+    .progress-bar-custom.grade-e { background: #ef4444; }
+    .progress-bar-custom.grade-f { background: #dc2626; }
+
+    /* Matrix Table */
+    .matrix-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .matrix-table th,
+    .matrix-table td {
+        padding: 0.75rem;
+        text-align: center;
+        border: 1px solid var(--gray-200);
+    }
+
+    .matrix-table th {
+        background: var(--gray-100);
+        font-weight: 600;
+    }
+
+    .matrix-table td.highlight {
+        background: var(--primary-light);
+        font-weight: 600;
+    }
+
+    /* Badges */
+    .badge-grade {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-align: center;
+        min-width: 40px;
+    }
+
+    .badge-grade.A { background: #d1fae5; color: #065f46; }
+    .badge-grade.B { background: #d9f99d; color: #3f6212; }
+    .badge-grade.C { background: #fef3c7; color: #92400e; }
+    .badge-grade.D { background: #fed7aa; color: #9a3412; }
+    .badge-grade.E { background: #ffedd5; color: #c2410c; }
+    .badge-grade.F { background: #fee2e2; color: #991b1b; }
+
+    /* Score Range Card */
+    .range-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .range-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    /* Student List */
+    .student-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .student-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .student-item:hover {
+        background: var(--gray-100);
+    }
+
+    .student-name {
+        font-weight: 500;
+    }
+
+    .student-score {
+        font-family: monospace;
+        font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn-export {
+        background: var(--success);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-export:hover {
+        background: #0f7b3a;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-back {
+        background: var(--gray-200);
+        color: var(--gray-700);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--gray-300);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .filter-group {
+            flex-direction: column;
+        }
+        
+        .filter-item {
+            width: 100%;
+        }
+        
+        .card-header-custom {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .table-analytics {
+            font-size: 0.75rem;
+        }
+        
+        .table-analytics th,
+        .table-analytics td {
+            padding: 0.5rem;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .no-print {
+            display: none;
+        }
+        
+        .analytics-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        .stats-grid {
+            break-inside: avoid;
+        }
+        
+        .page-header {
+            background: var(--gray-100);
+            color: black;
+        }
+    }
+
+    /* Tabs */
+    .analytics-tabs {
+        display: flex;
+        gap: 0.5rem;
+        border-bottom: 2px solid var(--gray-200);
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .analytics-tab {
+        padding: 0.75rem 1.25rem;
+        background: none;
+        border: none;
+        font-weight: 500;
+        color: var(--gray-600);
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .analytics-tab:hover {
+        color: var(--primary);
+    }
+
+    .analytics-tab.active {
+        color: var(--primary);
+    }
+
+    .analytics-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--primary);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Score Range Slider */
+    .range-slider {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .range-input {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .range-input input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1>
+                <i class="bi bi-graph-up me-2"></i>
+                Subject Analytics
+            </h1>
+            <p class="mb-0">{{ subject.name }} ({{ subject.code }}) - {{ session.name }}</p>
+        </div>
+        <div class="d-flex gap-2 no-print">
+            <a href="{% url 'management:subject_results_summary' session.pk subject.pk %}" 
+               class="btn-back">
+                <i class="bi bi-table"></i>
+                View Results
+            </a>
+            <a href="{% url 'management:subject_analytics_export' session.pk subject.pk %}" 
+               class="btn-export">
+                <i class="bi bi-file-pdf"></i>
+                Export PDF
+            </a>
+            <a href="{% url 'management:exam_paper_list' session.pk %}" 
+               class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                Back to Papers
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar no-print">
+    <form method="get" class="filter-group">
+          <!-- Top N Performers - Simple input field -->
+        <div class="filter-item">
+            <label>Top N Performers</label>
+            <input type="number" name="top_n" class="form-control form-control-sm" 
+                   placeholder="Enter number (e.g., 10)" value="{{ top_n|default:10 }}" 
+                   min="1" max="500" step="1">         
+        </div>
+        
+        <!-- Bottom N Performers - Simple input field -->
+        <div class="filter-item">
+            <label>Bottom N Performers</label>
+            <input type="number" name="bottom_n" class="form-control form-control-sm" 
+                   placeholder="Enter number (e.g., 10)" value="{{ bottom_n|default:10 }}" 
+                   min="1" max="500" step="1">           
+        </div>
+        <div class="filter-item">
+            <label>Score Range (%)</label>
+            <div class="range-slider">
+                <input type="number" name="range_min" class="form-control form-control-sm" 
+                       placeholder="Min %" value="{{ range_min|default:'' }}" step="1">
+                <span>-</span>
+                <input type="number" name="range_max" class="form-control form-control-sm" 
+                       placeholder="Max %" value="{{ range_max|default:'' }}" step="1">
+            </div>
+        </div>
+        <div class="filter-item">
+            <label>Filter by Grade</label>
+            <select name="grade" class="form-select form-select-sm">
+                <option value="">All Grades</option>
+                {% for grade in matrix_grades %}
+                <option value="{{ grade }}" {% if grade_filter == grade %}selected{% endif %}>{{ grade }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-item">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+                <i class="bi bi-funnel"></i> Apply Filters
+            </button>
+        </div>
+        {% if range_min or range_max or grade_filter %}
+        <div class="filter-item">
+            <label>&nbsp;</label>
+            <a href="{% url 'management:subject_analytics' session.pk subject.pk %}" 
+               class="btn btn-secondary btn-sm w-100">
+                <i class="bi bi-x-circle"></i> Clear Filters
+            </a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--info-light); color: var(--info);">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_students }}</div>
+        <div class="stat-label">Total Students</div>
+        <div class="small text-muted mt-1">Enrolled in session</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--success-light); color: var(--success);">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ stats.students_with_scores }}</div>
+        <div class="stat-label">With Scores</div>
+        <div class="small text-muted mt-1">{{ stats.completion_rate|floatformat:1 }}% completion</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--warning-light); color: var(--warning);">
+            <i class="bi bi-star"></i>
+        </div>
+        <div class="stat-value">{{ stats.mean|floatformat:1 }}</div>
+        <div class="stat-label">Average Score</div>
+        <div class="small text-muted mt-1">out of {{ stats.total_max_possible|floatformat:0 }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--danger-light); color: var(--danger);">
+            <i class="bi bi-graph-up"></i>
+        </div>
+        <div class="stat-value">{{ stats.mean_percentage|floatformat:1 }}%</div>
+        <div class="stat-label">Average Percentage</div>
+        <div class="small text-muted mt-1">Mean: {{ stats.mean|floatformat:1 }} / {{ stats.total_max_possible|floatformat:0 }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--purple-light); color: var(--purple);">
+            <i class="bi bi-trophy"></i>
+        </div>
+        <div class="stat-value">{{ stats.highest|floatformat:1 }}</div>
+        <div class="stat-label">Highest Score</div>
+        <div class="small text-muted mt-1">Best performance</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gray-200); color: var(--gray-600);">
+            <i class="bi bi-arrow-down"></i>
+        </div>
+        <div class="stat-value">{{ stats.lowest|floatformat:1 }}</div>
+        <div class="stat-label">Lowest Score</div>
+        <div class="small text-muted mt-1">Needs improvement</div>
+    </div>
+</div>
+
+<!-- Analytics Tabs -->
+<div class="analytics-tabs no-print">
+    <button class="analytics-tab active" data-tab="overview">Overview</button>
+    <button class="analytics-tab" data-tab="performance">Performance Analysis</button>
+    <button class="analytics-tab" data-tab="students">Student List</button>
+    <button class="analytics-tab" data-tab="papers">Paper Analysis</button>
+    <button class="analytics-tab" data-tab="demographics">Demographics</button>
+</div>
+
+<!-- ============================================
+     TAB 1: OVERVIEW
+     ============================================ -->
+<div id="tab-overview" class="tab-content active">
+    <!-- In the Grade Distribution table, add a passing indicator -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-pie-chart"></i> Grade Distribution</h3>
+            <span class="badge bg-secondary">{{ stats.students_with_scores }} students</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table-analytics table">
+                    <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>Description</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                            <th>Distribution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grade in grade_distribution %}
+                        <tr>
+                            <td>
+                                <span class="badge-grade {{ grade.grade }}">
+                                    {{ grade.grade }}
+                                </span>
+                            </td>
+                            <td>{{ grade.description }}</td>
+                            <td><strong>{{ grade.count }}</strong> student{{ grade.count|pluralize }}</td>
+                            <td>{{ grade.percentage|floatformat:1 }}%</td>
+                            <td>
+                                {% if grade.is_passing %}
+                                <span class="badge bg-success">Passing</span>
+                                {% else %}
+                                <span class="badge bg-danger">Failing</span>
+                                {% endif %}
+                            </td>
+                            <td style="width: 35%;">
+                                <div class="progress-custom">
+                                    <div class="progress-bar-custom grade-{{ grade.grade|lower }}" 
+                                        style="width: {{ grade.percentage }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No grade data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+        
+    <!-- Score Range Distribution -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-bar-chart"></i> Score Range Distribution</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for range in score_ranges %}
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="range-card">
+                        <div class="range-header">
+                            <span>{{ range.label }}</span>
+                            <span class="badge bg-primary">{{ range.count }}</span>
+                        </div>
+                        <div class="progress-custom mb-2">
+                            <div class="progress-bar-custom" style="width: {{ range.percentage }}%; background: var(--primary);"></div>
+                        </div>
+                        <div class="small text-muted">{{ range.percentage|floatformat:1 }}% of students</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistical Summary -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-calculator"></i> Statistical Summary</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Mean (Average)</div>
+                        <div class="h4 mb-0">{{ stats.mean|floatformat:1 }} / {{ stats.total_max_possible|floatformat:0 }}</div>
+                        <div class="small">{{ stats.mean_percentage|floatformat:1 }}%</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Median</div>
+                        <div class="h4 mb-0">{{ stats.median|floatformat:1 }} / {{ stats.total_max_possible|floatformat:0 }}</div>
+                        <div class="small">{{ stats.median_percentage|floatformat:1 }}%</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Mode</div>
+                        <div class="h4 mb-0">{{ stats.mode|floatformat:1 }} / {{ stats.total_max_possible|floatformat:0 }}</div>
+                        <div class="small">Most frequent score</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Standard Deviation</div>
+                        <div class="h4 mb-0">{{ stats.std_dev|floatformat:1 }}</div>
+                        <div class="small">Score variability</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Range</div>
+                        <div class="h4 mb-0">{{ stats.highest|floatformat:0 }} - {{ stats.lowest|floatformat:0 }}</div>
+                        <div class="small">Highest to lowest</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Completion Rate</div>
+                        <div class="h4 mb-0">{{ stats.completion_rate|floatformat:1 }}%</div>
+                        <div class="small">{{ stats.students_with_scores }} / {{ stats.total_students }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+   <!-- In the Pass/Fail Analysis section, update to show passing grades -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-check2-circle"></i> Pass/Fail Analysis</h3>
+            <div class="small text-muted">
+                Passing grades: {{ passing_grades|join:", " }} | 
+                Failing grades: {{ failing_grades|join:", " }}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="text-center p-4">
+                        <div class="display-4 text-success">{{ pass_fail_stats.passed_count }}</div>
+                        <div class="text-muted">Students Passed</div>
+                        <div class="h5">{{ pass_fail_stats.pass_rate|floatformat:1 }}%</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-center p-4">
+                        <div class="display-4 text-danger">{{ pass_fail_stats.failed_count }}</div>
+                        <div class="text-muted">Students Failed</div>
+                        <div class="h5">{{ pass_fail_stats.fail_rate|floatformat:1 }}%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-custom" style="height: 30px;">
+                <div class="progress-bar-custom bg-success" style="width: {{ pass_fail_stats.pass_rate }}%;">
+                    {{ pass_fail_stats.pass_rate|floatformat:1 }}%
+                </div>
+                <div class="progress-bar-custom bg-danger" style="width: {{ pass_fail_stats.fail_rate }}%;">
+                    {{ pass_fail_stats.fail_rate|floatformat:1 }}%
+                </div>
+            </div>
+            <div class="mt-3 small text-muted text-center">
+                <i class="bi bi-info-circle"></i> 
+                Passing grades based on {{ session.class_level.educational_level.name }} grading scale: 
+                Grades <strong>{{ passing_grades|join:", " }}</strong> are passing, 
+                grades <strong>{{ failing_grades|join:", " }}</strong> are failing.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     TAB 2: PERFORMANCE ANALYSIS
+     ============================================ -->
+<div id="tab-performance" class="tab-content">
+    <!-- Top Performers -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-trophy-fill"></i> Top {{ top_n }} Performers</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table-analytics table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>Total Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in top_performers %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ result.student.full_name }}</td>
+                            <td><strong>{{ result.total_marks|floatformat:1 }}</strong> / {{ total_max_possible|floatformat:0 }}</td>
+                            <td>{{ result.percentage|floatformat:1 }}%</td>
+                            <td><span class="badge-grade {{ result.grade }}">{{ result.grade }}</span></td>
+                            <td>{{ result.points|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Performers -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-arrow-down-circle"></i> Bottom {{ bottom_n }} Performers</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table-analytics table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>Total Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in bottom_performers %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ result.student.full_name }}</td>
+                            <td><strong>{{ result.total_marks|floatformat:1 }}</strong> / {{ total_max_possible|floatformat:0 }}</td>
+                            <td>{{ result.percentage|floatformat:1 }}%</td>
+                            <td><span class="badge-grade {{ result.grade }}">{{ result.grade }}</span></td>
+                            <td>{{ result.points|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Consistent vs Inconsistent Performers -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="analytics-card">
+                <div class="card-header-custom">
+                    <h3><i class="bi bi-check-lg"></i> Most Consistent Performers</h3>
+                    <small class="text-muted">Lowest variance across papers</small>
+                </div>
+                <div class="card-body">
+                    <div class="student-list">
+                        {% for performer in consistent_performers %}
+                        <div class="student-item">
+                            <div>
+                                <div class="student-name">{{ performer.student.full_name }}</div>
+                                <div class="small text-muted">Avg: {{ performer.average|floatformat:1 }} | Variance: {{ performer.variance|floatformat:1 }}</div>
+                            </div>
+                            <div class="student-score text-success">✓ Consistent</div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3">No data available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="analytics-card">
+                <div class="card-header-custom">
+                    <h3><i class="bi bi-exclamation-triangle"></i> Most Inconsistent Performers</h3>
+                    <small class="text-muted">Highest variance across papers</small>
+                </div>
+                <div class="card-body">
+                    <div class="student-list">
+                        {% for performer in inconsistent_performers %}
+                        <div class="student-item">
+                            <div>
+                                <div class="student-name">{{ performer.student.full_name }}</div>
+                                <div class="small text-muted">Avg: {{ performer.average|floatformat:1 }} | Variance: {{ performer.variance|floatformat:1 }}</div>
+                            </div>
+                            <div class="student-score text-warning">⚠ Variable</div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3">No data available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     TAB 3: STUDENT LIST
+     ============================================ -->
+<div id="tab-students" class="tab-content">
+    <!-- Filtered Students -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-people"></i> Student Results</h3>
+            <div>
+                <span class="badge bg-primary">{{ filtered_results|length }} students</span>
+                {% if range_min or range_max or grade_filter %}
+                <span class="badge bg-info">Filtered</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table-analytics table" id="studentTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Reg No</th>
+                            <th>Student Name</th>
+                            <th>Gender</th>
+                            <th>Total Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                            <th>Points</th>
+                            <th>Papers Done</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in filtered_results %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ result.student.registration_number|default:"-" }}</td>
+                            <td>{{ result.student.full_name }}</td>
+                            <td>
+                                {% if result.student.gender == 'male' %}
+                                <i class="bi bi-gender-male text-primary"></i> Male
+                                {% elif result.student.gender == 'female' %}
+                                <i class="bi bi-gender-female text-danger"></i> Female
+                                {% else %}
+                                <i class="bi bi-gender-ambiguous"></i> Other
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ result.total_marks|floatformat:1 }}</strong> / {{ total_max_possible|floatformat:0 }}</td>
+                            <td>{{ result.percentage|floatformat:1 }}%</td>
+                            <td><span class="badge-grade {{ result.grade }}">{{ result.grade }}</span></td>
+                            <td>{{ result.points|default:"-" }}</td>
+                            <td>{{ result.papers_completed }}/{{ result.total_papers }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                No students match the selected filters
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     TAB 4: PAPER ANALYSIS
+     ============================================ -->
+<div id="tab-papers" class="tab-content">
+    {% for paper_stat in paper_statistics %}
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3>
+                <i class="bi bi-file-text"></i>
+                Paper {{ paper_stat.paper.paper_number }} - {{ paper_stat.paper.paper_name|default:"Main Paper" }}
+            </h3>
+            <span class="badge bg-secondary">Max: {{ paper_stat.max_marks|floatformat:0 }}</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <div class="small text-muted">Students with Scores</div>
+                        <div class="h3 mb-0">{{ paper_stat.students_with_scores }}</div>
+                        <div class="small">{{ paper_stat.students_with_scores|floatformat:0 }} / {{ stats.total_students }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <div class="small text-muted">Average Score</div>
+                        <div class="h3 mb-0">{{ paper_stat.mean|floatformat:1 }}</div>
+                        <div class="small">/ {{ paper_stat.max_marks|floatformat:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <div class="small text-muted">Highest / Lowest</div>
+                        <div class="h5 mb-0">{{ paper_stat.highest|floatformat:0 }} / {{ paper_stat.lowest|floatformat:0 }}</div>
+                        <div class="small">Range: {{ paper_stat.highest|floatformat:0|add:"-"|add:paper_stat.lowest|floatformat:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <div class="small text-muted">Pass Rate</div>
+                        <div class="h3 mb-0">{{ paper_stat.pass_rate|floatformat:1 }}%</div>
+                        <div class="small">Students passing</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="small text-muted mb-2">Score Distribution ({{ paper_stat.students_with_scores }} students)</div>
+                <div class="progress-custom" style="height: 20px;">
+                    {% for bin in score_bins %}
+                    <div class="progress-bar-custom" style="width: {{ bin.percentage }}%; background: {% cycle '#1a73e8' '#34a853' '#fbbc04' '#ea4335' '#8e24aa' '#00acc1' '#f06292' '#ffb74d' '#4fc3f7' '#81c784' %};" 
+                         title="{{ bin.min|floatformat:0 }}-{{ bin.max|floatformat:0 }}: {{ bin.count }} students">
+                        {% if bin.percentage > 8 %}{{ bin.min|floatformat:0 }}{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="small text-muted mt-2">Score ranges (low → high)</div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="analytics-card">
+        <div class="card-body text-center text-muted py-5">
+            <i class="bi bi-file-earmark-x display-4 d-block mb-2"></i>
+            No paper data available
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ============================================
+     TAB 5: DEMOGRAPHICS
+     ============================================ -->
+<div id="tab-demographics" class="tab-content">
+    <!-- Grade × Gender Matrix -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-grid-3x3"></i> Grade × Gender Cross-Analysis</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Gender</th>
+                            {% for grade in matrix_grades %}
+                            <th>{{ grade }}</th>
+                            {% endfor %}
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gender, grades in grade_gender_matrix.items %}
+                        <tr>
+                            <td class="fw-bold">{{ gender }}</td>
+                            {% for grade in matrix_grades %}
+                            <td>
+                                {{ grades|get_item:grade|default:0 }}
+                            </td>
+                            {% endfor %}
+                            <td class="highlight">{{ gender_totals|get_item:gender|default:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr style="background: var(--gray-100);">
+                            <td class="fw-bold">Total</td>
+                            {% for grade in matrix_grades %}
+                            <td class="fw-bold">{{ grade_totals|get_item:grade|default:0 }}</td>
+                            {% endfor %}
+                            <td class="fw-bold highlight">{{ grand_total }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pass/Fail by Gender -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-gender-ambiguous"></i> Pass/Fail by Gender</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for gender, stats in pass_fail_gender.items %}
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="fw-bold mb-2">{{ gender }}</div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Passed:</span>
+                            <span class="text-success fw-bold">{{ stats.passed }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Failed:</span>
+                            <span class="text-danger fw-bold">{{ stats.failed }}</span>
+                        </div>
+                         <div class="progress-custom">
+                            {% with total=stats.passed|add:stats.failed %}
+                            <div class="progress-bar-custom bg-success" style="width: {% if total > 0 %}{{ stats.passed|divisibleby:total|floatformat:0 }}{% else %}0{% endif %}%"></div>
+                            <div class="progress-bar-custom bg-danger" style="width: {% if total > 0 %}{{ stats.failed|divisibleby:total|floatformat:0 }}{% else %}0{% endif %}%"></div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gender Performance Comparison -->
+    <div class="analytics-card">
+        <div class="card-header-custom">
+            <h3><i class="bi bi-bar-chart-steps"></i> Performance by Gender</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Male Average</div>
+                        <div class="h3">{{ gender_performance.Male.mean_percentage|floatformat:1 }}%</div>
+                        <div class="small">{{ gender_performance.Male.average|floatformat:1 }} / {{ total_max_possible|floatformat:0 }}</div>
+                        <div class="small text-muted mt-2">N = {{ gender_performance.Male.count }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small text-muted">Female Average</div>
+                        <div class="h3">{{ gender_performance.Female.mean_percentage|floatformat:1 }}%</div>
+                        <div class="small">{{ gender_performance.Female.average|floatformat:1 }} / {{ total_max_possible|floatformat:0 }}</div>
+                        <div class="small text-muted mt-2">N = {{ gender_performance.Female.count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ============================================
+    // TAB SWITCHING
+    // ============================================
+    document.querySelectorAll('.analytics-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // Update active tab
+            document.querySelectorAll('.analytics-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            // Save to localStorage
+            localStorage.setItem('activeAnalyticsTab', tabId);
+        });
+    });
+    
+    // Restore active tab from localStorage
+    const savedTab = localStorage.getItem('activeAnalyticsTab');
+    if (savedTab) {
+        const tabButton = document.querySelector(`.analytics-tab[data-tab="${savedTab}"]`);
+        if (tabButton) {
+            tabButton.click();
+        }
+    }
+    
+    // ============================================
+    // STUDENT TABLE SEARCH
+    // ============================================
+    const searchInput = document.createElement('div');
+    searchInput.className = 'mb-3';
+    searchInput.innerHTML = `
+        <input type="text" id="studentSearch" class="form-control" placeholder="Search students by name or registration number...">
+    `;
+    
+    const studentTable = document.getElementById('studentTable');
+    if (studentTable) {
+        const cardBody = document.querySelector('#tab-students .card-body');
+        if (cardBody) {
+            cardBody.insertBefore(searchInput, cardBody.firstChild);
+            
+            document.getElementById('studentSearch').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = studentTable.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    }
+    
+
+    
+    const headerActions = document.querySelector('.page-header .d-flex');
+    if (headerActions) {
+        headerActions.appendChild(printBtn);
+    }
+    
+    // ============================================
+    // TOOLTIPS
+    // ============================================
+    document.querySelectorAll('[title]').forEach(el => {
+        el.addEventListener('mouseenter', function(e) {
+            // Simple tooltip implementation
+            const title = this.getAttribute('title');
+            if (!title) return;
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'position-fixed bg-dark text-white small p-2 rounded';
+            tooltip.style.zIndex = '9999';
+            tooltip.style.pointerEvents = 'none';
+            tooltip.textContent = title;
+            document.body.appendChild(tooltip);
+            
+            const updatePosition = (e) => {
+                tooltip.style.top = (e.pageY + 10) + 'px';
+                tooltip.style.left = (e.pageX + 10) + 'px';
+            };
+            
+            updatePosition(e);
+            
+            this.addEventListener('mousemove', updatePosition);
+            
+            this.addEventListener('mouseleave', function() {
+                tooltip.remove();
+                this.removeEventListener('mousemove', updatePosition);
+            }, { once: true });
+        });
+    });
+</script>
+{% endblock %}

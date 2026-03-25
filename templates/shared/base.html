@@ -21,6 +21,9 @@
     {% block extra_css %}{% endblock %}
 
     <style>
+        /* ============================================
+           CSS VARIABLES & RESET
+        ============================================ */
         :root {
             --portal-primary: {% block portal_primary %}#0d6efd{% endblock %};
             --portal-sidebar-bg: {% block portal_sidebar_bg %}#1a1a2e{% endblock %};
@@ -44,39 +47,35 @@
             min-height: 100vh;
         }
 
-        /* ═══════════════════════════════════════════
-           SIDEBAR — Desktop First
-        ═══════════════════════════════════════════ */
+        /* ============================================
+           SIDEBAR - MAIN CONTAINER
+           FIXED HEIGHT FOR DESKTOP SCROLLING
+        ============================================ */
         #sidebar {
             width: var(--sidebar-width);
-            min-height: 100vh;
+            height: 100vh; /* Fixed height instead of min-height */
             background: var(--portal-sidebar-bg);
             position: fixed;
             top: 0;
             left: 0;
             z-index: 1040;
-            overflow-x: hidden;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
             display: flex;
             flex-direction: column;
-            transition: width 0.3s cubic-bezier(0.4,0,0.2,1),
-                        transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             will-change: transform, width;
+            overflow: hidden; /* Hide overflow on main container */
         }
 
-        #sidebar::-webkit-scrollbar { width: 4px; }
-        #sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-        #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        #sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-
-        /* ── Sidebar Brand ── */
+        /* ============================================
+           SIDEBAR BRAND (FIXED AT TOP)
+        ============================================ */
         #sidebar .sidebar-brand {
             padding: 1.1rem 1rem;
             color: #fff;
             font-weight: 700;
             font-size: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             white-space: nowrap;
             overflow: hidden;
             display: flex;
@@ -94,19 +93,216 @@
             transition: opacity 0.2s ease, width 0.2s ease;
         }
 
-        /* ── Sidebar Nav wrapper ── */
+        /* ============================================
+           SIDEBAR NAVIGATION WRAPPER (SCROLLABLE AREA)
+           THIS IS THE KEY FIX - ENSURE IT TAKES REMAINING SPACE AND SCROLLS
+        ============================================ */
         .sidebar-nav-wrapper {
-            flex: 1;
+            flex: 1 1 auto; /* Take remaining space */
             overflow-y: auto;
             overflow-x: hidden;
             padding: 0.5rem 0 1rem;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.2) transparent;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            min-height: 0; /* CRITICAL: Allows flex child to shrink below content height */
         }
 
-        /* ═══════════════════════════════════════════
+        /* Custom scrollbar styling */
+        .sidebar-nav-wrapper::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav-wrapper::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .sidebar-nav-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .sidebar-nav-wrapper::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ============================================
+           NAVIGATION SECTIONS
+        ============================================ */
+        .nav-section {
+            margin-bottom: 0.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border-radius: 10px;
+            margin: 0.15rem 0.6rem;
+            user-select: none;
+            transition: background 0.2s ease, color 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .nav-section-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .nav-section-header > i:first-child {
+            font-size: 1rem;
+            min-width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-section-header .section-label {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .section-toggle {
+            font-size: 0.75rem;
+            transition: transform 0.3s ease;
+            opacity: 0.6;
+            flex-shrink: 0;
+        }
+
+        /* Section collapse states */
+        .nav-section:not(.active) .section-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .nav-section.active .section-toggle {
+            transform: rotate(0deg);
+        }
+
+        .nav-section-content {
+            display: none;
+            overflow: hidden;
+        }
+
+        .nav-section.active .nav-section-content {
+            display: block;
+            animation: slideDown 0.25s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================
+           NAVIGATION LINKS
+        ============================================ */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.55rem 1rem 0.55rem 2.6rem;
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 0.1rem 0.6rem;
+            font-size: 0.875rem;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .nav-link i {
+            font-size: 1rem;
+            min-width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-link .link-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, rgba(26, 115, 232, 0.25), rgba(26, 115, 232, 0.08));
+            color: #5b9cf6;
+            border-left: 3px solid #1a73e8;
+        }
+
+        .nav-link.active i {
+            color: #5b9cf6;
+        }
+
+        /* ============================================
+           BADGES & COUNTERS
+        ============================================ */
+        .nav-badge {
+            font-size: 0.68rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .nav-badge.active-badge {
+            background: #2ecc71;
+            color: #fff;
+        }
+
+        .nav-badge.success-badge {
+            background: #27ae60;
+            color: #fff;
+        }
+
+        .nav-badge.info-badge {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .nav-badge.warning-badge {
+            background: #f39c12;
+            color: #212529;
+        }
+
+        .nav-counter {
+            background: rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.68rem;
+            padding: 0.12rem 0.4rem;
+            border-radius: 20px;
+            min-width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* ============================================
            DESKTOP COLLAPSED STATE
-        ═══════════════════════════════════════════ */
+        ============================================ */
         #sidebar.collapsed {
             width: var(--sidebar-collapsed-width);
         }
@@ -116,11 +312,11 @@
             padding: 1.1rem 0;
         }
 
-        #sidebar.collapsed .brand-text { 
+        #sidebar.collapsed .brand-text {
             display: none;
         }
 
-        /* Hide text/extras in collapsed desktop sidebar */
+        /* Hide text elements in collapsed mode */
         #sidebar.collapsed .nav-section-header .section-label,
         #sidebar.collapsed .nav-section-header .section-toggle,
         #sidebar.collapsed .nav-link .link-text,
@@ -148,30 +344,29 @@
             min-width: unset;
         }
 
-        /* Keep all section contents visible when collapsed on desktop — 
-           but hide sub-link text. Show them as icon-only rows. */
+        /* Keep section content visible on desktop collapsed */
         #sidebar.collapsed .nav-section-content {
             display: block !important;
         }
 
-        /* ═══════════════════════════════════════════
-           MAIN CONTENT
-        ═══════════════════════════════════════════ */
+        /* ============================================
+           MAIN CONTENT AREA
+        ============================================ */
         #main-content {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #main-content.expanded {
             margin-left: var(--sidebar-collapsed-width);
         }
 
-        /* ═══════════════════════════════════════════
+        /* ============================================
            TOPBAR
-        ═══════════════════════════════════════════ */
+        ============================================ */
         #topbar {
             background: #fff;
             border-bottom: 1px solid #e5e7eb;
@@ -183,7 +378,7 @@
             position: sticky;
             top: 0;
             z-index: 1020;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
             flex-shrink: 0;
         }
 
@@ -206,7 +401,9 @@
             flex-shrink: 0;
         }
 
-        #sidebarToggle:hover { background: #f3f4f6; }
+        #sidebarToggle:hover {
+            background: #f3f4f6;
+        }
 
         /* User Dropdown */
         .user-avatar {
@@ -223,14 +420,14 @@
             flex-shrink: 0;
         }
 
-        /* ═══════════════════════════════════════════
+        /* ============================================
            MOBILE OVERLAY
-        ═══════════════════════════════════════════ */
+        ============================================ */
         #mobileSidebarOverlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.55);
+            background: rgba(0, 0, 0, 0.55);
             z-index: 1035;
             backdrop-filter: blur(2px);
             -webkit-backdrop-filter: blur(2px);
@@ -240,28 +437,51 @@
             display: block;
         }
 
-        /* ═══════════════════════════════════════════
-           MOBILE / TABLET ≤ 992px
-        ═══════════════════════════════════════════ */
+        /* ============================================
+           DESKTOP SCROLLING FIX
+           Ensure sidebar has proper height on all devices
+        ============================================ */
+        @media (min-width: 993px) {
+            /* Desktop: fixed height for sidebar */
+            #sidebar {
+                height: 100vh;
+                position: fixed;
+            }
+            
+            /* Ensure the nav wrapper can scroll */
+            .sidebar-nav-wrapper {
+                max-height: calc(100vh - var(--header-height));
+                overflow-y: auto;
+            }
+        }
+
+        /* ============================================
+           MOBILE / TABLET RESPONSIVE (≤992px)
+        ============================================ */
         @media (max-width: 992px) {
             #sidebar {
-                /* On mobile: always full width, but slide off-screen when "closed" */
-                width: var(--sidebar-width) !important; /* override collapsed width */
+                width: var(--sidebar-width) !important;
+                height: 100vh !important; /* Ensure full height on mobile */
                 transform: translateX(-100%);
-                /* Not "collapsed" class-based width — use transform instead */
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            /* When mobile sidebar is OPEN (body has class mobile-sidebar-open) */
             #sidebar.mobile-open {
                 transform: translateX(0);
             }
 
-            /* Main content fills full width on mobile — no margin */
             #main-content {
                 margin-left: 0 !important;
             }
 
-            /* All text visible on mobile (collapsed class has no effect on mobile) */
+            /* Ensure sidebar nav wrapper scrolls properly on mobile */
+            .sidebar-nav-wrapper {
+                max-height: calc(100vh - var(--header-height));
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Show all text on mobile */
             #sidebar.collapsed .nav-section-header .section-label,
             #sidebar.collapsed .nav-section-header .section-toggle,
             #sidebar.collapsed .nav-link .link-text,
@@ -297,9 +517,13 @@
                 padding: 1.1rem 1rem;
             }
 
-            /* Restore section collapse behaviour on mobile (hide content by default) */
-            #sidebar.collapsed .nav-section-content {
-                /* let JS control via .active */
+            /* Larger tap targets for mobile */
+            .nav-section-header {
+                min-height: 44px;
+            }
+
+            .nav-link {
+                min-height: 42px;
             }
 
             #topbar .page-title {
@@ -307,7 +531,22 @@
             }
         }
 
+        /* ============================================
+           EXTRA SMALL DEVICES (≤576px)
+        ============================================ */
         @media (max-width: 576px) {
+            .sidebar-nav-wrapper {
+                max-height: calc(100vh - 55px);
+            }
+
+            .nav-section-header {
+                min-height: 48px;
+            }
+
+            .nav-link {
+                min-height: 46px;
+            }
+
             #topbar .page-title {
                 max-width: 35vw;
                 font-size: 0.85rem;
@@ -322,21 +561,21 @@
             }
         }
 
-        /* ═══════════════════════════════════════════
-           CARDS & COMPONENTS
-        ═══════════════════════════════════════════ */
+        /* ============================================
+           CARDS & UI COMPONENTS
+        ============================================ */
         .stat-card {
             border: none;
             border-radius: 16px;
             padding: 1.25rem;
             background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             transition: all 0.3s ease;
         }
 
         .stat-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card .stat-icon {
@@ -366,17 +605,20 @@
             background: #fff;
             border-radius: 16px;
             padding: 1.25rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .form-card {
             background: #fff;
             border-radius: 16px;
             padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
-        .badge { font-size: 0.72rem; padding: 0.35rem 0.75rem; }
+        .badge {
+            font-size: 0.72rem;
+            padding: 0.35rem 0.75rem;
+        }
 
         .toast-container {
             position: fixed;
@@ -385,15 +627,17 @@
             z-index: 9999;
         }
 
-        .select2-container { width: 100% !important; }
+        .select2-container {
+            width: 100% !important;
+        }
 
-        /* ═══════════════════════════════════════════
+        /* ============================================
            LOADING OVERLAY
-        ═══════════════════════════════════════════ */
+        ============================================ */
         .loading-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(3px);
             display: none;
             justify-content: center;
@@ -401,7 +645,9 @@
             z-index: 9999;
         }
 
-        .loading-overlay.show { display: flex; }
+        .loading-overlay.show {
+            display: flex;
+        }
 
         .loading-spinner {
             width: 46px;
@@ -412,326 +658,359 @@
             animation: spin 0.75s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ═══════════════════════════════════════════
-           PRINT
-        ═══════════════════════════════════════════ */
-        @media print {
-            #sidebar, #topbar, #mobileSidebarOverlay, .btn, .action-buttons { display: none !important; }
-            #main-content { margin-left: 0 !important; }
-            .stat-card, .dt-card, .form-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
-        html { scroll-behavior: smooth; }
+        /* ============================================
+           PRINT STYLES
+        ============================================ */
+        @media print {
+            #sidebar,
+            #topbar,
+            #mobileSidebarOverlay,
+            .btn,
+            .action-buttons {
+                display: none !important;
+            }
+
+            #main-content {
+                margin-left: 0 !important;
+            }
+
+            .stat-card,
+            .dt-card,
+            .form-card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+
+        /* ============================================
+           UTILITIES & MISC
+        ============================================ */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Smooth scroll for sidebar on mobile */
+        @media (max-width: 992px) {
+            .sidebar-nav-wrapper {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile Overlay -->
+    <div id="mobileSidebarOverlay"></div>
 
-<!-- Mobile Overlay -->
-<div id="mobileSidebarOverlay"></div>
-
-<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
-<nav id="sidebar">
-    <div class="sidebar-brand">
-        <i class="bi bi-mortarboard-fill" style="color:var(--portal-primary);font-size:1.4rem;flex-shrink:0;"></i>
-        <span class="brand-text">{{ SCHOOL_NAME }}</span>
-    </div>
-
-    <div class="sidebar-nav-wrapper flex-grow-1">
-        {% block sidebar_menu %}{% endblock %}
-    </div>
-</nav>
-
-<!-- ═══════════════════ MAIN ═══════════════════ -->
-<div id="main-content">
-
-    <!-- Topbar -->
-    <div id="topbar">
-        <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
-            <button class="btn btn-sm" id="sidebarToggle" aria-label="Toggle sidebar">
-                <i class="bi bi-list fs-4"></i>
-            </button>
-            <span class="page-title">{% block page_title %}{% endblock %}</span>
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-mortarboard-fill" style="color:var(--portal-primary);font-size:1.4rem;flex-shrink:0;"></i>
+            <span class="brand-text">{{ SCHOOL_NAME }}</span>
         </div>
-        <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
-            <!-- Online indicator -->
-            <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-md-inline-flex align-items-center gap-1">
-                <i class="bi bi-circle-fill" style="font-size:0.45rem;"></i>
-                <span>Online</span>
-            </span>
-            <!-- User dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2 py-1" 
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="user-avatar">
-                        {{ request.user.get_full_name|first|upper }}{{ request.user.last_name|first|upper }}
-                    </div>
-                    <span class="d-none d-sm-inline user-name-text">
-                        {{ request.user.get_full_name|default:request.user.username }}
-                    </span>
+
+        <div class="sidebar-nav-wrapper flex-grow-1">
+            {% block sidebar_menu %}{% endblock %}
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Topbar -->
+        <div id="topbar">
+            <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                <button class="btn btn-sm" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="bi bi-list fs-4"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                    <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}">
-                        <i class="bi bi-key me-2"></i>Change Password
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="post" action="{% url 'accounts:logout' %}">
-                            {% csrf_token %}
-                            <button class="dropdown-item text-danger" type="submit">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+                <span class="page-title">{% block page_title %}{% endblock %}</span>
             </div>
+            <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
+                <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-md-inline-flex align-items-center gap-1">
+                    <i class="bi bi-circle-fill" style="font-size:0.45rem;"></i>
+                    <span>Online</span>
+                </span>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2 py-1" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">
+                            {{ request.user.get_full_name|first|upper }}{{ request.user.last_name|first|upper }}
+                        </div>
+                        <span class="d-none d-sm-inline user-name-text">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}">
+                            <i class="bi bi-key me-2"></i>Change Password
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button class="dropdown-item text-danger" type="submit">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Django Messages -->
+        {% if messages %}
+        <div class="toast-container">
+            {% for message in messages %}
+            <div class="toast show align-items-center text-bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} border-0"
+                 role="alert" data-bs-autohide="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body">{{ message }}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page Content -->
+        <div class="p-3 p-md-4 flex-grow-1">
+            {% block content %}{% endblock %}
         </div>
     </div>
 
-    <!-- Django Messages -->
-    {% if messages %}
-    <div class="toast-container">
-        {% for message in messages %}
-        <div class="toast show align-items-center text-bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} border-0"
-             role="alert" data-bs-autohide="true" data-bs-delay="4000">
-            <div class="d-flex">
-                <div class="toast-body">{{ message }}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 
-    <!-- Page Content -->
-    <div class="p-3 p-md-4 flex-grow-1">
-        {% block content %}{% endblock %}
-    </div>
-</div>
+    <script>
+    (function () {
+        'use strict';
 
-<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('mobileSidebarOverlay');
 
-<script>
-(function () {
-    'use strict';
-
-    const sidebar      = document.getElementById('sidebar');
-    const mainContent  = document.getElementById('main-content');
-    const toggleBtn    = document.getElementById('sidebarToggle');
-    const overlay      = document.getElementById('mobileSidebarOverlay');
-
-    /* ── Breakpoint helper ── */
-    function isMobile() { return window.innerWidth <= 992; }
-
-    /* ── Restore desktop state ── */
-    function applyDesktopState() {
-        const savedCollapsed = localStorage.getItem('sidebar_desktop_collapsed') === 'true';
-        if (savedCollapsed) {
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('expanded');
-        } else {
-            sidebar.classList.remove('collapsed');
-            mainContent.classList.remove('expanded');
+        function isMobile() {
+            return window.innerWidth <= 992;
         }
-    }
 
-    /* ── Open mobile sidebar ── */
-    function openMobileSidebar() {
-        sidebar.classList.add('mobile-open');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    /* ── Close mobile sidebar ── */
-    function closeMobileSidebar() {
-        sidebar.classList.remove('mobile-open');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    /* ── Toggle desktop sidebar ── */
-    function toggleDesktopSidebar() {
-        const isCollapsed = sidebar.classList.toggle('collapsed');
-        mainContent.classList.toggle('expanded', isCollapsed);
-        localStorage.setItem('sidebar_desktop_collapsed', isCollapsed);
-    }
-
-    /* ── Initialise correct state on load ── */
-    function init() {
-        if (isMobile()) {
-            /* Mobile: sidebar is always off-screen by default (transform: translateX(-100%)) */
-            /* Remove any lingering desktop classes */
-            sidebar.classList.remove('collapsed');
-            mainContent.classList.remove('expanded');
-        } else {
-            applyDesktopState();
-        }
-    }
-
-    init();
-
-    /* ── Toggle button ── */
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function () {
-            if (isMobile()) {
-                if (sidebar.classList.contains('mobile-open')) {
-                    closeMobileSidebar();
-                } else {
-                    openMobileSidebar();
-                }
+        function applyDesktopState() {
+            const savedCollapsed = localStorage.getItem('sidebar_desktop_collapsed') === 'true';
+            if (savedCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
             } else {
-                toggleDesktopSidebar();
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
             }
-        });
-    }
-
-    /* ── Overlay click → close ── */
-    if (overlay) {
-        overlay.addEventListener('click', closeMobileSidebar);
-    }
-
-    /* ── Escape key → close on mobile ── */
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && isMobile() && sidebar.classList.contains('mobile-open')) {
-            closeMobileSidebar();
         }
-    });
 
-    /* ── Touch swipe ── */
-    let touchStartX = 0;
-
-    document.addEventListener('touchstart', function (e) {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    document.addEventListener('touchend', function (e) {
-        if (!isMobile()) return;
-        const delta = e.changedTouches[0].screenX - touchStartX;
-
-        if (delta > 60 && touchStartX < 40) {
-            openMobileSidebar();
-        } else if (delta < -60 && sidebar.classList.contains('mobile-open')) {
-            closeMobileSidebar();
+        function openMobileSidebar() {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
-    }, { passive: true });
 
-    /* ── Resize: switch between mobile & desktop modes cleanly ── */
-    let resizeTimer;
-    window.addEventListener('resize', function () {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function () {
+        function closeMobileSidebar() {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function toggleDesktopSidebar() {
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded', isCollapsed);
+            localStorage.setItem('sidebar_desktop_collapsed', isCollapsed);
+        }
+
+        function init() {
             if (isMobile()) {
-                /* Reset any desktop state — mobile uses transform, not width */
-                closeMobileSidebar();
                 sidebar.classList.remove('collapsed');
                 mainContent.classList.remove('expanded');
             } else {
-                /* Back to desktop — close mobile overlay and apply saved desktop state */
-                closeMobileSidebar();
                 applyDesktopState();
             }
-        }, 150);
-    });
+        }
 
-})();
+        init();
 
-/* ── Auto-dismiss Django messages toasts ── */
-document.querySelectorAll('.toast').forEach(function (el) {
-    new bootstrap.Toast(el).show();
-});
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                if (isMobile()) {
+                    if (sidebar.classList.contains('mobile-open')) {
+                        closeMobileSidebar();
+                    } else {
+                        openMobileSidebar();
+                    }
+                } else {
+                    toggleDesktopSidebar();
+                }
+            });
+        }
 
-/* ── Global Select2 init ── */
-$(document).ready(function () {
-    $('.select2').select2({
-        theme: 'bootstrap-5',
-        width: '100%',
-        dropdownParent: $('body')
-    });
-});
+        if (overlay) {
+            overlay.addEventListener('click', closeMobileSidebar);
+        }
 
-/* ── Global DataTable defaults ── */
-$.extend(true, $.fn.dataTable.defaults, {
-    pageLength: 25,
-    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-    language: {
-        search: '',
-        searchPlaceholder: 'Search...',
-        emptyTable: 'No records found',
-        info: 'Showing _START_ to _END_ of _TOTAL_ records',
-        infoEmpty: 'No records to show',
-        infoFiltered: '(filtered from _MAX_ total)',
-    },
-    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-         "<'row'<'col-sm-12'tr>>" +
-         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-    responsive: true,
-    autoWidth: false,
-});
-
-/* ── Delete confirmation helper ── */
-document.querySelectorAll('.confirm-delete').forEach(function (btn) {
-    btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const url  = this.getAttribute('data-url');
-        const name = this.getAttribute('data-name') || 'this record';
-        Swal.fire({
-            title: 'Delete ' + name + '?',
-            text: 'This action cannot be undone.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            confirmButtonText: 'Yes, delete',
-            cancelButtonText: 'Cancel',
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = url;
-                const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
-                if (csrf) form.appendChild(csrf.cloneNode(true));
-                document.body.appendChild(form);
-                form.submit();
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && isMobile() && sidebar.classList.contains('mobile-open')) {
+                closeMobileSidebar();
             }
         });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', function (e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function (e) {
+            if (!isMobile()) return;
+            const delta = e.changedTouches[0].screenX - touchStartX;
+
+            if (delta > 60 && touchStartX < 40) {
+                openMobileSidebar();
+            } else if (delta < -60 && sidebar.classList.contains('mobile-open')) {
+                closeMobileSidebar();
+            }
+        }, { passive: true });
+
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                if (isMobile()) {
+                    closeMobileSidebar();
+                    sidebar.classList.remove('collapsed');
+                    mainContent.classList.remove('expanded');
+                } else {
+                    closeMobileSidebar();
+                    applyDesktopState();
+                }
+            }, 150);
+        });
+
+        // Scroll active link into view on mobile
+        if (isMobile()) {
+            setTimeout(function () {
+                const activeLink = document.querySelector('.nav-link.active');
+                if (activeLink) {
+                    activeLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 200);
+        }
+        
+        // Ensure sidebar nav wrapper scrolls on desktop if content overflows
+        if (!isMobile()) {
+            const navWrapper = document.querySelector('.sidebar-nav-wrapper');
+            if (navWrapper && navWrapper.scrollHeight > navWrapper.clientHeight) {
+                // Scrollbar will appear automatically due to CSS
+                console.log('Sidebar content exceeds height, scrollbar enabled');
+            }
+        }
+    })();
+
+    // Auto-dismiss Django messages
+    document.querySelectorAll('.toast').forEach(function (el) {
+        new bootstrap.Toast(el).show();
     });
-});
 
-/* ── Loading overlay helpers ── */
-window.showLoading = function () {
-    let el = document.querySelector('.loading-overlay');
-    if (!el) {
-        el = document.createElement('div');
-        el.className = 'loading-overlay';
-        el.innerHTML = '<div class="loading-spinner"></div>';
-        document.body.appendChild(el);
-    }
-    el.classList.add('show');
-};
+    // Global Select2 init
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            dropdownParent: $('body')
+        });
+    });
 
-window.hideLoading = function () {
-    const el = document.querySelector('.loading-overlay');
-    if (el) el.classList.remove('show');
-};
+    // Global DataTable defaults
+    $.extend(true, $.fn.dataTable.defaults, {
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search...',
+            emptyTable: 'No records found',
+            info: 'Showing _START_ to _END_ of _TOTAL_ records',
+            infoEmpty: 'No records to show',
+            infoFiltered: '(filtered from _MAX_ total)',
+        },
+        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        responsive: true,
+        autoWidth: false,
+    });
 
-/* ── Bootstrap Tooltip init ── */
-[].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    .forEach(function (el) { new bootstrap.Tooltip(el); });
-</script>
+    // Delete confirmation helper
+    document.querySelectorAll('.confirm-delete').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url');
+            const name = this.getAttribute('data-name') || 'this record';
+            Swal.fire({
+                title: 'Delete ' + name + '?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (csrf) form.appendChild(csrf.cloneNode(true));
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    });
 
-{% block extra_js %}{% endblock %}
+    // Loading overlay helpers
+    window.showLoading = function () {
+        let el = document.querySelector('.loading-overlay');
+        if (!el) {
+            el = document.createElement('div');
+            el.className = 'loading-overlay';
+            el.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(el);
+        }
+        el.classList.add('show');
+    };
+
+    window.hideLoading = function () {
+        const el = document.querySelector('.loading-overlay');
+        if (el) el.classList.remove('show');
+    };
+
+    // Bootstrap Tooltip init
+    [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        .forEach(function (el) {
+            new bootstrap.Tooltip(el);
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

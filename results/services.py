@@ -35,6 +35,8 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Prefetch, Sum
 
+from core.models import CombinationSubject, DivisionScale, ExamSession, GradingScale, StudentEnrollment, StudentExamMetrics, StudentExamPosition, StudentPaperScore, StudentStreamAssignment, StudentSubjectResult
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +49,7 @@ def _load_grading_scale(education_level):
     Return grading scale as a list of dicts sorted descending by min_mark.
     Loaded once per call and passed around — never re-queried per student.
     """
-    from .models import GradingScale
+
     return list(
         GradingScale.objects
         .filter(education_level=education_level)
@@ -61,7 +63,7 @@ def _load_division_scale(education_level):
     Return division scale as a list of dicts sorted ascending by min_points.
     Only applicable to O_LEVEL and A_LEVEL.
     """
-    from .models import DivisionScale
+  
     return list(
         DivisionScale.objects
         .filter(education_level=education_level)
@@ -107,10 +109,7 @@ def calculate_subject_results(exam_session_id: int) -> dict:
     Returns a summary dict:
         {'created': int, 'updated': int, 'skipped': int}
     """
-    from .models import (
-        ExamSession, StudentPaperScore,
-        StudentSubjectResult, SubjectExamPaper,
-    )
+ 
 
     session = (
         ExamSession.objects
@@ -225,11 +224,7 @@ def calculate_metrics(exam_session_id: int) -> dict:
 
     Returns {'created': int, 'updated': int, 'skipped': int}
     """
-    from .models import (
-        ExamSession, StudentSubjectResult,
-        StudentExamMetrics, CombinationSubject,
-    )
-    from students.models import StudentEnrollment
+
 
     session = (
         ExamSession.objects
@@ -510,8 +505,7 @@ def calculate_positions(exam_session_id: int) -> dict:
 
     Returns {'class_positions': int, 'stream_positions': int}
     """
-    from .models import ExamSession, StudentExamMetrics, StudentExamPosition
-    from students.models import StudentStreamAssignment
+
 
     session = (
         ExamSession.objects

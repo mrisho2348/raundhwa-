@@ -1,0 +1,1151 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ profile.name }} - Details — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ profile.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM SCHOOL PROFILE DETAIL STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Profile Header Card */
+    .profile-header-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .profile-logo-section {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-logo {
+        width: 120px;
+        height: 120px;
+        border-radius: var(--radius-2xl);
+        background: var(--gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        border: 3px solid var(--primary-light);
+    }
+
+    .profile-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-logo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .profile-title-section {
+        flex: 1;
+    }
+
+    .profile-title-section h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-badges {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+    }
+
+    .badge-custom {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .badge-inactive {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .badge-main {
+        background: var(--purple-light);
+        color: var(--purple);
+    }
+
+    .badge-level {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.students { background: var(--info-light); color: var(--info); }
+    .stat-icon.staff { background: var(--success-light); color: var(--success); }
+    .stat-icon.classes { background: var(--warning-light); color: var(--warning); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+    }
+
+    .info-card:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-light);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .info-card-header i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .info-card-header h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        transition: var(--transition);
+    }
+
+    .info-item:hover {
+        background: var(--primary-light);
+        transform: translateX(5px);
+    }
+
+    .info-item i {
+        font-size: 1.2rem;
+        color: var(--primary);
+        margin-top: 0.2rem;
+    }
+
+    .info-item-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--gray-800);
+        word-break: break-word;
+    }
+
+    .info-value a {
+        color: var(--primary);
+        text-decoration: none;
+    }
+
+    .info-value a:hover {
+        text-decoration: underline;
+    }
+
+    /* Vision & Mission Cards */
+    .vision-mission-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .vision-card, .mission-card {
+        background: linear-gradient(135deg, var(--gray-50), white);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .vision-card:hover, .mission-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-light);
+    }
+
+    .vision-card h4, .mission-card h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .vision-card h4 i, .mission-card h4 i {
+        color: var(--primary);
+    }
+
+    .vision-text, .mission-text {
+        color: var(--gray-600);
+        line-height: 1.6;
+        font-style: italic;
+    }
+
+    .motto-card {
+        background: linear-gradient(135deg, var(--primary-light), white);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1.5rem;
+    }
+
+    .motto-text {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--primary);
+        font-style: italic;
+        margin: 0;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--gray-200);
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .profile-header-card {
+            padding: 1.5rem;
+        }
+
+        .profile-logo-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-title-section {
+            text-align: center;
+        }
+
+        .profile-badges {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .vision-mission-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-secondary, .btn-danger {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-building me-2"></i>
+                School Profile Details
+            </h1>
+            <p class="mb-0">View and manage school profile information</p>
+        </div>
+        <div>
+            <a href="{% url 'management:school_profile_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Profiles</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Header Card -->
+<div class="profile-header-card">
+    <div class="profile-logo-section">
+        <div class="profile-logo">
+            {% if profile.logo %}
+                <img src="{{ profile.logo.url }}" alt="{{ profile.name }} logo">
+            {% else %}
+                <div class="profile-logo-placeholder">
+                    <i class="bi bi-building"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="profile-title-section">
+            <h2>{{ profile.name }}</h2>
+            <div class="profile-badges">
+                {% if profile.is_active %}
+                    <span class="badge-custom badge-active">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Active
+                    </span>
+                {% else %}
+                    <span class="badge-custom badge-inactive">
+                        <i class="bi bi-x-circle-fill"></i>
+                        Inactive
+                    </span>
+                {% endif %}
+                
+                {% if not profile.educational_level %}
+                    <span class="badge-custom badge-main">
+                        <i class="bi bi-star-fill"></i>
+                        Main Profile
+                    </span>
+                {% endif %}
+                
+                {% if profile.educational_level %}
+                    <span class="badge-custom badge-level">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        {{ profile.educational_level.name }}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="mt-3">
+                <code class="px-3 py-2 bg-light rounded">{{ profile.code }}</code>
+                <span class="ms-2 text-muted">| Reg: {{ profile.registration_number }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon students">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_students|default:0 }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon staff">
+            <i class="bi bi-person-badge-fill"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_staff|default:0 }}</div>
+        <div class="stat-label">Staff Members</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon classes">
+            <i class="bi bi-book-fill"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_classes|default:0 }}</div>
+        <div class="stat-label">Active Classes</div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <!-- Contact Information -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="bi bi-telephone-fill"></i>
+                <h3>Contact Information</h3>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ profile.address|default:"Not provided" }}</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="bi bi-telephone-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">
+                            {% if profile.phone %}
+                                <a href="tel:{{ profile.phone }}">{{ profile.phone }}</a>
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if profile.alternative_phone %}
+                <div class="info-item">
+                    <i class="bi bi-telephone-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Alternative Phone</div>
+                        <div class="info-value">
+                            <a href="tel:{{ profile.alternative_phone }}">{{ profile.alternative_phone }}</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="info-item">
+                    <i class="bi bi-envelope-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">
+                            {% if profile.email %}
+                                <a href="mailto:{{ profile.email }}">{{ profile.email }}</a>
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if profile.website %}
+                <div class="info-item">
+                    <i class="bi bi-globe"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Website</div>
+                        <div class="info-value">
+                            <a href="{{ profile.website }}" target="_blank" rel="noopener noreferrer">
+                                {{ profile.website|truncatechars:40 }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="bi bi-info-circle-fill"></i>
+                <h3>Additional Information</h3>
+            </div>
+            <div class="info-grid">
+                {% if profile.established_year %}
+                <div class="info-item">
+                    <i class="bi bi-calendar-check-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Established</div>
+                        <div class="info-value">{{ profile.established_year }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="info-item">
+                    <i class="bi bi-calendar-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Created On</div>
+                        <div class="info-value">{{ profile.created_at|date:"F d, Y" }}</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="bi bi-pencil-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Last Updated</div>
+                        <div class="info-value">{{ profile.updated_at|date:"F d, Y" }}</div>
+                    </div>
+                </div>
+                
+                {% if profile.contact_person %}
+                <div class="info-item">
+                    <i class="bi bi-person-fill"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Contact Person</div>
+                        <div class="info-value">{{ profile.contact_person.get_full_name|default:profile.contact_person.username }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <!-- Vision & Mission -->
+        <div class="vision-mission-grid">
+            {% if profile.vision %}
+            <div class="vision-card">
+                <h4>
+                    <i class="bi bi-eye-fill"></i>
+                    Our Vision
+                </h4>
+                <div class="vision-text">
+                    {{ profile.vision|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if profile.mission %}
+            <div class="mission-card">
+                <h4>
+                    <i class="bi bi-bullseye"></i>
+                    Our Mission
+                </h4>
+                <div class="mission-text">
+                    {{ profile.mission|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Motto -->
+        {% if profile.motto %}
+        <div class="motto-card">
+            <div class="motto-text">
+                <i class="bi bi-quote me-2"></i>
+                {{ profile.motto }}
+                <i class="bi bi-quote ms-2"></i>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- System Information -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="bi bi-gear-fill"></i>
+                <h3>System Information</h3>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="bi bi-upc-scan"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Profile ID</div>
+                        <div class="info-value">#{{ profile.pk }}</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="bi bi-code-square"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">School Code</div>
+                        <div class="info-value">{{ profile.code }}</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="bi bi-card-text"></i>
+                    <div class="info-item-content">
+                        <div class="info-label">Registration Number</div>
+                        <div class="info-value">{{ profile.registration_number }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'management:school_profile_edit' profile.pk %}" class="btn-primary">
+        <i class="bi bi-pencil-fill"></i>
+        Edit Profile
+    </a>
+    
+    {% if not profile.educational_level %}
+        <button type="button" class="btn-danger" id="toggleStatusBtn" 
+                data-profile-id="{{ profile.pk }}"
+                data-profile-name="{{ profile.name|escapejs }}"
+                data-profile-active="{{ profile.is_active|yesno:'true,false' }}">
+            <i class="bi bi-power"></i>
+            {% if profile.is_active %}Deactivate{% else %}Activate{% endif %} Profile
+        </button>
+    {% endif %}
+    
+    <a href="{% url 'management:school_profile_list' %}" class="btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+    </a>
+</div>
+
+<!-- Toggle Status Confirmation Modal -->
+<div class="modal fade" id="toggleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Status Change
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to <strong id="toggle-action-text"></strong> the school profile <strong id="toggle-school-name"></strong>?</p>
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span id="toggle-status-message"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-warning" id="confirm-toggle-btn">
+                    <span class="spinner-border spinner-border-sm d-none me-1" role="status" aria-hidden="true"></span>
+                    <i class="bi bi-power me-2"></i>
+                    <span class="btn-text">Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let toggleProfileId = null;
+let toggleProfileName = null;
+let currentModal = null;
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // TOGGLE STATUS BUTTON HANDLER
+    // ============================================
+    $('#toggleStatusBtn').on('click', function() {
+        const profileId = $(this).data('profile-id');
+        const profileName = $(this).data('profile-name');
+        const isActive = $(this).data('profile-active') === 'true';
+        
+        toggleProfileId = profileId;
+        toggleProfileName = profileName;
+        
+        const actionDisplay = isActive ? 'Deactivate' : 'Activate';
+        const statusMessage = isActive 
+            ? 'This will deactivate the school profile. Inactive profiles will not be used as the default school information.'
+            : 'This will activate the school profile. Active profiles will be used as the default school information.';
+        
+        $('#toggle-action-text').text(actionDisplay);
+        $('#toggle-school-name').text(profileName);
+        $('#toggle-status-message').text(statusMessage);
+        
+        if (currentModal) {
+            currentModal.dispose();
+        }
+        currentModal = new bootstrap.Modal(document.getElementById('toggleModal'), {
+            backdrop: 'static',
+            keyboard: true
+        });
+        currentModal.show();
+    });
+
+    // ============================================
+    // CONFIRM TOGGLE BUTTON
+    // ============================================
+    $('#confirm-toggle-btn').on('click', function() {
+        if (!toggleProfileId) return;
+        
+        const btn = $(this);
+        const spinner = btn.find('.spinner-border');
+        const btnText = btn.find('.btn-text');
+        
+        btn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.text('Processing...');
+        
+        $.ajax({
+            url: `/management/school-profiles/${toggleProfileId}/toggle-active/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(data) {
+                if (currentModal) {
+                    currentModal.hide();
+                }
+                showNotification(data.message || 'Status updated successfully', 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            },
+            error: function(xhr) {
+                let errorMsg = 'Error updating status';
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMsg = response.message || errorMsg;
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                }
+                showNotification(errorMsg, 'error');
+                btn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.text('Confirm');
+            }
+        });
+    });
+
+    // ============================================
+    // MODAL RESET HANDLER
+    // ============================================
+    $('#toggleModal').on('hidden.bs.modal', function() {
+        const btn = $('#confirm-toggle-btn');
+        btn.prop('disabled', false);
+        btn.find('.spinner-border').addClass('d-none');
+        btn.find('.btn-text').text('Confirm');
+        toggleProfileId = null;
+        toggleProfileName = null;
+        if (currentModal) {
+            currentModal.dispose();
+            currentModal = null;
+        }
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle-fill',
+        error: 'x-octagon-fill',
+        warning: 'exclamation-triangle-fill'
+    };
+    
+    const icon = icons[type] || 'info-circle-fill';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+    
+    toast.querySelector('.btn-close')?.addEventListener('click', () => {
+        toast.remove();
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

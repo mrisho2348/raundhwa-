@@ -1,0 +1,1128 @@
+<!-- templates/portal_management/students/student_result_detail.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Results — {{ student.full_name }} — {{ session.name }}{% endblock %}
+{% block page_title %}Student Results Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STUDENT RESULT ANALYTICS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Student Info Card */
+    .student-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .student-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 3px solid var(--primary-light);
+    }
+
+    .student-avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .level-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--info-light);
+        color: var(--info);
+        display: inline-block;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.success::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.warning::before { background: linear-gradient(90deg, var(--warning), #fd7e14); }
+    .stat-card.info::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+    .stat-card.purple::before { background: linear-gradient(90deg, var(--purple), #a855f7); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-trend {
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .stat-trend.up { color: var(--success); }
+    .stat-trend.down { color: var(--danger); }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Export Buttons */
+    .export-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-export {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-export-excel {
+        background: #1f7b4d;
+        color: white;
+    }
+
+    .btn-export-excel:hover {
+        background: #0f5a3a;
+        transform: translateY(-2px);
+    }
+
+    .btn-export-pdf {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-export-pdf:hover {
+        background: #b02a37;
+        transform: translateY(-2px);
+    }
+
+    /* Subject Cards */
+    .subject-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .subject-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .subject-header {
+        background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .subject-header:hover {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--gray-50) 100%);
+    }
+
+    .subject-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--gray-800);
+    }
+
+    .subject-code {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        font-family: monospace;
+    }
+
+    .subject-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .subject-stat {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .subject-grade {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .subject-grade.A { background: #10b981; color: white; }
+    .subject-grade.B { background: #34d399; color: white; }
+    .subject-grade.C { background: #fbbf24; color: #92400e; }
+    .subject-grade.D { background: #f59e0b; color: white; }
+    .subject-grade.E { background: #ef4444; color: white; }
+    .subject-grade.F { background: #dc2626; color: white; }
+    .subject-grade.S { background: #8b5cf6; color: white; }
+
+    .subject-body {
+        padding: 1.5rem;
+        display: none;
+    }
+
+    .subject-body.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Paper Items */
+    .paper-item {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        transition: var(--transition);
+    }
+
+    .paper-item:hover {
+        background: var(--primary-light);
+        transform: translateX(5px);
+    }
+
+    .paper-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .paper-name {
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    .paper-marks {
+        font-family: monospace;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .paper-marks .score {
+        color: var(--primary);
+    }
+
+    /* Performance Summary Grid */
+    .performance-summary {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--gray-200);
+    }
+
+    .summary-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .summary-card:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+    }
+
+    .summary-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--gray-500);
+        letter-spacing: 0.5px;
+    }
+
+    .summary-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-top: 0.25rem;
+    }
+
+    /* Strengths & Weaknesses */
+    .strength-card, .weakness-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .strength-card:hover, .weakness-card:hover {
+        transform: translateX(5px);
+    }
+
+    .strength-card {
+        border-left: 4px solid var(--success);
+    }
+
+    .weakness-card {
+        border-left: 4px solid var(--danger);
+    }
+
+    /* Grade Distribution */
+    .grade-distribution {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .grade-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* Navigation Buttons */
+    .btn-navigation {
+        background: var(--primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-navigation:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error { border-left: 4px solid var(--danger); }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error { background: var(--danger-light); color: var(--danger); }
+
+    /* Collapse Icon */
+    .collapse-icon {
+        transition: transform 0.2s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header { padding: 1.5rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .subject-header { flex-direction: column; align-items: flex-start; }
+        .summary-card { margin-bottom: 0.5rem; }
+        .export-buttons { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-graph-up me-2"></i>
+                {{ session.name }}
+            </h1>
+            <p class="mb-0 opacity-75">
+                <i class="bi bi-calendar3 me-1"></i>
+                {{ session.exam_date|date:"l, F d, Y" }}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="export-buttons">
+                <button class="btn-export btn-export-excel" onclick="exportToExcel()">
+                    <i class="bi bi-file-earmark-excel"></i>
+                    Export Excel
+                </button>
+                <button class="btn-export btn-export-pdf" onclick="exportToPDF()">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Export PDF
+                </button>
+            </div>
+            <a href="{% url 'management:student_exam_sessions' student.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                All Sessions
+            </a>
+            <a href="{% url 'management:student_detail' student.pk %}" class="btn btn-outline-light">
+                <i class="bi bi-person me-2"></i>
+                Profile
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Student Info Card -->
+<div class="student-info-card">
+    {% if student.profile_picture %}
+        <img src="{{ student.profile_picture.url }}" class="student-avatar" alt="{{ student.full_name }}">
+    {% else %}
+        <div class="student-avatar-placeholder">
+            {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+        </div>
+    {% endif %}
+    <div class="flex-grow-1">
+        <h2 class="h4 mb-2">{{ student.full_name }}</h2>
+        <div class="d-flex flex-wrap gap-3 text-muted">
+            <span><i class="bi bi-person-badge me-1"></i> {{ student.registration_number|default:"—" }}</span>
+            <span><i class="bi bi-gender-{{ student.gender }} me-1"></i> {{ student.get_gender_display|default:"—" }}</span>
+            <span><i class="bi bi-journal-bookmark-fill me-1"></i> {{ session.class_level.name }}</span>
+            <span><i class="bi bi-calendar-week me-1"></i> {{ session.term }} {{ session.academic_year }}</span>
+        </div>
+    </div>
+    <div>
+        <span class="level-badge">{{ educational_level.get_level_type_display }}</span>
+    </div>
+</div>
+
+<!-- Session Navigation -->
+{% if available_sessions %}
+<div class="mb-3 d-flex justify-content-end gap-2 flex-wrap">
+    <span class="text-muted me-2"><i class="bi bi-clock-history"></i> Other Sessions:</span>
+    {% for other_session in available_sessions %}
+    <a href="{% url 'management:student_result_detail' student.pk other_session.pk %}" 
+       class="btn-navigation btn-sm">
+        <i class="bi bi-calendar"></i>
+        {{ other_session.name|truncatechars:35 }}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Performance Overview Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ performance_metrics.total_marks|floatformat:0|default:"—" }}</div>
+        <div class="stat-label">Total Marks</div>
+        {% if performance_metrics.vs_class_avg %}
+        <div class="stat-trend {{ performance_metrics.vs_class_avg.is_above|yesno:'up,down' }}">
+            <i class="bi bi-arrow-{{ performance_metrics.vs_class_avg.is_above|yesno:'up,down' }}"></i>
+            {{ performance_metrics.vs_class_avg.percentage_diff|floatformat:1 }}% vs class avg
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-value">{{ performance_metrics.average_marks|floatformat:1|default:"—" }}%</div>
+        <div class="stat-label">Average Score</div>
+        {% if performance_metrics.class_avg_percentage %}
+        <div class="stat-trend">Class avg: {{ performance_metrics.class_avg_percentage|floatformat:1 }}%</div>
+        {% endif %}
+    </div>
+    
+    {% if is_secondary and performance_metrics.division %}
+    <div class="stat-card info">
+        <div class="stat-value">{{ performance_metrics.division }}</div>
+        <div class="stat-label">Division</div>
+        {% if performance_metrics.total_points %}
+        <div class="stat-trend">{{ performance_metrics.total_points|floatformat:1 }} points</div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if is_primary_nursery and performance_metrics.overall_grade %}
+    <div class="stat-card success">
+        <div class="stat-value">{{ performance_metrics.overall_grade }}</div>
+        <div class="stat-label">Overall Grade</div>
+    </div>
+    {% endif %}
+    
+    {% if performance_metrics.class_position %}
+    <div class="stat-card success">
+        <div class="stat-value">{{ performance_metrics.class_position }}</div>
+        <div class="stat-label">Class Position</div>
+        {% if performance_metrics.stream_position %}
+        <div class="stat-trend">Stream: {{ performance_metrics.stream_position }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Grade Distribution -->
+{% if grade_counts %}
+<div class="main-card">
+    <h5 class="mb-3">
+        <i class="bi bi-pie-chart me-2"></i>
+        Grade Distribution
+    </h5>
+    <div class="grade-distribution">
+        {% for grade, count in grade_counts.items %}
+        <span class="grade-badge subject-grade {{ grade }}">
+            {{ grade }} ({{ count }})
+        </span>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Subject-wise Performance -->
+<div class="main-card" id="results-content">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="mb-0">
+            <i class="bi bi-book me-2"></i>
+            Subject Performance
+        </h5>
+        <div class="text-muted small">
+            <i class="bi bi-info-circle"></i>
+            Click on any subject to expand details
+        </div>
+    </div>
+    
+    {% if subjects_data %}
+        {% for data in subjects_data %}
+        <div class="subject-card">
+            <div class="subject-header" onclick="toggleSubject(this)">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="subject-title">
+                            <i class="bi bi-journal-bookmark-fill me-2"></i>
+                            {{ data.subject.name }}
+                        </span>
+                        <span class="subject-code">({{ data.subject.code }})</span>
+                    </div>
+                    {% if data.result %}
+                    <div class="subject-stats">
+                        <span class="subject-stat">
+                            <i class="bi bi-star-fill"></i>
+                            {{ data.total_marks|floatformat:0 }} marks
+                        </span>
+                        <span class="subject-stat">
+                            <i class="bi bi-percent"></i>
+                            {{ data.percentage|floatformat:1 }}%
+                        </span>
+                        {% if data.position %}
+                        <span class="subject-stat {% if data.position <= 3 %}text-success fw-bold{% endif %}">
+                            <i class="bi bi-trophy"></i>
+                            Position: {{ data.position }}/{{ data.total_students }}
+                        </span>
+                        {% endif %}
+                        <span class="subject-stat">
+                            <i class="bi bi-graph-up"></i>
+                            Class Avg: {{ data.class_avg_marks|floatformat:0 }} marks
+                        </span>
+                        {% if data.performance_vs_class %}
+                        <span class="subject-stat {{ data.performance_vs_class.is_above|yesno:'text-success,text-danger' }}">
+                            <i class="bi bi-arrow-{{ data.performance_vs_class.is_above|yesno:'up,down' }}"></i>
+                            {{ data.performance_vs_class.percentage_diff|floatformat:1 }}% vs avg
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="d-flex gap-3 align-items-center">
+                    {% if data.grade %}
+                    <span class="subject-grade {{ data.grade }}">
+                        {{ data.grade }}
+                        {% if is_secondary and data.points %}
+                            <small class="ms-1">({{ data.points|floatformat:1 }})</small>
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                    <i class="bi bi-chevron-down collapse-icon"></i>
+                </div>
+            </div>
+            <div class="subject-body">
+                <!-- Class Grade Distribution -->
+                {% if data.class_grade_distribution %}
+                <div class="mb-3 p-3 bg-light rounded">
+                    <div class="small text-muted mb-2">
+                        <i class="bi bi-bar-chart-steps me-1"></i>
+                        Class Grade Distribution
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% for grade, count in data.class_grade_distribution.items %}
+                        <span class="grade-badge subject-grade {{ grade }}" style="font-size: 0.75rem;">
+                            {{ grade }} ({{ count }})
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Papers Section -->
+                <h6 class="mb-3">
+                    <i class="bi bi-files me-2"></i>
+                    Paper Breakdown
+                </h6>
+                {% if data.papers %}
+                    {% for paper in data.papers %}
+                    <div class="paper-item">
+                        <div>
+                            <div class="paper-name">
+                                Paper {{ paper.paper.paper_number }}
+                                {% if paper.paper.paper_name %}
+                                <span class="text-muted ms-1">- {{ paper.paper.paper_name }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted">Maximum: {{ paper.max_marks|floatformat:0 }} marks</div>
+                        </div>
+                        <div class="paper-marks">
+                            {% if paper.has_score %}
+                            <span class="score">{{ paper.marks|floatformat:0 }}</span>
+                            <span class="text-muted">/ {{ paper.max_marks|floatformat:0 }}</span>
+                            <span class="badge bg-light text-dark ms-2">{{ paper.percentage|floatformat:1 }}%</span>
+                            {% else %}
+                            <span class="text-muted">Not scored</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="bi bi-inbox fs-4"></i>
+                        <p class="mb-0 mt-2">No papers configured for this subject.</p>
+                    </div>
+                {% endif %}
+                
+                <!-- Performance Summary -->
+                {% if data.result %}
+                <div class="performance-summary">
+                    <h6 class="mb-3">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Performance Summary
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-sm-3 col-6">
+                            <div class="summary-card">
+                                <div class="summary-label">Your Score</div>
+                                <div class="summary-value">{{ data.percentage|floatformat:1 }}%</div>
+                                <div class="small text-muted">{{ data.total_marks|floatformat:0 }} marks</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="summary-card">
+                                <div class="summary-label">Class Average</div>
+                                <div class="summary-value">{{ data.class_avg_percentage|floatformat:1 }}%</div>
+                                <div class="small text-muted">{{ data.class_avg_marks|floatformat:0 }} marks</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="summary-card">
+                                <div class="summary-label">Your Position</div>
+                                <div class="summary-value">
+                                    {% if data.position %}
+                                        {{ data.position }}/{{ data.total_students }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div class="small">
+                                    {% if data.position and data.position <= 3 %}
+                                        <span class="text-warning"><i class="bi bi-trophy-fill"></i> Top Performer</span>
+                                    {% elif data.position and data.position <= data.total_students|divisibleby:2 %}
+                                        <span class="text-success"><i class="bi bi-arrow-up"></i> Above Median</span>
+                                    {% elif data.position %}
+                                        <span class="text-danger"><i class="bi bi-arrow-down"></i> Below Median</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="summary-card">
+                                <div class="summary-label">Your Grade</div>
+                                <div class="summary-value">
+                                    <span class="subject-grade {{ data.grade }}" style="display: inline-block; padding: 0.25rem 1rem;">
+                                        {{ data.grade }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <p class="text-muted mt-2">No subject results available for this session.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Strengths and Weaknesses Analysis -->
+<div class="row">
+    {% if subject_strengths %}
+    <div class="col-md-6 mb-4">
+        <div class="main-card h-100">
+            <h5 class="mb-3">
+                <i class="bi bi-trophy-fill text-success me-2"></i>
+                Strengths
+                <span class="badge bg-success ms-2">{{ subject_strengths|length }} subjects</span>
+            </h5>
+            <div class="strengths-list">
+                {% for subject in subject_strengths %}
+                <div class="strength-card">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <strong class="fs-6">{{ subject.subject.name }}</strong>
+                            <div class="small text-muted mt-1">
+                                <span class="subject-grade {{ subject.grade }}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;">
+                                    {{ subject.grade }}
+                                </span>
+                                {% if is_secondary and subject.points %}
+                                <span class="ms-2">{{ subject.points|floatformat:1 }} points</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-success">
+                                <i class="bi bi-arrow-up"></i>
+                                +{{ subject.difference|floatformat:0 }} marks
+                            </div>
+                            <div class="small text-muted">
+                                vs class avg ({{ subject.class_avg|floatformat:0 }})
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if subject_weaknesses %}
+    <div class="col-md-6 mb-4">
+        <div class="main-card h-100">
+            <h5 class="mb-3">
+                <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                Areas for Improvement
+                <span class="badge bg-danger ms-2">{{ subject_weaknesses|length }} subjects</span>
+            </h5>
+            <div class="weaknesses-list">
+                {% for subject in subject_weaknesses %}
+                <div class="weakness-card">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <strong class="fs-6">{{ subject.subject.name }}</strong>
+                            <div class="small text-muted mt-1">
+                                <span class="subject-grade {{ subject.grade }}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;">
+                                    {{ subject.grade }}
+                                </span>
+                                {% if is_secondary and subject.points %}
+                                <span class="ms-2">{{ subject.points|floatformat:1 }} points</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-danger">
+                                <i class="bi bi-arrow-down"></i>
+                                {{ subject.difference|floatformat:0 }} marks
+                            </div>
+                            <div class="small text-muted">
+                                vs class avg ({{ subject.class_avg|floatformat:0 }})
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// CSRF Token
+const csrftoken = '{{ csrf_token }}';
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'x-octagon-fill'}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+async function exportToExcel() {
+    showLoading();
+    try {
+        const response = await fetch(`/management/students/{{ student.pk }}/exam-sessions/{{ session.pk }}/export-excel/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `student_results_{{ student.registration_number }}_{{ session.name|slugify }}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showNotification('Excel export completed successfully!', 'success');
+        } else {
+            const data = await response.json();
+            showNotification(data.message || 'Export failed', 'error');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        showNotification('An error occurred during export', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function exportToPDF() {
+    showLoading();
+    try {
+        const response = await fetch(`/management/students/{{ student.pk }}/exam-sessions/{{ session.pk }}/export-pdf/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `student_results_{{ student.registration_number }}_{{ session.name|slugify }}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showNotification('PDF export completed successfully!', 'success');
+        } else {
+            const data = await response.json();
+            showNotification(data.message || 'Export failed', 'error');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        showNotification('An error occurred during export', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function toggleSubject(header) {
+    const card = header.closest('.subject-card');
+    const body = card.querySelector('.subject-body');
+    const icon = header.querySelector('.collapse-icon');
+    
+    if (body.classList.contains('show')) {
+        body.classList.remove('show');
+        icon.classList.remove('bi-chevron-up');
+        icon.classList.add('bi-chevron-down');
+    } else {
+        body.classList.add('show');
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-up');
+    }
+}
+
+// Auto-expand subjects with scores on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.subject-card').forEach(card => {
+        const hasScores = card.querySelector('.paper-item .score');
+        if (hasScores) {
+            const header = card.querySelector('.subject-header');
+            const body = card.querySelector('.subject-body');
+            const icon = header.querySelector('.collapse-icon');
+            body.classList.add('show');
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-up');
+        }
+    });
+    
+    // Add animation to stat cards
+    document.querySelectorAll('.stat-card').forEach((card, index) => {
+        card.style.animation = `slideUp 0.4s ease-out ${index * 0.1}s`;
+        card.style.animationFillMode = 'backwards';
+    });
+    
+    // Add tooltips to elements with titles
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

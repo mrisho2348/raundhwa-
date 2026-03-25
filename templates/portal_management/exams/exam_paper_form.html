@@ -1,0 +1,998 @@
+<!-- templates/portal_management/exams/exam_paper_form.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM EXAM PAPER FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Session Info Card */
+    .session-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .session-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .session-details {
+        flex: 1;
+    }
+
+    .session-details h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .session-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .session-meta i {
+        color: var(--primary);
+        margin-right: 0.3rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.draft { background: var(--warning-light); color: #856404; }
+    .status-badge.published { background: var(--success-light); color: var(--success); }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .form-header h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-header h3 i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Form Fields */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-label .required {
+        color: var(--danger);
+        margin-left: 0.25rem;
+    }
+
+    .form-control,
+    .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        font-size: 0.95rem;
+        background: white;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: var(--danger);
+    }
+
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(220,53,69,0.15);
+    }
+
+    .form-text {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .invalid-feedback {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* Paper Preview Card */
+    .preview-card {
+        background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .preview-card h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-card h4 i {
+        color: var(--primary);
+    }
+
+    .preview-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .preview-badge {
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+    }
+
+    /* Warning Card */
+    .warning-card {
+        background: var(--warning-light);
+        border-left: 4px solid var(--warning);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .warning-card i {
+        font-size: 1.5rem;
+        color: #856404;
+    }
+
+    .warning-card .warning-text {
+        flex: 1;
+        color: #856404;
+        font-size: 0.9rem;
+    }
+
+    /* Buttons */
+    .btn-save {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-save:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-cancel {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-300);
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .btn-cancel:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Select2 Customization */
+    .select2-container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 50px;
+        padding: 0.3rem 1rem;
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 36px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 48px;
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-width: calc(100vw - 2rem) !important;
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        max-width: calc(100vw - 2rem);
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error { border-left: 4px solid var(--danger); }
+    .toast-notification.warning { border-left: 4px solid var(--warning); }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error { background: var(--danger-light); color: var(--danger); }
+    .toast-icon.warning { background: var(--warning-light); color: #856404; }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header { padding: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; }
+        .form-card { padding: 1.5rem; }
+
+        .form-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            width: 100%;
+        }
+
+        .btn-save,
+        .btn-cancel {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .preview-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-file-text me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">Configure exam paper details, marks, and schedule</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_paper_list' session.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Papers
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Session Info Card -->
+<div class="session-info-card">
+    <div class="session-icon">
+        <i class="bi bi-calendar-check"></i>
+    </div>
+    <div class="session-details">
+        <h2>{{ session.name }}</h2>
+        <div class="session-meta">
+            <span><i class="bi bi-file-text"></i> {{ session.exam_type.name }}</span>
+            <span><i class="bi bi-people"></i> {{ session.class_level.name }}{% if session.stream_class %} - {{ session.stream_class.name }}{% endif %}</span>
+            <span><i class="bi bi-calendar"></i> {{ session.exam_date|date:"l, F d, Y" }}</span>
+        </div>
+    </div>
+    <div>
+        <span class="status-badge {{ session.status }}">
+            <i class="bi bi-{% if session.status == 'draft' %}file-earmark-text{% elif session.status == 'submitted' %}send{% elif session.status == 'verified' %}check-circle{% else %}check-circle-fill{% endif %}"></i>
+            {{ session.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Warning if session is published -->
+{% if session.status == 'published' %}
+<div class="warning-card">
+    <i class="bi bi-lock-fill"></i>
+    <div class="warning-text">
+        <strong>Published Session:</strong> This exam session has been published and cannot be modified. 
+        Papers cannot be added, edited, or deleted once the session is published.
+    </div>
+    <a href="{% url 'management:exam_session_detail' session.pk %}" class="btn btn-sm btn-outline-warning">
+        View Session
+    </a>
+</div>
+{% endif %}
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-header">
+        <h3>
+            <i class="bi bi-{% if is_edit %}pencil-square{% else %}plus-circle{% endif %}"></i>
+            {{ title }}
+        </h3>
+        <div class="action-buttons">
+            <a href="{% url 'management:exam_paper_list' session.pk %}" class="btn-cancel">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+            <button type="submit" form="exam-paper-form" class="btn-save" id="submit-btn" {% if session.status == 'published' %}disabled{% endif %}>
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <i class="bi bi-{% if is_edit %}check-lg{% else %}plus-lg{% endif %}"></i>
+                <span class="btn-text">{% if is_edit %}Update Paper{% else %}Create Paper{% endif %}</span>
+            </button>
+        </div>
+    </div>
+
+    <form id="exam-paper-form"
+          method="POST"
+          action="{% if is_edit %}{% url 'management:exam_paper_update' paper.pk %}{% else %}{% url 'management:exam_paper_create' session.pk %}{% endif %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <!-- Subject -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="subject" class="form-label">
+                        Subject <span class="required">*</span>
+                    </label>
+                    <select class="form-select {% if errors.subject %}is-invalid{% endif %}"
+                            id="subject"
+                            name="subject"
+                            required
+                            {% if session.status == 'published' %}disabled{% endif %}>
+                        <option value="">Select Subject</option>
+                        {% for subject in available_subjects %}
+                        <option value="{{ subject.pk }}"
+                            {% if form_data.subject|stringformat:"s" == subject.pk|stringformat:"s" %}selected
+                            {% elif paper and paper.subject.pk|stringformat:"s" == subject.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ subject.name }} ({{ subject.code }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.subject %}
+                        <div class="invalid-feedback">{{ errors.subject.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">The subject this paper belongs to.</div>
+                </div>
+            </div>
+
+            <!-- Paper Number -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="paper_number" class="form-label">
+                        Paper Number <span class="required">*</span>
+                    </label>
+                    <input type="number"
+                           class="form-control {% if errors.paper_number %}is-invalid{% endif %}"
+                           id="paper_number"
+                           name="paper_number"
+                           value="{% if form_data.paper_number %}{{ form_data.paper_number }}{% elif paper and paper.paper_number %}{{ paper.paper_number }}{% endif %}"
+                           min="1"
+                           required
+                           {% if session.status == 'published' %}disabled{% endif %}
+                           placeholder="e.g., 1, 2, 3">
+                    {% if errors.paper_number %}
+                        <div class="invalid-feedback">{{ errors.paper_number.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Paper number within this subject (1, 2, 3...).</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Paper Name -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="paper_name" class="form-label">Paper Name</label>
+                    <input type="text"
+                           class="form-control {% if errors.paper_name %}is-invalid{% endif %}"
+                           id="paper_name"
+                           name="paper_name"
+                           value="{% if form_data.paper_name %}{{ form_data.paper_name }}{% elif paper and paper.paper_name %}{{ paper.paper_name }}{% endif %}"
+                           {% if session.status == 'published' %}disabled{% endif %}
+                           placeholder="e.g., Theory Paper, Practical Exam, Multiple Choice">
+                    {% if errors.paper_name %}
+                        <div class="invalid-feedback">{{ errors.paper_name.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Optional descriptive name for this paper.</div>
+                </div>
+            </div>
+
+            <!-- Max Marks -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="max_marks" class="form-label">
+                        Maximum Marks <span class="required">*</span>
+                    </label>
+                    <input type="number"
+                           class="form-control {% if errors.max_marks %}is-invalid{% endif %}"
+                           id="max_marks"
+                           name="max_marks"
+                           value="{% if form_data.max_marks %}{{ form_data.max_marks }}{% elif paper and paper.max_marks %}{{ paper.max_marks }}{% else %}100{% endif %}"
+                           step="0.5"
+                           min="1"
+                           required
+                           {% if session.status == 'published' %}disabled{% endif %}
+                           placeholder="e.g., 100">
+                    {% if errors.max_marks %}
+                        <div class="invalid-feedback">{{ errors.max_marks.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Total marks available for this paper.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Exam Date (Optional) -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exam_date" class="form-label">Exam Date (Optional)</label>
+                    <input type="date"
+                           class="form-control {% if errors.exam_date %}is-invalid{% endif %}"
+                           id="exam_date"
+                           name="exam_date"
+                           value="{% if form_data.exam_date %}{{ form_data.exam_date }}{% elif paper and paper.exam_date %}{{ paper.exam_date|date:'Y-m-d' }}{% endif %}"
+                           {% if session.status == 'published' %}disabled{% endif %}>
+                    {% if errors.exam_date %}
+                        <div class="invalid-feedback">{{ errors.exam_date.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Leave blank to use session exam date.</div>
+                </div>
+            </div>
+
+            <!-- Duration (Optional) -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="duration_minutes" class="form-label">Duration (Minutes)</label>
+                    <input type="number"
+                           class="form-control {% if errors.duration_minutes %}is-invalid{% endif %}"
+                           id="duration_minutes"
+                           name="duration_minutes"
+                           value="{% if form_data.duration_minutes %}{{ form_data.duration_minutes }}{% elif paper and paper.duration_minutes %}{{ paper.duration_minutes }}{% endif %}"
+                           min="1"
+                           step="1"
+                           {% if session.status == 'published' %}disabled{% endif %}
+                           placeholder="e.g., 120">
+                    {% if errors.duration_minutes %}
+                        <div class="invalid-feedback">{{ errors.duration_minutes.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Duration in minutes (e.g., 120 for 2 hours).</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper Preview -->
+        <div class="preview-card">
+            <h4>
+                <i class="bi bi-eye"></i>
+                Paper Preview
+            </h4>
+            <div class="preview-content">
+                <div class="preview-badge">
+                    <i class="bi bi-book"></i>
+                    <span id="preview-subject">{% if paper and paper.subject %}{{ paper.subject.name }}{% else %}Subject{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-hash"></i>
+                    <span id="preview-number">{% if paper and paper.paper_number %}Paper {{ paper.paper_number }}{% else %}Paper Number{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-star-fill"></i>
+                    <span id="preview-marks">{% if paper and paper.max_marks %}{{ paper.max_marks }} marks{% else %}Max Marks{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-calendar"></i>
+                    <span id="preview-date">{% if paper and paper.exam_date %}{{ paper.exam_date|date:"M d, Y" }}{% else %}Date{% endif %}</span>
+                </div>
+                <div class="preview-badge">
+                    <i class="bi bi-clock"></i>
+                    <span id="preview-duration">{% if paper and paper.duration_minutes %}{{ paper.duration_minutes }} min{% else %}Duration{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info for Edit Mode -->
+        {% if is_edit and paper %}
+        <div class="preview-card" style="margin-top: 1rem;">
+            <h4>
+                <i class="bi bi-info-circle"></i>
+                Paper Information
+            </h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label class="form-label text-muted">Created</label>
+                        <div class="form-control-plaintext">{{ paper.created_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label class="form-label text-muted">Last Updated</label>
+                        <div class="form-control-plaintext">{{ paper.updated_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    'use strict';
+
+    // ================================================================
+    // HELPERS
+    // ================================================================
+
+    function escapeHtml(text) {
+        var d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function showNotification(message, type) {
+        type = type || 'success';
+        var iconMap = { success: 'check-circle', error: 'x-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+        var toast = document.createElement('div');
+        toast.className = 'toast-notification ' + type;
+        toast.innerHTML = [
+            '<div class="toast-icon ' + type + '"><i class="bi bi-' + (iconMap[type] || 'info-circle') + '"></i></div>',
+            '<div class="flex-grow-1"><div class="fw-semibold">' + escapeHtml(message) + '</div></div>',
+            '<button class="btn-close" onclick="this.parentElement.remove()"></button>'
+        ].join('');
+
+        var container = document.getElementById('toast-container') || document.body;
+        container.appendChild(toast);
+        setTimeout(function () { if (toast.parentElement) toast.remove(); }, 5000);
+    }
+
+    function showFieldError(fieldId, message) {
+        var $field = $('#' + fieldId);
+        $field.addClass('is-invalid');
+        $field.parent().find('.invalid-feedback').remove();
+        $field.after('<div class="invalid-feedback">' + escapeHtml(message) + '</div>');
+    }
+
+    // ================================================================
+    // SELECT2 INITIALISATION
+    // ================================================================
+    function initSelect2(selector, placeholder) {
+        $(selector).select2({
+            width: '100%',
+            placeholder: placeholder || 'Select an option',
+            allowClear: true
+        });
+    }
+
+    initSelect2('#subject', 'Select Subject');
+
+    // ================================================================
+    // LIVE PREVIEW
+    // ================================================================
+    function updatePreview() {
+        var subject = $('#subject option:selected').text();
+        var paperNumber = $('#paper_number').val();
+        var paperName = $('#paper_name').val().trim();
+        var maxMarks = $('#max_marks').val();
+        var examDate = $('#exam_date').val();
+        var duration = $('#duration_minutes').val();
+
+        $('#preview-subject').text(subject && subject !== 'Select Subject' ? subject : 'Subject');
+        
+        if (paperNumber) {
+            var previewNumber = 'Paper ' + paperNumber;
+            if (paperName) {
+                previewNumber += ' - ' + paperName;
+            }
+            $('#preview-number').text(previewNumber);
+        } else {
+            $('#preview-number').text('Paper Number');
+        }
+
+        if (maxMarks) {
+            $('#preview-marks').text(parseFloat(maxMarks).toFixed(0) + ' marks');
+        } else {
+            $('#preview-marks').text('Max Marks');
+        }
+
+        if (examDate) {
+            var d = new Date(examDate);
+            $('#preview-date').text(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+        } else {
+            $('#preview-date').text('Date');
+        }
+
+        if (duration) {
+            $('#preview-duration').text(duration + ' min');
+        } else {
+            $('#preview-duration').text('Duration');
+        }
+    }
+
+    // Wire preview to all fields
+    $('#subject, #paper_number, #paper_name, #max_marks, #exam_date, #duration_minutes').on('change input', updatePreview);
+
+    // ================================================================
+    // FORM SUBMISSION VIA AJAX
+    // ================================================================
+    $('#exam-paper-form').on('submit', function (e) {
+        e.preventDefault();
+
+        var $form = $(this);
+        var $submitBtn = $('#submit-btn');
+        var $spinner = $submitBtn.find('.spinner-border');
+        var $btnText = $submitBtn.find('.btn-text');
+
+        // Clear previous errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+
+        // Client-side validation
+        var hasErrors = false;
+        var required = {
+            subject: 'Subject is required.',
+            paper_number: 'Paper number is required.',
+            max_marks: 'Maximum marks is required.'
+        };
+
+        $.each(required, function (fieldId, msg) {
+            var value = $('#' + fieldId).val();
+            if (!value || value === '') {
+                showFieldError(fieldId, msg);
+                hasErrors = true;
+            }
+        });
+
+        // Validate max_marks > 0
+        var maxMarks = $('#max_marks').val();
+        if (maxMarks && parseFloat(maxMarks) <= 0) {
+            showFieldError('max_marks', 'Maximum marks must be greater than 0.');
+            hasErrors = true;
+        }
+
+        // Validate paper_number > 0
+        var paperNumber = $('#paper_number').val();
+        if (paperNumber && parseInt(paperNumber) < 1) {
+            showFieldError('paper_number', 'Paper number must be at least 1.');
+            hasErrors = true;
+        }
+
+        if (hasErrors) {
+            showNotification('Please correct the errors above.', 'error');
+            return false;
+        }
+
+        // Disable button & show spinner
+        $submitBtn.prop('disabled', true);
+        $spinner.removeClass('d-none');
+        $btnText.text('Saving…');
+
+        $.ajax({
+            url: $form.attr('action'),
+            method: 'POST',
+            data: $form.serialize(),
+            success: function (response) {
+                showNotification(response.message, 'success');
+                setTimeout(function () {
+                    window.location.href = response.redirect_url || "{% url 'management:exam_paper_list' session.pk %}";
+                }, 1500);
+            },
+            error: function (xhr) {
+                $submitBtn.prop('disabled', false);
+                $spinner.addClass('d-none');
+                $btnText.text('{% if is_edit %}Update Paper{% else %}Create Paper{% endif %}');
+
+                var resp = xhr.responseJSON;
+                if (resp && resp.errors) {
+                    $.each(resp.errors, function (field, errs) {
+                        showFieldError(field, errs[0]);
+                    });
+                    showNotification(resp.message || 'Please correct the errors below.', 'error');
+                } else {
+                    showNotification((resp && resp.message) || 'An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+
+    // ================================================================
+    // UNSAVED-CHANGES GUARD
+    // ================================================================
+    var formChanged = false;
+
+    $('#exam-paper-form :input').on('change input', function () { formChanged = true; });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+
+    $('#exam-paper-form').on('submit', function () { formChanged = false; });
+    $('.btn-cancel').on('click', function () { formChanged = false; });
+
+    // ================================================================
+    // INITIAL PREVIEW UPDATE
+    // ================================================================
+    updatePreview();
+
+}); // end $(document).ready
+</script>
+{% endblock %}

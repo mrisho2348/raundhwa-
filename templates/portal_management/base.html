@@ -16,7 +16,7 @@
         <div class="nav-section-content">
             <a href="{% url 'management:dashboard' %}"
                class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <i class="bi bi-house-door"></i>
+                <i class="bi bi-house-door-fill"></i>
                 <span class="link-text">Overview</span>
             </a>
         </div>
@@ -32,13 +32,13 @@
         <div class="nav-section-content">
             <a href="{% url 'management:student_list' %}"
                class="nav-link {% if 'student' in request.resolver_match.url_name and not 'enrollment' in request.resolver_match.url_name and not 'education_history' in request.resolver_match.url_name and not 'transfer' in request.resolver_match.url_name and not 'withdrawal' in request.resolver_match.url_name and not 'suspension' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-people"></i>
+                <i class="bi bi-person-rolodex"></i>
                 <span class="link-text">All Students</span>
                 <span class="nav-counter">{{ student_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:student_enrollment_list' %}"
                class="nav-link {% if 'enrollment' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-plus-fill"></i>
+                <i class="bi bi-person-add"></i>
                 <span class="link-text">Enroll Student</span>
                 <span class="nav-badge info-badge">Active</span>
             </a>
@@ -49,36 +49,36 @@
             </a>
             <a href="{% url 'management:student_transfer_list' %}"
                class="nav-link {% if 'transfer' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-arrow-right-circle-fill"></i>
+                <i class="bi bi-arrow-left-right"></i>
                 <span class="link-text">Transfers</span>
             </a>
             <a href="{% url 'management:student_withdrawal_list' %}"
                class="nav-link {% if 'withdrawal' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-box-arrow-right"></i>
+                <i class="bi bi-door-closed-fill"></i>
                 <span class="link-text">Withdrawals</span>
             </a>
             <a href="{% url 'management:suspension_list' %}"
                class="nav-link {% if 'suspension' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-exclamation-triangle-fill"></i>
+                <i class="bi bi-pause-circle-fill"></i>
                 <span class="link-text">Suspensions</span>
             </a>
             <a href="{% url 'management:parent_list' %}"
                class="nav-link {% if 'parent' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-lines-fill"></i>
+                <i class="bi bi-people-fill"></i>
                 <span class="link-text">Parents/Guardians</span>
                 <span class="nav-counter">{{ parent_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:promotion_list' %}"
                class="nav-link {% if 'promotion' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-lines-fill"></i>
+                <i class="bi bi-arrow-up-circle-fill"></i>
                 <span class="link-text">Promotions</span>
                 <span class="nav-counter">{{ promotion_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:student_combination_assignment_list' %}"
                class="nav-link {% if 'comb' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-lines-fill"></i>
-                <span class="link-text">Assign Comb</span>
-                <span class="nav-counter">{{ parent_count|default:0 }}</span>
+                <i class="bi bi-diagram-2-fill"></i>
+                <span class="link-text">Assign Combination</span>
+                <span class="nav-counter">{{ combination_count|default:0 }}</span>
             </a>
         </div>
     </div>
@@ -92,46 +92,46 @@
         </div>
         <div class="nav-section-content">
             <a href="{% url 'management:staff_list' %}"
-               class="nav-link {% if 'staff' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
+               class="nav-link {% if 'staff_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-person-badge"></i>
                 <span class="link-text">All Staff</span>
                 <span class="nav-counter">{{ staff_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:staff_leave_list' %}"
                class="nav-link {% if 'staff_leave_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
-                <span class="link-text">Leaves</span>
-                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+                <i class="bi bi-calendar-minus-fill"></i>
+                <span class="link-text">Staff Leaves</span>
+                <span class="nav-counter">{{ leave_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:staff_role_list' %}"
                class="nav-link {% if 'staff_role_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
-                <span class="link-text">Role group</span>
-                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+                <i class="bi bi-tag-fill"></i>
+                <span class="link-text">Staff Roles</span>
+                <span class="nav-counter">{{ role_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:staff_role_assignment_list' %}"
                class="nav-link {% if 'staff_role_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
+                <i class="bi bi-person-workspace"></i>
                 <span class="link-text">Role Assignments</span>
-                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+                <span class="nav-counter">{{ role_assignment_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:staff_department_assignment_list' %}"
                class="nav-link {% if 'staff_department_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
+                <i class="bi bi-building"></i>
                 <span class="link-text">Department Assignments</span>
-                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+                <span class="nav-counter">{{ dept_assignment_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:staff_teaching_assignment_list' %}"
                class="nav-link {% if 'staff_teaching_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
+                <i class="bi bi-easel2-fill"></i>
                 <span class="link-text">Teaching Assignments</span>
-                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+                <span class="nav-counter">{{ teaching_assignment_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:class_teacher_assignment_list' %}"
                class="nav-link {% if 'class_teacher_assignment_list' in request.resolver_match.url_name and 'create' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
+                <i class="bi bi-person-standing-dress"></i>
                 <span class="link-text">Class Teacher Assignments</span>
-                <span class="nav-counter">{{ staff_count|default:0 }}</span>
+                <span class="nav-counter">{{ class_teacher_count|default:0 }}</span>
             </a>
             <a href="{% url 'management:staff_create' %}"
                class="nav-link {% if 'staff_create' in request.resolver_match.url_name %}active{% endif %}">
@@ -151,24 +151,24 @@
         <div class="nav-section-content">
             <a href="{% url 'management:educational_level_list' %}"
                class="nav-link {% if 'educational_level' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-layers"></i>
+                <i class="bi bi-layers-fill"></i>
                 <span class="link-text">Educational Levels</span>
             </a>
             <a href="{% url 'management:academic_year_list' %}"
                class="nav-link {% if 'academic_year' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-calendar3"></i>
+                <i class="bi bi-calendar3-fill"></i>
                 <span class="link-text">Academic Years</span>
                 <span class="nav-badge active-badge">Active</span>
             </a>
             <a href="{% url 'management:term_list' %}"
                class="nav-link {% if 'term' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-calendar3"></i>
+                <i class="bi bi-calendar-week-fill"></i>
                 <span class="link-text">Terms</span>
                 <span class="nav-badge active-badge">Active</span>
             </a>
             <a href="{% url 'management:class_level_list' %}"
                class="nav-link {% if 'class_level' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-diagram-3"></i>
+                <i class="bi bi-diagram-3-fill"></i>
                 <span class="link-text">Class Levels</span>
             </a>
             <a href="{% url 'management:stream_class_list' %}"
@@ -177,23 +177,23 @@
                 <span class="link-text">Stream Classes</span>
             </a>
             <a href="{% url 'management:school_list' %}"
-               class="nav-link {% if 'school' in request.resolver_match.url_name %}active{% endif %}">
+               class="nav-link {% if 'school_list' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-building"></i>
                 <span class="link-text">Schools Registry</span>
             </a>
             <a href="{% url 'management:subject_list' %}"
                class="nav-link {% if 'subject' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-book"></i>
+                <i class="bi bi-book-fill"></i>
                 <span class="link-text">Subjects</span>
             </a>
             <a href="{% url 'management:combination_list' %}"
                class="nav-link {% if 'combination' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <i class="bi bi-puzzle-fill"></i>
                 <span class="link-text">Combinations</span>
             </a>
             <a href="{% url 'management:department_list' %}"
                class="nav-link {% if 'department' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-diagram-3"></i>
+                <i class="bi bi-diagram-3-fill"></i>
                 <span class="link-text">Departments</span>
             </a>
         </div>
@@ -202,22 +202,22 @@
     <!-- ── Examinations ── -->
     <div class="nav-section">
         <div class="nav-section-header" role="button">
-            <i class="bi bi-clipboard-check-fill"></i>
+            <i class="bi bi-clipboard2-check-fill"></i>
             <span class="section-label">Examinations</span>
             <i class="bi bi-chevron-down section-toggle ms-auto"></i>
         </div>
         <div class="nav-section-content">
             <a href="{% url 'management:exam_type_list' %}"
                class="nav-link {% if 'exam_type_list' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-clipboard-check"></i>
-                <span class="link-text">Exam Type</span>
-                <span class="nav-badge success-badge">New</span>
+                <i class="bi bi-file-text-fill"></i>
+                <span class="link-text">Exam Types</span>
+                <span class="nav-badge success-badge">Manage</span>
             </a>
             <a href="{% url 'management:exam_session_list' %}"
                class="nav-link {% if 'exam_session' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-clipboard-check"></i>
+                <i class="bi bi-calendar-check-fill"></i>
                 <span class="link-text">Exam Sessions</span>
-                <span class="nav-badge success-badge">New</span>
+                <span class="nav-badge success-badge">Active</span>
             </a>
             <a href="{% url 'management:division_scale_list' %}"
                class="nav-link {% if 'division_scale' in request.resolver_match.url_name %}active{% endif %}">
@@ -226,20 +226,66 @@
             </a>
             <a href="{% url 'management:grading_scale_list' %}"
                class="nav-link {% if 'grading_scale' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-bar-chart-steps"></i>
+                <i class="bi bi-star-half"></i>
                 <span class="link-text">Grading Scales</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'result_management' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-table"></i>
+                <span class="link-text">Result Management</span>
             </a>
         </div>
     </div>
 
-    <!-- ── Reports & Audit ── -->
+    <!-- ── Reports & Analytics ── -->
     <div class="nav-section">
         <div class="nav-section-header" role="button">
-            <i class="bi bi-file-text-fill"></i>
-            <span class="section-label">Reports & Audit</span>
+            <i class="bi bi-bar-chart-line-fill"></i>
+            <span class="section-label">Reports & Analytics</span>
             <i class="bi bi-chevron-down section-toggle ms-auto"></i>
         </div>
         <div class="nav-section-content">
+            <a href="#"
+               class="nav-link {% if 'performance_analytics' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-graph-up"></i>
+                <span class="link-text">Performance Analytics</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'attendance_reports' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-calendar-check"></i>
+                <span class="link-text">Attendance Reports</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'exam_reports' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-file-bar-graph-fill"></i>
+                <span class="link-text">Exam Reports</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'student_transcript' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-file-pdf-fill"></i>
+                <span class="link-text">Student Transcripts</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── System Administration ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-gear-fill"></i>
+            <span class="section-label">System Admin</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="{% url 'management:school_profile_list' %}"
+               class="nav-link {% if 'school_profile_list' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-building-fill"></i>
+                <span class="link-text">School Profile</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'user_management' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-people-fill"></i>
+                <span class="link-text">User Management</span>
+            </a>
             <a href="{% url 'management:audit_log' %}"
                class="nav-link {% if 'audit_log' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-journal-text"></i>
@@ -249,6 +295,42 @@
                class="nav-link {% if 'online_users' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-wifi"></i>
                 <span class="link-text">Online Users</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'system_settings' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-sliders2"></i>
+                <span class="link-text">System Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Help & Support ── -->
+    <div class="nav-section">
+        <div class="nav-section-header" role="button">
+            <i class="bi bi-question-circle-fill"></i>
+            <span class="section-label">Help & Support</span>
+            <i class="bi bi-chevron-down section-toggle ms-auto"></i>
+        </div>
+        <div class="nav-section-content">
+            <a href="#"
+               class="nav-link {% if 'documentation' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-book-fill"></i>
+                <span class="link-text">Documentation</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'faq' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-question-lg"></i>
+                <span class="link-text">FAQ</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'support_tickets' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-envelope-paper-fill"></i>
+                <span class="link-text">Support Tickets</span>
+            </a>
+            <a href="#"
+               class="nav-link {% if 'system_status' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-heart-pulse-fill"></i>
+                <span class="link-text">System Status</span>
             </a>
         </div>
     </div>
@@ -409,9 +491,8 @@
     }
 
     /* ── Desktop collapsed overrides ── */
-    /* (base.html handles width; here we hide text elements) */
     #sidebar.collapsed .nav-section-content {
-        display: block !important; /* keep links visible as icon rows */
+        display: block !important;
     }
 
     #sidebar.collapsed .nav-section-header {
@@ -441,7 +522,7 @@
         }
 
         .nav-link {
-            min-height: 42px; /* Larger tap targets on touch */
+            min-height: 42px;
         }
 
         .nav-section-header {
@@ -459,9 +540,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const hasActive = section.querySelector('.nav-link.active') !== null;
         const savedState = localStorage.getItem('nav_section_' + index);
 
-        /* Open if: has active link OR was previously saved as open */
         if (hasActive || savedState === 'active') {
             section.classList.add('active');
+            
+            setTimeout(() => {
+                const activeLink = section.querySelector('.nav-link.active');
+                if (activeLink && window.innerWidth <= 992) {
+                    activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 100);
         }
 
         if (header) {
@@ -475,12 +562,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    /* Ensure the section with the active link is open on first load */
     const activeLink = document.querySelector('.nav-link.active');
     if (activeLink) {
         const parentSection = activeLink.closest('.nav-section');
         if (parentSection) parentSection.classList.add('active');
+        
+        if (window.innerWidth <= 992) {
+            setTimeout(() => {
+                activeLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 200);
+        }
     }
+    
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            const activeLink = document.querySelector('.nav-link.active');
+            if (activeLink && window.innerWidth <= 992 && window.innerWidth > 0) {
+                activeLink.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+            }
+        }, 150);
+    });
 });
 </script>
 {% endblock %}

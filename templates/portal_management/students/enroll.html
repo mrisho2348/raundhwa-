@@ -7,414 +7,1173 @@
 
 {% block extra_css %}
 <style>
-    /* Premium Enrollment Styles */
+    /* ============================================
+       PREMIUM DESIGN SYSTEM (Consistent with Student Form)
+       ============================================ */
+    
     :root {
-        --enroll-primary: #2563eb;
-        --enroll-success: #059669;
-        --enroll-warning: #d97706;
-        --enroll-gradient: linear-gradient(145deg, #2563eb, #7c3aed);
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-dark: #0b5e2c;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .enrollment-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-
-    .student-summary-card {
-        background: var(--enroll-gradient);
-        border-radius: 24px;
-        padding: 2rem;
-        color: white;
+    /* ============================================
+       PROGRESS INDICATOR
+       ============================================ */
+    
+    .progress-container {
         margin-bottom: 2rem;
-        box-shadow: 0 20px 40px -15px rgba(37, 99, 235, 0.4);
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    
+    .progress-indicator {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background: white;
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
         position: relative;
         overflow: hidden;
     }
-
-    .student-summary-card::before {
+    
+    .progress-indicator::before {
         content: '';
         position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+    
+    .progress-step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-400);
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+        transition: var(--transition);
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+    }
+    
+    .progress-step:hover { background: var(--gray-100); }
+    .progress-step.active { color: var(--primary); }
+    .progress-step.completed { color: var(--success); }
+    
+    .step-number {
+        width: 32px; height: 32px;
+        border-radius: var(--radius-full);
+        background: var(--gray-200);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .progress-step.active .step-number {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    }
+    
+    .progress-step.completed .step-number {
+        background: var(--success);
+        color: white;
+    }
+    
+    .step-label { font-size: 0.95rem; }
+    
+    @media (max-width: 768px) {
+        .progress-indicator { flex-direction: column; gap: 0.5rem; border-radius: var(--radius-lg); }
+        .progress-step { width: 100%; }
+        .step-label { display: none; }
+    }
+
+    /* ============================================
+       STUDENT PREVIEW CARD
+       ============================================ */
+    
+    .student-preview-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.4s ease-out;
+    }
+    
+    .student-preview-card::before {
+        content: '';
+        position: absolute;
+        top: -50%; right: -50%;
+        width: 200%; height: 200%;
         background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
         animation: rotate 30s linear infinite;
     }
-
-    .enrollment-form-card {
-        background: white;
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
     }
-
-    .current-enrollment-card {
-        background: linear-gradient(145deg, #f8fafc, #ffffff);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        border: 1px solid #e2e8f0;
+    
+    .preview-avatar {
+        width: 80px; height: 80px;
+        border-radius: var(--radius-full);
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.5rem;
+        border: 3px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        overflow: hidden;
+        transition: var(--transition);
     }
-
-    .stream-info {
-        background: #e0f2fe;
-        color: #0369a1;
+    
+    .preview-avatar:hover { transform: scale(1.05); border-color: white; }
+    .preview-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-details { flex: 1; }
+    
+    .preview-badge {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        padding: 0.25rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .current-enrollment-badge {
+        background: rgba(255,255,255,0.25);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-full);
         padding: 0.5rem 1rem;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 500;
-    }
-
-    .capacity-indicator {
-        width: 100%;
-        height: 8px;
-        background: #e2e8f0;
-        border-radius: 4px;
-        margin-top: 0.5rem;
-    }
-
-    .capacity-fill {
-        height: 100%;
-        background: var(--enroll-primary);
-        border-radius: 4px;
-        transition: width 0.3s ease;
-    }
-
-    .capacity-warning {
-        background: #f59e0b;
-    }
-
-    .capacity-danger {
-        background: #ef4444;
-    }
-
-    .stream-option {
-        padding: 1rem;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        margin-bottom: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .stream-option:hover {
-        border-color: var(--enroll-primary);
-        background: #f8fafc;
-    }
-
-    .stream-option.selected {
-        border-color: var(--enroll-primary);
-        background: #eff6ff;
-    }
-
-    .stream-option .capacity-badge {
-        background: #f1f5f9;
-        padding: 0.25rem 0.75rem;
-        border-radius: 50px;
         font-size: 0.85rem;
     }
 
-    .stream-option.selected .capacity-badge {
+    /* ============================================
+       CURRENT ENROLLMENT SECTION
+       ============================================ */
+    
+    .current-enrollment-section {
         background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .current-enrollment-section:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+    
+    .enrollment-detail-item {
+        display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+    }
+    
+    .enrollment-detail-label {
+        font-size: 0.85rem; color: var(--gray-500); font-weight: 500; min-width: 100px;
+    }
+    
+    .enrollment-detail-value { font-weight: 600; color: var(--gray-700); }
+    
+    .stream-badge {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        display: inline-flex; align-items: center; gap: 0.5rem;
     }
 
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+    /* ============================================
+       FORM SECTIONS
+       ============================================ */
+    
+    .form-section {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        animation: slideUp 0.3s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .form-section:nth-child(1) { animation-delay: 0.1s; }
+    .form-section:nth-child(2) { animation-delay: 0.2s; }
+    
+    .form-section:hover { box-shadow: var(--shadow-lg); border-color: var(--primary); }
+    
+    .section-header {
+        display: flex; align-items: center; gap: 0.75rem;
+        margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+    
+    .section-icon {
+        width: 40px; height: 40px;
+        border-radius: var(--radius-lg);
+        background: var(--primary-light);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--primary); font-size: 1.25rem;
+    }
+    
+    .section-title { font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin: 0; }
+    .section-subtitle { font-size: 0.85rem; color: var(--gray-500); margin-left: auto; }
+
+    /* ============================================
+       FORM CONTROLS
+       ============================================ */
+    
+    .form-group { margin-bottom: 1.25rem; }
+    
+    .form-label {
+        font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;
+        display: flex; align-items: center; gap: 0.25rem;
+    }
+    
+    .required-star { color: var(--danger); font-size: 1.2rem; line-height: 1; }
+    
+    .form-control, .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+    
+    .form-control:hover, .form-select:hover { border-color: var(--gray-400); }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+        outline: none;
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+    
+    .form-control.is-valid, .form-select.is-valid {
+        border-color: var(--success);
+        background-image: none;
+    }
+    
+    .invalid-feedback {
+        display: block; font-size: 0.85rem; margin-top: 0.25rem;
+        color: var(--danger); background: var(--danger-light);
+        padding: 0.5rem 1rem; border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+    
+    .invalid-feedback:empty { display: none; }
+    
+    .field-hint {
+        font-size: 0.8rem; color: var(--gray-500); margin-top: 0.25rem;
+        display: flex; align-items: center; gap: 0.25rem;
+    }
+    
+    .field-hint i { font-size: 0.9rem; }
+
+    /* ============================================
+       ACTION MENU
+       ============================================ */
+    
+    .action-menu-container {
+        position: sticky;
+        bottom: 1rem;
+        z-index: 1000;
+        margin-top: 2rem;
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    .action-menu-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .action-menu-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1rem; padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .action-menu-title {
+        font-weight: 600; color: var(--gray-700);
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    
+    .action-menu-title i { color: var(--primary); }
+    
+    .action-buttons {
+        display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500; font-size: 0.95rem;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+    
+    .btn i { font-size: 1.1rem; }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px rgba(26, 115, 232, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(26, 115, 232, 0.4);
+    }
+    
+    .btn-primary:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+    
+    .btn-outline-primary {
+        border: 1.5px solid var(--primary);
+        color: var(--primary);
+        background: transparent;
+    }
+    
+    .btn-outline-primary:hover {
+        background: var(--primary); color: white; transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary {
+        border: 1.5px solid var(--gray-300);
+        color: var(--gray-600);
+        background: transparent;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: var(--gray-100); border-color: var(--gray-400); transform: translateY(-2px);
+    }
+    
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: var(--success-dark); transform: translateY(-2px); }
+    
+    .dropdown-menu {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 0.5rem;
+        margin-top: 0.5rem !important;
+        min-width: 280px;
+        animation: slideUp 0.2s ease-out;
+    }
+    
+    .dropdown-item {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: var(--gray-700);
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+        cursor: pointer; font-size: 0.95rem;
+    }
+    
+    .dropdown-item i {
+        width: 20px; color: var(--gray-500); font-size: 1.1rem; transition: var(--transition);
+    }
+    
+    .dropdown-item:hover {
+        background: var(--primary-light); color: var(--primary); transform: translateX(4px);
+    }
+    
+    .dropdown-item:hover i { color: var(--primary); }
+    
+    .dropdown-divider { height: 1px; background: var(--gray-200); margin: 0.5rem 0; }
+    
+    .dropdown-header {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem; font-weight: 600;
+        color: var(--gray-500);
+        text-transform: uppercase; letter-spacing: 0.5px;
+        background: transparent;
+    }
+    
+    .action-status {
+        display: flex; align-items: center; gap: 0.5rem;
+        margin-left: 1rem; padding-left: 1rem;
+        border-left: 1px solid var(--gray-200);
+        color: var(--gray-600); font-size: 0.9rem;
+    }
+    
+    .action-shortcut {
+        margin-left: auto; font-size: 0.75rem;
+        color: var(--gray-400); font-family: monospace;
+    }
+    
+    @media (max-width: 992px) {
+        .action-buttons { flex-direction: column; }
+        .btn, .dropdown { width: 100%; }
+        .dropdown-menu { width: 100%; margin-top: 0.25rem !important; }
+        .action-status { margin-left: 0; padding-left: 0; border-left: none; justify-content: center; }
     }
 
+    /* ============================================
+       SELECT2 CUSTOMIZATION
+       ============================================ */
+    
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300) !important;
+        border-radius: var(--radius-lg) !important;
+        height: 42px !important;
+        padding: 0.25rem 0;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 38px !important;
+        padding-left: 1rem !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+        right: 10px !important;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15) !important;
+    }
+    
+    .select2-dropdown {
+        border: 1px solid var(--gray-300) !important;
+        border-radius: var(--radius-lg) !important;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .select2-results__option--selected {
+        background: var(--primary-light) !important;
+        color: var(--primary) !important;
+    }
+
+    /* ============================================
+       ALERTS & NOTIFICATIONS
+       ============================================ */
+    
+    .alert {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        display: flex; align-items: center; gap: 0.75rem;
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .alert-danger { background: var(--danger-light); border-color: #f5c6cb; color: #721c24; }
+    .alert i { font-size: 1.2rem; }
+    
+    .toast-notification {
+        position: fixed;
+        top: 1rem; right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex; align-items: center; gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        max-width: 360px;
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error   { border-left: 4px solid var(--danger); }
+    
+    .toast-icon {
+        width: 32px; height: 32px;
+        border-radius: var(--radius-full);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+    }
+    
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error   { background: var(--danger-light);  color: var(--danger); }
+
+    /* ============================================
+       LOADING OVERLAY
+       ============================================ */
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(5px);
+        display: none; justify-content: center; align-items: center;
+        z-index: 9999;
+    }
+    
+    .loading-overlay.show { display: flex; }
+    
+    .loading-spinner {
+        width: 50px; height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================
+       RESPONSIVE ADJUSTMENTS
+       ============================================ */
+    
     @media (max-width: 768px) {
-        .enrollment-form-card {
-            padding: 1rem;
-        }
+        .form-section { padding: 1rem; }
+        .preview-avatar { width: 60px; height: 60px; font-size: 2rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="enrollment-container">
-    <!-- Student Summary Card -->
-    <div class="student-summary-card">
-        <div class="d-flex align-items-center gap-4">
-            <div class="rounded-circle bg-white bg-opacity-25 p-4">
-                <i class="bi bi-person-circle fs-1"></i>
+<div class="container-fluid px-0">
+
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+        <div class="progress-indicator">
+            <div class="progress-step active" onclick="scrollToSection(1)">
+                <span class="step-number">1</span>
+                <span class="step-label">Student Information</span>
             </div>
-            <div>
-                <h2 class="mb-2">{{ student.full_name }}</h2>
-                <div class="d-flex gap-3">
-                    <span class="badge bg-white text-primary">
-                        <i class="bi bi-qr-code me-1"></i>
-                        {{ student.registration_number }}
-                    </span>
-                    <span class="badge bg-white text-primary">
-                        <i class="bi bi-tag me-1"></i>
-                        {{ student.get_status_display }}
-                    </span>
-                </div>
+            <div class="progress-step" onclick="scrollToSection(2)">
+                <span class="step-number">2</span>
+                <span class="step-label">Enrollment Details</span>
             </div>
         </div>
     </div>
 
-    <!-- Current Enrollment Info -->
-    {% if current_enrollment %}
-    <div class="current-enrollment-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0">
-                <i class="bi bi-info-circle-fill text-primary me-2"></i>
-                Current Enrollment
-            </h5>
-            <span class="badge bg-success">{{ current_enrollment.get_status_display }}</span>
+    <!-- Student Preview Card -->
+    <div class="student-preview-card" id="studentPreview">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="preview-avatar" id="previewAvatar">
+                {% if student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+            </div>
+            <div class="preview-details">
+                <h3 class="mb-2" id="previewName">{{ student.full_name }}</h3>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="preview-badge" id="previewRegNumber">
+                        <i class="bi bi-upc-scan"></i>
+                        {{ student.registration_number }}
+                    </span>
+                    <span class="preview-badge" id="previewStatus">
+                        <i class="bi bi-flag"></i>
+                        {{ student.get_status_display }}
+                    </span>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <span class="preview-badge">
+                        <i class="bi bi-gender-{% if student.gender == 'male' %}male{% else %}female{% endif %}"></i>
+                        {{ student.get_gender_display|default:"Not specified" }}
+                    </span>
+                    <span class="preview-badge">
+                        <i class="bi bi-calendar"></i>
+                        Age: {{ student.age|default:"N/A" }}
+                    </span>
+                    <span class="preview-badge">
+                        <i class="bi bi-calendar-check"></i>
+                        Admitted: {{ student.admission_date|date:"d M Y" }}
+                    </span>
+                </div>
+            </div>
+            {% if current_enrollment %}
+            <div class="ms-auto">
+                <div class="current-enrollment-badge">
+                    <i class="bi bi-bookmark-check-fill me-2"></i>
+                    Currently enrolled in {{ current_enrollment.class_level.name }}
+                </div>
+            </div>
+            {% endif %}
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <small class="text-muted">Academic Year</small>
-                <p class="fw-semibold">{{ current_enrollment.academic_year.name }}</p>
+    </div>
+
+    <!-- Current Enrollment Info (if exists) -->
+    {% if current_enrollment %}
+    <div class="current-enrollment-section">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="bi bi-info-circle"></i>
             </div>
-            <div class="col-md-4">
-                <small class="text-muted">Class Level</small>
-                <p class="fw-semibold">{{ current_enrollment.class_level.name }}</p>
+            <h5 class="section-title">Current Enrollment</h5>
+            <span class="section-subtitle">Active enrollment details</span>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Academic Year:</span>
+                    <span class="enrollment-detail-value">{{ current_enrollment.academic_year.name }}</span>
+                </div>
             </div>
-            <div class="col-md-4">
-                <small class="text-muted">Enrolled Since</small>
-                <p class="fw-semibold">{{ current_enrollment.enrollment_date|date:"d M Y" }}</p>
+            <div class="col-md-3">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Class Level:</span>
+                    <span class="enrollment-detail-value">{{ current_enrollment.class_level.name }}</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Enrolled Since:</span>
+                    <span class="enrollment-detail-value">{{ current_enrollment.enrollment_date|date:"d M Y" }}</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="enrollment-detail-item">
+                    <span class="enrollment-detail-label">Status:</span>
+                    <span class="enrollment-detail-value">
+                        <span class="badge bg-{{ current_enrollment.status }}">
+                            {{ current_enrollment.get_status_display }}
+                        </span>
+                    </span>
+                </div>
             </div>
         </div>
         {% if current_enrollment.stream_assignment %}
-        <div class="stream-info mt-2">
-            <i class="bi bi-diagram-3"></i>
-            Current Stream: {{ current_enrollment.stream_assignment.stream_class.name }}
+        <div class="mt-3">
+            <div class="stream-badge">
+                <i class="bi bi-diagram-3"></i>
+                Current Stream: {{ current_enrollment.stream_assignment.stream_class.name }}
+            </div>
+        </div>
+        {% endif %}
+        {% if current_enrollment.combination %}
+        <div class="mt-2">
+            <div class="stream-badge">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                Combination: {{ current_enrollment.combination.code }}
+            </div>
         </div>
         {% endif %}
     </div>
     {% endif %}
 
-    <!-- Enrollment Form -->
-    <div class="enrollment-form-card">
-        <h4 class="mb-4">
-            <i class="bi bi-plus-circle-fill text-primary me-2"></i>
-            New Enrollment
-        </h4>
-
-        <form method="post" id="enrollmentForm" novalidate>
-            {% csrf_token %}
-
-            <!-- Hidden student field -->
-            <input type="hidden" name="student" value="{{ student.pk }}">
-
-            <!-- Academic Year -->
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Academic Year</label>
-                <select name="academic_year" class="form-select form-select-lg" required id="academicYear">
-                    <option value="">Select academic year...</option>
-                    {% for year in form.fields.academic_year.queryset %}
-                    <option value="{{ year.pk }}" {% if year.is_active %}selected{% endif %}>
-                        {{ year.name }} {% if year.is_active %}(Current){% endif %}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Class Level -->
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Class Level</label>
-                <select name="class_level" class="form-select form-select-lg" required id="classLevel">
-                    <option value="">Select class level...</option>
-                    {% for level in form.fields.class_level.queryset %}
-                    <option value="{{ level.pk }}" data-level-type="{{ level.educational_level.level_type }}">
-                        {{ level.name }} ({{ level.educational_level.name }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Stream Selection (Dynamic) -->
-            <div class="mb-4" id="streamSection" style="display: none;">
-                <label class="form-label fw-semibold">Select Stream</label>
-                <div id="streamList" class="mt-2">
-                    <!-- Streams will be loaded via AJAX -->
+    <!-- Main Form - Using standard form submission like the working template -->
+    <form method="post" id="enrollmentForm" action="{% url 'management:student_enroll' student.pk %}" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="student" value="{{ student.pk }}">
+        
+        <!-- Section 1: Student Information (Read-only display) -->
+        <div class="form-section" id="section1">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="bi bi-person-badge"></i>
                 </div>
-                <small class="text-muted">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Stream assignment is optional. Students can be assigned later.
-                </small>
+                <h5 class="section-title">Student Information</h5>
+                <span class="section-subtitle">Student details (read-only)</span>
             </div>
-
-            <!-- Combination (For A-Level) -->
-            <div class="mb-4" id="combinationSection" style="display: none;">
-                <label class="form-label fw-semibold">Combination</label>
-                <select name="combination" class="form-select form-select-lg" id="combination">
-                    <option value="">Select combination...</option>
-                    {% for combo in form.fields.combination.queryset %}
-                    <option value="{{ combo.pk }}" data-code="{{ combo.code }}">
-                        {{ combo.code }} — {{ combo.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-                <small class="text-muted">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Required for A-Level students
-                </small>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" value="{{ student.full_name }}" readonly disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Registration Number</label>
+                        <input type="text" class="form-control" value="{{ student.registration_number }}" readonly disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="text" class="form-control" value="{{ student.date_of_birth|date:'d M Y'|default:'Not specified' }}" readonly disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <input type="text" class="form-control" value="{{ student.get_gender_display|default:'Not specified' }}" readonly disabled>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Enrollment Date -->
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Enrollment Date</label>
-                <input type="date" name="enrollment_date" class="form-control form-control-lg" 
-                       value="{{ form.enrollment_date.value|date:'Y-m-d'|default:'' }}" required>
+        <!-- Section 2: Enrollment Details -->
+        <div class="form-section" id="section2">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <h5 class="section-title">Enrollment Details</h5>
+                <span class="section-subtitle">Select academic year and class level</span>
             </div>
+            <div class="row g-4">
 
-            <!-- Status -->
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Status</label>
-                <select name="status" class="form-select form-select-lg">
-                    {% for value, label in form.fields.status.choices %}
-                    <option value="{{ value }}" {% if value == 'active' %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <!-- Academic Year -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Academic Year
+                            <span class="required-star">*</span>
+                        </label>
+                        {{ form.academic_year }}
+                        <div class="invalid-feedback" id="academicYearError"></div>
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Only active academic years are shown
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class Level -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Class Level
+                            <span class="required-star">*</span>
+                        </label>
+                        {{ form.class_level }}
+                        <div class="invalid-feedback" id="classLevelError"></div>
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Select the class level for this enrollment
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enrollment Date -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Enrollment Date
+                            <span class="required-star">*</span>
+                        </label>
+                        {{ form.enrollment_date }}
+                        <div class="invalid-feedback" id="enrollmentDateError"></div>
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Date when the student enrolled
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        {{ form.status }}
+                        <div class="invalid-feedback" id="statusError"></div>
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Current enrollment status
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remarks -->
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="form-label">Remarks</label>
+                        {{ form.remarks }}
+                        <div class="invalid-feedback" id="remarksError"></div>
+                        <div class="field-hint">
+                            <span id="remarksCount">{{ form.remarks.value|length|default:0 }}</span>/500 characters
+                        </div>
+                    </div>
+                </div>
+
             </div>
+        </div>
 
-            <!-- Remarks -->
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Remarks (Optional)</label>
-                <textarea name="remarks" class="form-control" rows="3">{{ form.remarks.value|default:'' }}</textarea>
-            </div>
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
 
-            {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                <div>{{ error }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Action Buttons -->
-            <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
-                <a href="{% url 'management:student_detail' student.pk %}" class="btn btn-outline-secondary btn-lg">
-                    <i class="bi bi-x-lg"></i>
-                    Cancel
-                </a>
+        <!-- Action Menu - Using standard submit buttons like the working template -->
+        <div class="action-menu-container">
+            <div class="action-menu-card">
+                <div class="action-menu-header">
+                    <div class="action-menu-title">
+                        <i class="bi bi-lightning-charge"></i>
+                        Quick Actions
+                    </div>
+                    <div class="action-status" id="actionStatus">
+                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                        Ready to enroll
+                    </div>
+                </div>
                 
-                <button type="submit" name="action" value="save" class="btn btn-primary btn-lg">
-                    <i class="bi bi-check-lg"></i>
-                    Enroll Student
-                </button>
+                <div class="action-buttons">
+                    <!-- Primary Enroll Button - Standard submit button with name="action" -->
+                    <button type="submit" name="action" value="save" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Enroll Student
+                        <span class="action-shortcut">⌘S</span>
+                    </button>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                id="actionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-chevron-down"></i>
+                            More Options
+                        </button>
+                        
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionDropdown">
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="bi bi-diagram-3"></i>
+                                    Stream Assignment
+                                </h6>
+                            </li>
+                            <li>
+                                <!-- Standard submit button with name="action" -->
+                                <button type="submit" name="action" value="save_and_assign_stream" class="dropdown-item">
+                                    <i class="bi bi-diagram-3"></i>
+                                    Enroll &amp; Assign Stream Later
+                                    <span class="action-shortcut">⌘E</span>
+                                </button>
+                            </li>
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="bi bi-arrow-left"></i>
+                                    Navigation
+                                </h6>
+                            </li>
+                            <li>
+                                <a href="{% url 'management:student_detail' student.pk %}" class="dropdown-item">
+                                    <i class="bi bi-person-circle"></i>
+                                    Back to Student Profile
+                                    <span class="action-shortcut">⌘B</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'management:student_list' %}" class="dropdown-item">
+                                    <i class="bi bi-list-ul"></i>
+                                    Student List
+                                    <span class="action-shortcut">⌘L</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline-secondary" id="cancelBtn">
+                        <i class="bi bi-x-lg"></i>
+                        Cancel
+                    </button>
+                </div>
                 
-                <button type="submit" name="action" value="save_and_stream" class="btn btn-outline-primary btn-lg">
-                    <i class="bi bi-diagram-3"></i>
-                    Enroll & Assign Stream
-                </button>
+                <div class="mt-2 text-center text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Fields marked with <span class="text-danger">*</span> are required
+                </div>
             </div>
-        </form>
+        </div>
+    </form>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                    Discard Enrollment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel? Any unsaved changes will be lost.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Editing</button>
+                <a href="{% url 'management:student_detail' student.pk %}" class="btn btn-danger">Yes, Discard</a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const classLevel = document.getElementById('classLevel');
-    const streamSection = document.getElementById('streamSection');
-    const streamList = document.getElementById('streamList');
-    const combinationSection = document.getElementById('combinationSection');
-    const academicYear = document.getElementById('academicYear');
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
 
-    // Load streams when class level changes
-    classLevel.addEventListener('change', function() {
-        const classLevelId = this.value;
-        
-        if (!classLevelId) {
-            streamSection.style.display = 'none';
-            combinationSection.style.display = 'none';
-            return;
-        }
+    // Bootstrap tooltips
+    [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      .forEach(function (el) { new bootstrap.Tooltip(el); });
 
-        // Check if A-Level
-        const selectedOption = this.options[this.selectedIndex];
-        const levelType = selectedOption.dataset.levelType;
-        
-        if (levelType === 'A_LEVEL') {
-            combinationSection.style.display = 'block';
+    // Character counter for remarks
+    const remarksField = document.getElementById('id_remarks');
+    const remarksCount = document.getElementById('remarksCount');
+
+    if (remarksField && remarksCount) {
+        remarksField.addEventListener('input', function () {
+            remarksCount.textContent = remarksField.value.length;
+        });
+    }
+
+    // Select2 initialization
+    if (typeof $ !== 'undefined') {
+        $('#id_academic_year').select2({ placeholder: 'Select academic year...', allowClear: true, width: '100%' });
+        $('#id_class_level').select2({ placeholder: 'Select class level...', allowClear: true, width: '100%' });
+        $('#id_status').select2({ placeholder: 'Select status...', allowClear: true, width: '100%' });
+    }
+
+    // Client-side validation
+    const academicYearSelect = document.getElementById('id_academic_year');
+    const classLevelSelect = document.getElementById('id_class_level');
+    const enrollmentDate = document.getElementById('id_enrollment_date');
+    const form = document.getElementById('enrollmentForm');
+
+    function validateField(field, errorId, message) {
+        if (!field.value) {
+            field.classList.add('is-invalid');
+            const errorEl = document.getElementById(errorId);
+            if (errorEl) errorEl.textContent = message;
+            return false;
         } else {
-            combinationSection.style.display = 'none';
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            return true;
+        }
+    }
+
+    // Real-time validation
+    if (academicYearSelect) {
+        academicYearSelect.addEventListener('change', function() {
+            validateField(this, 'academicYearError', 'Academic year is required');
+        });
+    }
+
+    if (classLevelSelect) {
+        classLevelSelect.addEventListener('change', function() {
+            validateField(this, 'classLevelError', 'Class level is required');
+        });
+    }
+
+    if (enrollmentDate) {
+        enrollmentDate.addEventListener('change', function() {
+            validateField(this, 'enrollmentDateError', 'Enrollment date is required');
+        });
+    }
+
+    // Form validation on submit (standard form submission)
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Clear previous error states
+        document.querySelectorAll('.is-invalid').forEach(function(el) {
+            el.classList.remove('is-invalid');
+        });
+        document.querySelectorAll('.invalid-feedback').forEach(function(el) {
+            el.textContent = '';
+        });
+
+        // Validate fields
+        if (!validateField(academicYearSelect, 'academicYearError', 'Academic year is required')) {
+            isValid = false;
         }
 
-        // Load streams
-        fetch(`/management/get-streams/?class_level_id=${classLevelId}`)
-            .then(response => response.json())
-            .then(streams => {
-                if (streams.length > 0) {
-                    streamList.innerHTML = '';
-                    streams.forEach(stream => {
-                        const fillPercent = (stream.student_count / stream.capacity) * 100;
-                        let capacityClass = '';
-                        if (fillPercent >= 90) capacityClass = 'capacity-danger';
-                        else if (fillPercent >= 75) capacityClass = 'capacity-warning';
-                        
-                        streamList.innerHTML += `
-                            <div class="stream-option" onclick="selectStream(${stream.id})">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">${stream.name}</h6>
-                                        <small class="text-muted">Capacity: ${stream.student_count}/${stream.capacity}</small>
-                                    </div>
-                                    <span class="capacity-badge">
-                                        ${Math.round((stream.student_count / stream.capacity) * 100)}% Full
-                                    </span>
-                                </div>
-                                <div class="capacity-indicator">
-                                    <div class="capacity-fill ${capacityClass}" style="width: ${fillPercent}%"></div>
-                                </div>
-                                <input type="radio" name="stream" value="${stream.id}" style="display: none;">
-                            </div>
-                        `;
-                    });
-                    streamSection.style.display = 'block';
-                } else {
-                    streamList.innerHTML = '<p class="text-muted">No streams available for this class level.</p>';
-                    streamSection.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading streams:', error);
-                streamList.innerHTML = '<p class="text-danger">Error loading streams.</p>';
-            });
-    });
+        if (!validateField(classLevelSelect, 'classLevelError', 'Class level is required')) {
+            isValid = false;
+        }
 
-    // Form validation
-    document.getElementById('enrollmentForm').addEventListener('submit', function(e) {
-        const classLevelValue = classLevel.value;
-        const selectedOption = classLevel.options[classLevel.selectedIndex];
-        
-        if (selectedOption && selectedOption.dataset.levelType === 'A_LEVEL') {
-            const combination = document.getElementById('combination').value;
-            if (!combination) {
-                e.preventDefault();
-                alert('Please select a combination for A-Level student.');
+        if (!validateField(enrollmentDate, 'enrollmentDateError', 'Enrollment date is required')) {
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+            showNotification('Please fix the errors before submitting', 'error');
+            return false;
+        }
+
+        // Show loading state on the submit button that was clicked
+        const submitter = e.submitter;
+        if (submitter && submitter.classList.contains('btn-primary')) {
+            submitter.disabled = true;
+            submitter.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enrolling...';
+            
+            const actionStatus = document.getElementById('actionStatus');
+            if (actionStatus) {
+                actionStatus.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
             }
         }
     });
+
+    // Cancel button handler
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            new bootstrap.Modal(document.getElementById('cancelModal')).show();
+        });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.target.matches('input, textarea, select')) return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            const hiddenAction = document.createElement('input');
+            hiddenAction.type = 'hidden';
+            hiddenAction.name = 'action';
+            hiddenAction.value = 'save';
+            form.appendChild(hiddenAction);
+            form.submit();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+            e.preventDefault();
+            const hiddenAction = document.createElement('input');
+            hiddenAction.type = 'hidden';
+            hiddenAction.name = 'action';
+            hiddenAction.value = 'save_and_assign_stream';
+            form.appendChild(hiddenAction);
+            form.submit();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+            e.preventDefault();
+            window.location.href = "{% url 'management:student_detail' student.pk %}";
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+            e.preventDefault();
+            window.location.href = "{% url 'management:student_list' %}";
+        }
+    });
+
+    // Scroll to section helper
+    window.scrollToSection = function(sectionNumber) {
+        const section = document.getElementById('section' + sectionNumber);
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Progress indicator update on scroll
+    const sections = document.querySelectorAll('.form-section');
+    const steps = document.querySelectorAll('.progress-step');
+
+    if (steps.length > 0) {
+        window.addEventListener('scroll', function() {
+            let current = 1;
+            sections.forEach(function(section, index) {
+                if (section.getBoundingClientRect().top <= 200) {
+                    current = index + 1;
+                }
+            });
+
+            steps.forEach(function(step, index) {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < current) {
+                    step.classList.add('completed');
+                } else if (index + 1 === current) {
+                    step.classList.add('active');
+                }
+            });
+        });
+    }
 });
 
-// Global function to select stream
-function selectStream(streamId) {
-    // Remove selected class from all options
-    document.querySelectorAll('.stream-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    
-    // Add selected class to clicked option
-    const selectedOption = Array.from(document.querySelectorAll('.stream-option')).find(
-        opt => opt.querySelector(`input[value="${streamId}"]`)
-    );
-    if (selectedOption) {
-        selectedOption.classList.add('selected');
-        selectedOption.querySelector('input').checked = true;
-    }
+// Toast notification function
+function showNotification(message, type) {
+    type = type || 'success';
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification ' + type;
+    toast.innerHTML =
+        '<div class="toast-icon ' + type + '">' +
+            '<i class="bi bi-' + (type === 'success' ? 'check-circle' : 'exclamation-triangle') + '"></i>' +
+        '</div>' +
+        '<div class="flex-grow-1"><div class="fw-semibold">' + message + '</div></div>' +
+        '<button class="btn-close" onclick="this.parentElement.remove()"></button>';
+
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+        if (toast.parentElement) toast.remove();
+    }, 5000);
 }
 </script>
 {% endblock %}

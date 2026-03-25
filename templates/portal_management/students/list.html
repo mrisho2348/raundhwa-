@@ -1,4 +1,3 @@
-<!-- templates/portal_management/students/list.html -->
 {% extends 'portal_management/base.html' %}
 {% load static %}
 
@@ -23,6 +22,10 @@
         --warning-light: #fff3cd;
         --info: #17a2b8;
         --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        --teal: #20c997;
+        --teal-light: #d1f0e6;
         
         --gray-50: #f9fafb;
         --gray-100: #f3f4f6;
@@ -67,6 +70,7 @@
         transition: var(--transition);
         position: relative;
         overflow: hidden;
+        cursor: pointer;
     }
 
     .stat-card:hover {
@@ -232,7 +236,7 @@
         color: white;
     }
 
-    /* Table Styles - FIXED for responsive with normal row spacing */
+    /* Table Styles */
     .table-responsive {
         border-radius: var(--radius-xl);
         overflow-x: auto;
@@ -245,7 +249,7 @@
     .table {
         margin-bottom: 0;
         width: 100%;
-        min-width: 1200px; /* Ensures table doesn't break on desktop */
+        min-width: 1000px;
         border-collapse: separate;
         border-spacing: 0;
     }
@@ -274,18 +278,9 @@
     .table tbody tr {
         transition: var(--transition);
     }
-
-    .table tbody tr:hover {
-        background-color: transparent;
-    }
     
     .table tbody tr:hover td {
         background-color: var(--gray-50);
-    }
-
-    /* Remove any extra spacing between rows */
-    .table tbody tr:last-child td {
-        border-bottom: 1px solid var(--gray-200);
     }
 
     .student-avatar {
@@ -381,54 +376,33 @@
         color: var(--primary);
     }
 
-    /* Action Buttons */
+    /* Quick Actions Button */
     .action-buttons {
         display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
         justify-content: center;
+        align-items: center;
     }
 
-    .btn-action {
-        width: 32px;
-        height: 32px;
+    .btn-quick-actions {
+        width: 36px;
+        height: 36px;
         border-radius: var(--radius-lg);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         transition: var(--transition);
-        border: 1px solid transparent;
         background: transparent;
         color: var(--gray-600);
-        border: none;
+        text-decoration: none;
         cursor: pointer;
+        border: none;
+        font-size: 1.2rem;
     }
 
-    .btn-action:hover {
+    .btn-quick-actions:hover {
         background: var(--primary-light);
         color: var(--primary);
         transform: translateY(-2px);
-    }
-
-    .btn-action.view:hover {
-        background: var(--info-light);
-        color: var(--info);
-    }
-
-    .btn-action.edit:hover {
-        background: var(--primary-light);
-        color: var(--primary);
-    }
-
-    .btn-action.delete:hover {
-        background: var(--danger-light);
-        color: var(--danger);
-    }
-
-    .btn-action:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
     }
 
     /* Gender icons */
@@ -454,13 +428,6 @@
         transition: var(--transition);
     }
 
-    .dataTables_wrapper .dataTables_length select:focus,
-    .dataTables_wrapper .dataTables_filter input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
-        outline: none;
-    }
-
     .dataTables_wrapper .dataTables_paginate .paginate_button {
         border-radius: var(--radius-md);
         padding: 0.4rem 0.8rem;
@@ -474,17 +441,11 @@
         border: none;
     }
 
-    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-        background: var(--primary-light) !important;
-        color: var(--primary) !important;
-        border: none;
-    }
-
-    /* Buttons */
     .dt-buttons {
         display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
+        margin-bottom: 1rem;
     }
 
     .dt-button {
@@ -496,7 +457,6 @@
         font-weight: 500 !important;
         color: var(--gray-700) !important;
         transition: var(--transition) !important;
-        box-shadow: none !important;
     }
 
     .dt-button:hover {
@@ -506,38 +466,41 @@
         transform: translateY(-2px);
     }
 
-    .dt-button.buttons-excel:hover {
-        border-color: var(--success) !important;
-        color: var(--success) !important;
+    /* Modal Styles */
+    .modal-content {
+        border-radius: var(--radius-2xl);
+        border: none;
+        box-shadow: var(--shadow-xl);
     }
 
-    .dt-button.buttons-pdf:hover {
-        border-color: var(--danger) !important;
-        color: var(--danger) !important;
+    .modal-header {
+        border-bottom: 2px solid var(--gray-200);
+        padding: 1.5rem;
     }
 
-    .dt-button.buttons-print:hover {
-        border-color: var(--info) !important;
-        color: var(--info) !important;
+    .modal-header .modal-title {
+        font-weight: 700;
+        color: var(--gray-800);
     }
 
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 3rem;
+    .modal-body {
+        padding: 1.5rem;
     }
 
-    .empty-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: var(--gray-100);
-        color: var(--gray-400);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        margin: 0 auto 1.5rem;
+    .list-group-item {
+        padding: 0.75rem 1rem;
+        border: none;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-group-item:hover {
+        background: var(--gray-50);
+        transform: translateX(5px);
     }
 
     /* Loading State */
@@ -572,7 +535,58 @@
         to { transform: rotate(360deg); }
     }
 
-    /* Responsive - Keep table structure on mobile */
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error { border-left: 4px solid var(--danger); }
+    .toast-notification.warning { border-left: 4px solid var(--warning); }
+
+    /* Responsive */
     @media (max-width: 768px) {
         .page-header {
             padding: 1.5rem;
@@ -591,46 +605,20 @@
             gap: 1rem;
             align-items: flex-start;
         }
-
-        .modal-dialog {
-            margin: 0.5rem;
-        }
         
-        /* Keep table structure on mobile - just make it horizontally scrollable */
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
         
         .table {
-            min-width: 1200px; /* Maintain desktop width */
+            min-width: 1000px;
         }
-        
-        /* Remove any card-like display on mobile */
-        .table tbody td {
-            display: table-cell;
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-        
-        .table tbody td::before {
-            display: none; /* Remove data-label pseudo-elements */
-        }
-        
-        .table thead {
-            display: table-header-group; /* Keep table headers visible */
-        }
-        
-        .action-buttons {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .student-avatar,
-        .student-avatar-placeholder {
-            width: 32px;
-            height: 32px;
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -641,6 +629,9 @@
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
 </div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
 <!-- Page Header -->
 <div class="page-header">
@@ -663,7 +654,7 @@
 
 <!-- Status Summary Cards -->
 <div class="stats-grid">
-    <div class="stat-card success">
+    <div class="stat-card success" onclick="filterByStatus('active')">
         <div class="stat-icon success">
             <i class="bi bi-check-circle"></i>
         </div>
@@ -671,7 +662,7 @@
         <div class="stat-label">Active Students</div>
     </div>
     
-    <div class="stat-card warning">
+    <div class="stat-card warning" onclick="filterByStatus('suspended')">
         <div class="stat-icon warning">
             <i class="bi bi-exclamation-triangle"></i>
         </div>
@@ -679,7 +670,7 @@
         <div class="stat-label">Suspended</div>
     </div>
     
-    <div class="stat-card danger">
+    <div class="stat-card danger" onclick="filterByStatus('withdrawn')">
         <div class="stat-icon danger">
             <i class="bi bi-box-arrow-right"></i>
         </div>
@@ -687,7 +678,7 @@
         <div class="stat-label">Withdrawn</div>
     </div>
     
-    <div class="stat-card info">
+    <div class="stat-card info" onclick="filterByStatus('transferred')">
         <div class="stat-icon info">
             <i class="bi bi-arrow-left-right"></i>
         </div>
@@ -695,7 +686,7 @@
         <div class="stat-label">Transferred</div>
     </div>
     
-    <div class="stat-card primary">
+    <div class="stat-card primary" onclick="filterByStatus('completed')">
         <div class="stat-icon primary">
             <i class="bi bi-mortarboard"></i>
         </div>
@@ -718,7 +709,7 @@
     </div>
 
     <div class="table-responsive">
-        <table id="studentTable" class="table table-hover">
+        <table id="studentTable" class="table text-nowrap table-hover">
             <thead>
                 <tr>
                     <th>Reg No</th>
@@ -727,11 +718,10 @@
                     <th>Status</th>
                     <th>Admission Date</th>
                     <th>Actions</th>
-                </tr>
-            </thead>
+                </thead>
             <tbody>
                 {% for student in students %}
-                <tr>
+                <tr data-student-id="{{ student.pk }}" data-student-status="{{ student.status }}">
                     <td>
                         <span class="registration-code">{{ student.registration_number|default:"—" }}</span>
                     </td>
@@ -769,24 +759,12 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <a href="{% url 'management:student_detail' student.pk %}"
-                               class="btn-action view" 
-                               title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{% url 'management:student_update' student.pk %}"
-                               class="btn-action edit" 
-                               title="Edit Student">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            {% if student.status == 'active' %}
                             <button type="button" 
-                                    class="btn-action delete" 
-                                    title="More Actions"
-                                    onclick="showStudentActions({{ student.pk }})">
-                                <i class="bi bi-three-dots"></i>
+                                    class="btn-quick-actions" 
+                                    title="Quick Actions"
+                                    onclick="showStudentActions({{ student.pk }}, '{{ student.full_name|escapejs }}', '{{ student.status|escapejs }}')">
+                                <i class="bi bi-three-dots-vertical"></i>
                             </button>
-                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -841,10 +819,26 @@
                         <i class="bi bi-people text-info me-3"></i>
                         Manage Parents
                     </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="examResultsLink">
+                        <i class="bi bi-table text-purple me-3"></i>
+                        View Exam Results
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="academicTrendLink">
+                        <i class="bi bi-graph-up text-teal me-3"></i>
+                        Academic Performance Trend
+                    </a>
                     <div class="dropdown-divider"></div>
                     <a href="#" class="list-group-item list-group-item-action text-danger" id="suspendLink">
                         <i class="bi bi-exclamation-triangle me-3"></i>
                         Suspend Student
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action text-danger" id="transferLink">
+                        <i class="bi bi-arrow-left-right me-3"></i>
+                        Transfer Out
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action text-danger" id="withdrawLink">
+                        <i class="bi bi-box-arrow-right me-3"></i>
+                        Withdraw
                     </a>
                 </div>
             </div>
@@ -855,116 +849,479 @@
 
 {% block extra_js %}
 <script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let currentStudentId = null;
+let currentStudentName = null;
+let currentStudentStatus = null;
+let dataTable = null;
+
 $(document).ready(function () {
-    // Initialize DataTable with responsive fixes
-    const table = $('#studentTable').DataTable({
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
-                className: 'dt-button buttons-excel',
-                title: 'Students List'
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
-                className: 'dt-button buttons-pdf',
-                title: 'Students List',
-                orientation: 'landscape',
-                pageSize: 'A4'
-            },
-            {
-                extend: 'print',
-                text: '<i class="bi bi-printer me-1"></i>Print',
-                className: 'dt-button buttons-print',
-                title: 'Students List'
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", csrfToken);
             }
-        ],
-        dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
-             "<'row'<'col-sm-12'tr>>" +
-             "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
-        order: [[0, 'asc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search students...",
-            lengthMenu: "Show _MENU_ entries",
-            info: "Showing _START_ to _END_ of _TOTAL_ students",
-            infoEmpty: "Showing 0 to 0 of 0 students",
-            infoFiltered: "(filtered from _MAX_ total students)",
-            paginate: {
-                first: '<i class="bi bi-chevron-double-left"></i>',
-                previous: '<i class="bi bi-chevron-left"></i>',
-                next: '<i class="bi bi-chevron-right"></i>',
-                last: '<i class="bi bi-chevron-double-right"></i>'
-            }
-        },
-        // Responsive fixes
-        scrollX: true,
-        autoWidth: false,
-        initComplete: function() {
-            // Add custom styling to search input
-            $('.dataTables_filter input').addClass('form-control form-control-sm');
-            $('.dataTables_length select').addClass('form-select form-select-sm');
-            
-            // Append buttons to a custom container
-            $('.dt-buttons').appendTo('.dataTables_length');
-            
-            // Fix responsive issues
-            $('.dataTables_scrollBody').css('overflow-x', 'auto');
         }
     });
 
-    // Handle window resize for responsive
-    $(window).on('resize', function() {
-        table.columns.adjust();
-    });
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    if ($('#studentTable').length && $('#studentTable tbody tr').length > 0) {
+        dataTable = $('#studentTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: 'Students List'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: 'Students List',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: 'Students List'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[4, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search students...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ students",
+                infoEmpty: "Showing 0 to 0 of 0 students",
+                infoFiltered: "(filtered from _MAX_ total students)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            scrollX: true,
+            autoWidth: false,
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
 
-    // Show loading on export
-    $('.dt-button').on('click', function() {
-        $('#loadingOverlay').addClass('show');
-        setTimeout(function() {
-            $('#loadingOverlay').removeClass('show');
-        }, 1000);
-    });
+        $(window).on('resize', function() {
+            if (dataTable) {
+                dataTable.columns.adjust();
+            }
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // FILTER BY STATUS (using DataTable)
+    // ============================================
+    window.filterByStatus = function(status) {
+        if (dataTable) {
+            dataTable.search('').columns().search('');
+            dataTable.column(3).search(status).draw();
+        }
+        showNotification(`Showing ${status} students`, 'info', 2000);
+    };
 });
 
-// Quick Actions Modal
-let currentStudentId = null;
-
-function showStudentActions(studentId) {
+// ============================================
+// QUICK ACTIONS MODAL
+// ============================================
+function showStudentActions(studentId, studentName, studentStatus) {
     currentStudentId = studentId;
+    currentStudentName = studentName;
+    currentStudentStatus = studentStatus;
     
-    // Update modal links with student ID
-    document.getElementById('viewDetailLink').href = `/management/students/${studentId}/`;
-    document.getElementById('editStudentLink').href = `/management/students/${studentId}/edit/`;
-    document.getElementById('enrollStudentLink').href = `/management/students/${studentId}/enroll/`;
-    document.getElementById('parentsLink').href = `/management/students/${studentId}/parents/`;
-    document.getElementById('suspendLink').href = `#`; // You can implement suspend modal here
+    // Base URL for the student
+    const baseUrl = `/management/students/${studentId}/`;
     
-    // Show modal
+    // Update modal links
+    document.getElementById('viewDetailLink').href = `${baseUrl}`;
+    document.getElementById('editStudentLink').href = `${baseUrl}edit/`;
+    document.getElementById('enrollStudentLink').href = `${baseUrl}enroll/`;
+    document.getElementById('parentsLink').href = `${baseUrl}parents/`;
+    document.getElementById('examResultsLink').href = `${baseUrl}exam-sessions/`;
+    document.getElementById('academicTrendLink').href = `${baseUrl}academic-trend/`;
+    
+    // Dynamic visibility based on status
+    const suspendLink = document.getElementById('suspendLink');
+    const transferLink = document.getElementById('transferLink');
+    const withdrawLink = document.getElementById('withdrawLink');
+    
+    // Only show lifecycle actions for active students
+    if (studentStatus === 'active') {
+        suspendLink.style.display = 'flex';
+        transferLink.style.display = 'flex';
+        withdrawLink.style.display = 'flex';
+        
+        // Set up suspend link with modal
+        suspendLink.href = '#';
+        suspendLink.onclick = function(e) {
+            e.preventDefault();
+            $('#studentActionsModal').modal('hide');
+            showSuspendModal(studentId, studentName);
+        };
+        
+        // Set up transfer link
+        transferLink.href = '#';
+        transferLink.onclick = function(e) {
+            e.preventDefault();
+            $('#studentActionsModal').modal('hide');
+            showTransferModal(studentId, studentName);
+        };
+        
+        // Set up withdraw link
+        withdrawLink.href = '#';
+        withdrawLink.onclick = function(e) {
+            e.preventDefault();
+            $('#studentActionsModal').modal('hide');
+            showWithdrawModal(studentId, studentName);
+        };
+    } else {
+        suspendLink.style.display = 'none';
+        transferLink.style.display = 'none';
+        withdrawLink.style.display = 'none';
+    }
+    
+    // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('studentActionsModal'));
     modal.show();
 }
 
+// ============================================
+// SUSPEND MODAL
+// ============================================
+function showSuspendModal(studentId, studentName) {
+    const modalHtml = `
+        <div class="modal fade" id="suspendModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Suspend Student
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="suspendForm" method="POST" action="/management/students/${studentId}/suspend/">
+                        <div class="modal-body">
+                            <p>Are you sure you want to suspend <strong>${escapeHtml(studentName)}</strong>?</p>
+                            <div class="alert alert-warning">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Suspended students will not be able to access the system until suspension is lifted.
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Reason for Suspension</label>
+                                <textarea name="reason" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Expected Return Date (Optional)</label>
+                                <input type="date" name="expected_return_date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Suspend Student</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if present
+    $('#suspendModal').remove();
+    $('body').append(modalHtml);
+    
+    // Handle form submission
+    $('#suspendForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRFToken': csrfToken },
+            success: function(response) {
+                $('#suspendModal').modal('hide');
+                showNotification(`${escapeHtml(studentName)} has been suspended.`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            },
+            error: function(xhr) {
+                showNotification(xhr.responseJSON?.message || 'Error suspending student', 'error');
+            }
+        });
+    });
+    
+    $('#suspendModal').modal('show');
+}
+
+// ============================================
+// TRANSFER MODAL
+// ============================================
+function showTransferModal(studentId, studentName) {
+    const modalHtml = `
+        <div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-arrow-left-right me-2"></i>
+                            Transfer Student
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="transferForm" method="POST" action="/management/students/${studentId}/transfer/">
+                        <div class="modal-body">
+                            <p>Transfer <strong>${escapeHtml(studentName)}</strong> to another school?</p>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                The student's status will be changed to "Transferred".
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Destination School Name *</label>
+                                <input type="text" name="destination_school" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Transfer Date *</label>
+                                <input type="date" name="transfer_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Reason for Transfer</label>
+                                <select name="reason" class="form-select">
+                                    <option value="relocation">Family Relocation</option>
+                                    <option value="fees">Unable to Pay Fees</option>
+                                    <option value="discipline">Disciplinary Transfer</option>
+                                    <option value="voluntary">Voluntary Transfer</option>
+                                    <option value="medical">Medical Reasons</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remarks (Optional)</label>
+                                <textarea name="remarks" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-info">Transfer Student</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#transferModal').remove();
+    $('body').append(modalHtml);
+    
+    $('#transferForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRFToken': csrfToken },
+            success: function(response) {
+                $('#transferModal').modal('hide');
+                showNotification(`${escapeHtml(studentName)} has been transferred out.`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            },
+            error: function(xhr) {
+                showNotification(xhr.responseJSON?.message || 'Error transferring student', 'error');
+            }
+        });
+    });
+    
+    $('#transferModal').modal('show');
+}
+
+// ============================================
+// WITHDRAW MODAL
+// ============================================
+function showWithdrawModal(studentId, studentName) {
+    const modalHtml = `
+        <div class="modal fade" id="withdrawModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Withdraw Student
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="withdrawForm" method="POST" action="/management/students/${studentId}/withdraw/">
+                        <div class="modal-body">
+                            <p>Withdraw <strong>${escapeHtml(studentName)}</strong> from the school?</p>
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                This action cannot be undone. The student's status will be changed to "Withdrawn".
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Withdrawal Date *</label>
+                                <input type="date" name="withdrawal_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Reason for Withdrawal</label>
+                                <select name="reason" class="form-select">
+                                    <option value="fees">Unable to Pay Fees</option>
+                                    <option value="family">Family Circumstances</option>
+                                    <option value="illness">Illness / Medical</option>
+                                    <option value="pregnancy">Pregnancy</option>
+                                    <option value="employment">Went to Work / Employment</option>
+                                    <option value="disability">Disability / Health Condition</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remarks (Optional)</label>
+                                <textarea name="remarks" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Withdraw Student</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#withdrawModal').remove();
+    $('body').append(modalHtml);
+    
+    $('#withdrawForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRFToken': csrfToken },
+            success: function(response) {
+                $('#withdrawModal').modal('hide');
+                showNotification(`${escapeHtml(studentName)} has been withdrawn.`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            },
+            error: function(xhr) {
+                showNotification(xhr.responseJSON?.message || 'Error withdrawing student', 'error');
+            }
+        });
+    });
+    
+    $('#withdrawModal').modal('show');
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+function showNotification(message, type = 'success', duration = 5000) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle-fill',
+        error: 'x-octagon-fill',
+        warning: 'exclamation-triangle-fill',
+        info: 'info-circle-fill'
+    };
+    
+    const icon = icons[type] || 'info-circle-fill';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, duration);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    // Ctrl+F to focus search
     if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         $('.dataTables_filter input').focus();
     }
     
-    // Ctrl+N for new student
     if (e.ctrlKey && e.key === 'n') {
         e.preventDefault();
         window.location.href = "{% url 'management:student_create' %}";
     }
+    
+    if (e.key === 'Escape') {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('studentActionsModal'));
+        if (modal) modal.hide();
+    }
 });
 
-// Show tooltips
+// Tooltips
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
 var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);

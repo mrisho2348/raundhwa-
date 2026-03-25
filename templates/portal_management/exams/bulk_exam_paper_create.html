@@ -1,0 +1,1238 @@
+<!-- templates/portal_management/exams/bulk_exam_paper_create.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Bulk Create Papers — {{ session.name }}{% endblock %}
+{% block page_title %}Bulk Create Exam Papers{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM BULK EXAM PAPER CREATE STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Session Info Card */
+    .session-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .session-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .session-details {
+        flex: 1;
+    }
+
+    .session-details h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .session-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .session-meta i {
+        color: var(--primary);
+        margin-right: 0.3rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.draft {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.submitted {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .status-badge.verified {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .status-badge.published {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Subject Card */
+    .subject-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .subject-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .subject-card-header {
+        background: linear-gradient(135deg, var(--gray-50) 0%, #ffffff 100%);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .subject-card-header:hover {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--gray-50) 100%);
+    }
+
+    .subject-card-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .subject-code {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: monospace;
+    }
+
+    .collapse-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .subject-content {
+        padding: 1.5rem;
+    }
+
+    /* Paper Row */
+    .paper-row {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .paper-row:hover {
+        background: var(--gray-50);
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .paper-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .remove-paper {
+        background: var(--danger-light);
+        color: var(--danger);
+        border: none;
+        border-radius: var(--radius-full);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .remove-paper:hover {
+        background: var(--danger);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    /* Form Elements */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.85rem;
+    }
+
+    .form-control,
+    .form-select {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        font-size: 0.9rem;
+        background: white;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-text {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* Buttons */
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-outline-primary-custom {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .btn-outline-primary-custom:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-danger-custom {
+        background: transparent;
+        border: 2px solid var(--danger);
+        color: var(--danger);
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .btn-outline-danger-custom:hover {
+        background: var(--danger);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-sm-custom {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-add-subject {
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 2px dashed var(--primary);
+        padding: 1rem;
+        text-align: center;
+        border-radius: var(--radius-xl);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+
+    .btn-add-subject:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    /* Select2 Overrides */
+    .select2-container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        height: 48px;
+        padding: 0.3rem 1rem;
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--gray-700);
+        line-height: 36px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select2-dropdown {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-width: calc(100vw - 2rem) !important;
+    }
+
+    .select2-results__option--highlighted {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Alert */
+    .alert-info {
+        background: var(--info-light);
+        border-left: 4px solid var(--info);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.5rem;
+    }
+
+    .alert-info i {
+        color: var(--info);
+        font-size: 1.2rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        max-width: calc(100vw - 2rem);
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error   { border-left: 4px solid var(--danger); }
+    .toast-notification.warning { border-left: 4px solid var(--warning); }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error   { background: var(--danger-light);  color: var(--danger); }
+    .toast-icon.warning { background: var(--warning-light); color: #856404; }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Animations */
+    @keyframes slideOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(-100%); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header { padding: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; }
+        .main-card { padding: 1rem; }
+        .subject-card-header { flex-direction: column; align-items: flex-start; }
+        .paper-row .row > [class*="col-"] { margin-bottom: 0.5rem; }
+        .remove-paper { position: static; margin-top: 0.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-collection me-2"></i>
+                Bulk Create Exam Papers
+            </h1>
+            <p class="mb-0">Create multiple exam papers across multiple subjects at once</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_paper_list' session.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Papers
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Session Info Card -->
+<div class="session-info-card">
+    <div class="session-icon">
+        <i class="bi bi-calendar-check"></i>
+    </div>
+    <div class="session-details">
+        <h2>{{ session.name }}</h2>
+        <div class="session-meta">
+            <span><i class="bi bi-file-text"></i> {{ session.exam_type.name }}</span>
+            <span><i class="bi bi-people"></i> {{ session.class_level.name }}</span>
+            <span><i class="bi bi-calendar"></i> {{ session.exam_date|date:"l, F d, Y" }}</span>
+            <span><i class="bi bi-calendar-week"></i> {{ session.term }} - {{ session.academic_year }}</span>
+        </div>
+    </div>
+    <div>
+        <span class="status-badge {{ session.status }}">
+            <i class="bi bi-{% if session.status == 'draft' %}file-earmark-text{% elif session.status == 'submitted' %}send{% elif session.status == 'verified' %}check-circle{% else %}check-circle-fill{% endif %}"></i>
+            {{ session.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Main Form -->
+<div class="main-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h5 class="mb-0">
+            <i class="bi bi-collection me-2"></i>
+            Configure Papers by Subject
+        </h5>
+        <button type="button" class="btn-outline-primary-custom" id="addSubjectBtn">
+            <i class="bi bi-plus-lg me-2"></i>
+            Add Subject
+        </button>
+    </div>
+
+    <div id="subjectsContainer">
+        <!-- Subjects will be added dynamically via JavaScript -->
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <div class="d-flex gap-3 align-items-start">
+            <i class="bi bi-info-circle fs-4"></i>
+            <div>
+                <strong class="d-block mb-2">Quick Tips:</strong>
+                <ul class="mb-0 ps-3">
+                    <li><strong>Paper Number:</strong> Leave blank to auto-assign the next available number</li>
+                    <li><strong>Max Marks:</strong> Leave blank to use default (100 marks)</li>
+                    <li><strong>Paper Name:</strong> Optional - helps identify the paper (e.g., "Theory", "Practical")</li>
+                    <li><strong>Duplicate Prevention:</strong> System automatically prevents duplicate paper numbers per subject</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 mt-4">
+        <button type="button" class="btn-primary-custom flex-grow-1" id="submitBtn">
+            <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+            <i class="bi bi-check-lg me-2"></i>
+            <span class="btn-text">Create All Papers</span>
+        </button>
+        <a href="{% url 'management:exam_paper_list' session.pk %}" class="btn-outline-primary-custom">
+            <i class="bi bi-x-lg me-2"></i>
+            Cancel
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+const sessionId = {{ session.pk }};
+let csrfToken = '{{ csrf_token }}';
+let subjectCounter = 0;
+let paperCounter = {};
+
+// Available subjects data
+const availableSubjects = [
+    {% for subject in available_subjects %}
+    {
+        id: {{ subject.pk }},
+        name: "{{ subject.name|escapejs }}",
+        code: "{{ subject.code|escapejs }}",
+        nextPaperNumber: {{ subject_next_paper|get_item:subject.pk|default:1 }}
+    },
+    {% endfor %}
+];
+
+// Existing paper numbers for validation
+const existingPaperNumbers = {
+    {% for subject_id, numbers in existing_paper_numbers.items %}
+    {{ subject_id }}: [{% for num in numbers %}{{ num }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+    {% endfor %}
+};
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function showNotification(message, type = 'success', duration = 5000) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle-fill',
+        error: 'x-octagon-fill',
+        warning: 'exclamation-triangle-fill',
+        info: 'info-circle-fill'
+    };
+    
+    const icon = icons[type] || 'info-circle-fill';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+    
+    toast.querySelector('.btn-close')?.addEventListener('click', () => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('show');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('show');
+}
+
+function getNextPaperNumber(subjectId) {
+    const subjectCard = document.querySelector(`.subject-card[data-actual-subject-id="${subjectId}"]`);
+    if (!subjectCard) return 1;
+    
+    const paperNumbers = [];
+    subjectCard.querySelectorAll('.paper-number-input').forEach(input => {
+        const val = input.value.trim();
+        if (val) {
+            const num = parseInt(val);
+            if (!isNaN(num)) {
+                paperNumbers.push(num);
+            }
+        }
+    });
+    
+    const existing = existingPaperNumbers[subjectId] || [];
+    const allNumbers = [...paperNumbers, ...existing];
+    
+    if (allNumbers.length === 0) return 1;
+    
+    let next = 1;
+    while (allNumbers.includes(next)) {
+        next++;
+    }
+    return next;
+}
+
+function updateNextPaperNumbers(subjectId) {
+    const nextNumber = getNextPaperNumber(subjectId);
+    const subjectCard = document.querySelector(`.subject-card[data-actual-subject-id="${subjectId}"]`);
+    if (!subjectCard) return;
+    
+    const papersContainer = subjectCard.querySelector('.papers-container');
+    if (!papersContainer) return;
+    
+    const paperRows = papersContainer.querySelectorAll('.paper-row');
+    const lastRow = paperRows[paperRows.length - 1];
+    
+    if (lastRow) {
+        const numberInput = lastRow.querySelector('.paper-number-input');
+        if (numberInput && !numberInput.value.trim()) {
+            numberInput.placeholder = `Auto (${nextNumber})`;
+        }
+    }
+}
+
+// ============================================
+// SELECT2 INITIALIZATION
+// ============================================
+function initSubjectSelect(selectElement) {
+    if (!selectElement) return;
+    
+    if ($(selectElement).hasClass('select2-hidden-accessible')) {
+        $(selectElement).select2('destroy');
+    }
+    
+    $(selectElement).select2({
+        width: '100%',
+        placeholder: 'Select a subject',
+        allowClear: true,
+        dropdownParent: $(selectElement).closest('.subject-content')
+    });
+}
+
+// ============================================
+// SUBJECT CARD MANAGEMENT
+// ============================================
+
+function addSubject(subjectId = null) {
+    subjectCounter++;
+    const cardId = `subject-${subjectCounter}`;
+    
+    let selectedSubject = null;
+    if (subjectId) {
+        selectedSubject = availableSubjects.find(s => s.id === subjectId);
+    }
+    
+    const subjectOptions = availableSubjects.map(sub => `
+        <option value="${sub.id}" data-code="${sub.code}" data-next="${sub.nextPaperNumber}"
+            ${selectedSubject && selectedSubject.id === sub.id ? 'selected' : ''}>
+            ${escapeHtml(sub.name)} (${escapeHtml(sub.code)})
+        </option>
+    `).join('');
+    
+    const subjectCard = document.createElement('div');
+    subjectCard.className = 'subject-card';
+    subjectCard.setAttribute('data-subject-id', subjectCounter);
+    subjectCard.setAttribute('data-actual-subject-id', subjectId || '');
+    subjectCard.innerHTML = `
+        <div class="subject-card-header" onclick="toggleSubject(this)">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-chevron-down collapse-icon"></i>
+                    <h3>${selectedSubject ? escapeHtml(selectedSubject.name) : 'Select Subject'}</h3>
+                </div>
+                <div class="subject-code">${selectedSubject ? escapeHtml(selectedSubject.code) : '—'}</div>
+            </div>
+            <div>
+                <button type="button" class="btn-outline-danger-custom btn-sm-custom" onclick="event.stopPropagation(); removeSubject(${subjectCounter})">
+                    <i class="bi bi-trash"></i> Remove Subject
+                </button>
+            </div>
+        </div>
+        <div class="subject-content" style="display: block;">
+            <div class="mb-4">
+                <label class="form-label">
+                    <i class="bi bi-book me-1"></i>
+                    Select Subject <span class="text-danger">*</span>
+                </label>
+                <select class="form-select subject-select" id="subject-select-${subjectCounter}" data-card-id="${cardId}" data-subject-counter="${subjectCounter}">
+                    <option value="">-- Select a subject --</option>
+                    ${subjectOptions}
+                </select>
+                <div class="form-text">Choose the subject for this set of papers</div>
+            </div>
+            
+            <div class="papers-container" id="papers-${subjectCounter}">
+                <!-- Papers will be added here -->
+            </div>
+            
+            <div class="mt-3">
+                <button type="button" class="btn-outline-primary-custom btn-sm-custom" onclick="addPaper(${subjectCounter})">
+                    <i class="bi bi-plus-lg me-1"></i> Add Paper
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const container = document.getElementById('subjectsContainer');
+    if (container) {
+        container.appendChild(subjectCard);
+    }
+    
+    // Initialize Select2 on the subject select
+    const subjectSelect = document.getElementById(`subject-select-${subjectCounter}`);
+    if (subjectSelect) {
+        initSubjectSelect(subjectSelect);
+        
+        // Bind change event for subject select
+        $(subjectSelect).on('change', function() {
+            onSubjectChange(this);
+        });
+    }
+    
+    // Initialize paper counter
+    paperCounter[subjectCounter] = 1;
+    
+    // Add first paper
+    addPaper(subjectCounter);
+    
+    // If subject is pre-selected, update accordingly
+    if (subjectId) {
+        updateSubjectCard(subjectCounter, subjectId);
+    }
+}
+
+function removeSubject(cardId) {
+    const card = document.querySelector(`.subject-card[data-subject-id="${cardId}"]`);
+    if (card) {
+        card.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => card.remove(), 300);
+    }
+}
+
+function toggleSubject(header) {
+    const card = header.closest('.subject-card');
+    if (!card) return;
+    
+    const content = card.querySelector('.subject-content');
+    const icon = header.querySelector('.collapse-icon');
+    
+    if (content && icon) {
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.classList.remove('bi-chevron-right');
+            icon.classList.add('bi-chevron-down');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-right');
+        }
+    }
+}
+
+function onSubjectChange(select) {
+    if (!select) return;
+    
+    const subjectId = parseInt(select.value);
+    const subjectCounter = $(select).data('subject-counter');
+    const card = document.querySelector(`.subject-card[data-subject-id="${subjectCounter}"]`);
+    const subjectData = availableSubjects.find(s => s.id === subjectId);
+    
+    if (subjectData && card) {
+        const headerH3 = card.querySelector('.subject-card-header h3');
+        const codeSpan = card.querySelector('.subject-code');
+        if (headerH3) headerH3.textContent = subjectData.name;
+        if (codeSpan) codeSpan.textContent = subjectData.code;
+        card.setAttribute('data-actual-subject-id', subjectId);
+        
+        // Update existing papers to use the correct subject ID
+        updatePapersSubject(card, subjectId);
+        
+        // Update next paper numbers
+        updateNextPaperNumbers(subjectId);
+    } else if (!subjectId && card) {
+        const headerH3 = card.querySelector('.subject-card-header h3');
+        const codeSpan = card.querySelector('.subject-code');
+        if (headerH3) headerH3.textContent = 'Select Subject';
+        if (codeSpan) codeSpan.textContent = '—';
+        card.setAttribute('data-actual-subject-id', '');
+    }
+}
+
+function updateSubjectCard(cardId, subjectId) {
+    const card = document.querySelector(`.subject-card[data-subject-id="${cardId}"]`);
+    const subjectData = availableSubjects.find(s => s.id === subjectId);
+    
+    if (subjectData && card) {
+        const select = card.querySelector('.subject-select');
+        if (select) {
+            $(select).val(subjectId).trigger('change');
+        }
+        
+        const headerH3 = card.querySelector('.subject-card-header h3');
+        const codeSpan = card.querySelector('.subject-code');
+        if (headerH3) headerH3.textContent = subjectData.name;
+        if (codeSpan) codeSpan.textContent = subjectData.code;
+        card.setAttribute('data-actual-subject-id', subjectId);
+        
+        updatePapersSubject(card, subjectId);
+    }
+}
+
+function updatePapersSubject(card, subjectId) {
+    if (!card) return;
+    
+    const papersContainer = card.querySelector('.papers-container');
+    if (!papersContainer) return;
+    
+    const paperRows = papersContainer.querySelectorAll('.paper-row');
+    paperRows.forEach(row => {
+        const subjectInput = row.querySelector('.paper-subject-id');
+        if (subjectInput) {
+            subjectInput.value = subjectId;
+        }
+    });
+}
+
+// ============================================
+// PAPER MANAGEMENT
+// ============================================
+
+function addPaper(subjectCardId) {
+    const papersContainer = document.getElementById(`papers-${subjectCardId}`);
+    if (!papersContainer) return;
+    
+    const paperId = paperCounter[subjectCardId]++;
+    const subjectCard = document.querySelector(`.subject-card[data-subject-id="${subjectCardId}"]`);
+    if (!subjectCard) return;
+    
+    const actualSubjectId = subjectCard.getAttribute('data-actual-subject-id');
+    const nextNumber = actualSubjectId ? getNextPaperNumber(actualSubjectId) : 1;
+    
+    const paperRow = document.createElement('div');
+    paperRow.className = 'paper-row';
+    paperRow.setAttribute('data-paper-id', paperId);
+    paperRow.innerHTML = `
+        <input type="hidden" class="paper-subject-id" value="${actualSubjectId}">
+        <div class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Paper Number</label>
+                <input type="number" 
+                       class="form-control paper-number-input" 
+                       placeholder="Auto" 
+                       min="1"
+                       value="${nextNumber > 1 ? '' : nextNumber}">
+                <div class="form-text">Leave blank for auto-assign</div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Paper Name</label>
+                <input type="text" class="form-control paper-name-input" placeholder="e.g., Theory, Practical">
+                <div class="form-text">Optional - helps identify the paper</div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Max Marks</label>
+                <input type="number" 
+                       class="form-control paper-marks-input" 
+                       placeholder="100" 
+                       min="1" 
+                       max="1000"
+                       value="100">
+                <div class="form-text">Default: 100 marks</div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Exam Date</label>
+                <input type="date" class="form-control paper-date-input">
+                <div class="form-text">Optional - override session date</div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Duration (min)</label>
+                <input type="number" class="form-control paper-duration-input" placeholder="Optional" min="1" max="480">
+                <div class="form-text">Optional paper duration</div>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="button" class="remove-paper" onclick="removePaper(this)" title="Remove Paper">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    papersContainer.appendChild(paperRow);
+    
+    // Add input event listener to update next paper number
+    const numberInput = paperRow.querySelector('.paper-number-input');
+    if (numberInput && actualSubjectId) {
+        numberInput.addEventListener('change', function() {
+            updateNextPaperNumbers(actualSubjectId);
+        });
+        numberInput.addEventListener('input', function() {
+            updateNextPaperNumbers(actualSubjectId);
+        });
+    }
+}
+
+function removePaper(button) {
+    const row = button.closest('.paper-row');
+    if (!row) return;
+    
+    const subjectCard = row.closest('.subject-card');
+    const subjectId = subjectCard ? subjectCard.getAttribute('data-actual-subject-id') : null;
+    
+    row.style.animation = 'slideOut 0.3s ease-out';
+    setTimeout(() => {
+        row.remove();
+        if (subjectId) {
+            updateNextPaperNumbers(subjectId);
+        }
+    }, 300);
+}
+
+// ============================================
+// FORM SUBMISSION
+// ============================================
+
+async function submitPapers() {
+    const $submitBtn = $('#submitBtn');
+    const $spinner = $submitBtn.find('.spinner-border');
+    const $btnText = $submitBtn.find('.btn-text');
+    
+    const subjectsData = [];
+    const subjectCards = document.querySelectorAll('.subject-card');
+    let hasError = false;
+    
+    for (const card of subjectCards) {
+        const subjectId = card.getAttribute('data-actual-subject-id');
+        if (!subjectId) {
+            showNotification('Please select a subject for all subject cards.', 'warning');
+            hasError = true;
+            continue;
+        }
+        
+        const papers = [];
+        const paperRows = card.querySelectorAll('.paper-row');
+        
+        if (paperRows.length === 0) {
+            showNotification(`Please add at least one paper for each subject.`, 'warning');
+            hasError = true;
+            continue;
+        }
+        
+        for (const row of paperRows) {
+            // Use specific class selectors instead of placeholder selectors
+            const paperNumberInput = row.querySelector('.paper-number-input');
+            const paperNameInput = row.querySelector('.paper-name-input');
+            const paperMarksInput = row.querySelector('.paper-marks-input');
+            const paperDateInput = row.querySelector('.paper-date-input');
+            const paperDurationInput = row.querySelector('.paper-duration-input');
+            
+            const paperNumber = paperNumberInput ? paperNumberInput.value.trim() : '';
+            const paperName = paperNameInput ? paperNameInput.value.trim() : '';
+            const maxMarks = paperMarksInput ? paperMarksInput.value.trim() : '';
+            const examDate = paperDateInput ? paperDateInput.value : '';
+            const durationMinutes = paperDurationInput ? paperDurationInput.value.trim() : '';
+            
+            papers.push({
+                paper_number: paperNumber ? parseInt(paperNumber) : null,
+                paper_name: paperName,
+                max_marks: maxMarks ? parseFloat(maxMarks) : null,
+                exam_date: examDate || null,
+                duration_minutes: durationMinutes ? parseInt(durationMinutes) : null,
+            });
+        }
+        
+        if (papers.length > 0) {
+            subjectsData.push({
+                subject_id: parseInt(subjectId),
+                papers: papers,
+            });
+        }
+    }
+    
+    if (hasError || subjectsData.length === 0) {
+        return false;
+    }
+    
+    // Disable button and show spinner
+    $submitBtn.prop('disabled', true);
+    $spinner.removeClass('d-none');
+    $btnText.text('Creating...');
+    
+    try {
+        const response = await fetch(`/management/exam-sessions/${sessionId}/papers/bulk-create-submit/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ papers: subjectsData })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => {
+                window.location.href = `/management/exam-sessions/${sessionId}/papers/`;
+            }, 2000);
+        } else {
+            showNotification(data.message || 'Failed to create papers.', 'error');
+            
+            if (data.errors && data.errors.length > 0) {
+                const errorSummary = data.errors.slice(0, 5).join('\n');
+                showNotification(`Errors:\n${errorSummary}`, 'warning');
+            }
+            
+            $submitBtn.prop('disabled', false);
+            $spinner.addClass('d-none');
+            $btnText.text('Create All Papers');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('An error occurred while creating papers. Please try again.', 'error');
+        $submitBtn.prop('disabled', false);
+        $spinner.addClass('d-none');
+        $btnText.text('Create All Papers');
+    } finally {
+        hideLoading();
+    }
+    
+    return false;
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+$(document).ready(function() {
+    // Add initial subject
+    addSubject();
+    
+    // Submit button handler
+    $('#submitBtn').on('click', function(e) {
+        e.preventDefault();
+        submitPapers();
+    });
+    
+    // Add subject button handler
+    $('#addSubjectBtn').on('click', function(e) {
+        e.preventDefault();
+        addSubject();
+    });
+    
+    // Unsaved changes guard
+    let formChanged = false;
+    
+    $(document).on('change input', '.subject-select, .paper-number-input, .paper-name-input, .paper-marks-input, .paper-date-input, .paper-duration-input', function() {
+        formChanged = true;
+    });
+    
+    $('#addSubjectBtn, #submitBtn').on('click', function() {
+        formChanged = false;
+    });
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+});
+</script>
+{% endblock  %}

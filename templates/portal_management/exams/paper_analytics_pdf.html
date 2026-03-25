@@ -1,0 +1,988 @@
+<!-- templates/portal_management/exams/paper_analytics_pdf.html -->
+<!DOCTYPE html>
+{% load custom_filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject.name }} - Paper {{ paper.paper_number }} Analytics – {{ session.name }}</title>
+    <style>
+        /* ── Page setup ─────────────────────────────────────── */
+        @page {
+            size: A4 landscape;
+            margin: 1.2cm 1.4cm;
+
+            @top-left {
+                content: "{{ school_info.name|default:'SCHOOL NAME NOT SET' }}";
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 7.5pt;
+                font-weight: bold;
+                color: #0D3349;
+            }
+            @top-right {
+                content: "{{ subject.name }} - Paper {{ paper.paper_number }} Analytics  |  {{ session.name }}";
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 7.5pt;
+                color: #555;
+            }
+            @bottom-left {
+                content: "CONFIDENTIAL – FOR SCHOOL USE ONLY";
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 6.5pt;
+                color: #aaa;
+                font-style: italic;
+            }
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'DejaVu Sans', Arial, sans-serif;
+                font-size: 7pt;
+                color: #666;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            line-height: 1.45;
+            color: #1A252F;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── School header banner ───────────────────────────── */
+        .school-header {
+            width: 100%;
+            background: #0D3349;
+            border-bottom: 4px solid #F0B429;
+        }
+
+        .school-header-inner {
+            padding: 10px 16px 8px 16px;
+            text-align: center;
+        }
+
+        .school-name {
+            font-size: 17pt;
+            font-weight: bold;
+            color: #F0B429;
+            letter-spacing: 0.5px;
+            margin: 0 0 3px 0;
+            text-transform: uppercase;
+        }
+
+        .school-contact {
+            font-size: 8pt;
+            color: #AED6F1;
+            margin: 0 0 2px 0;
+        }
+
+        .school-motto {
+            font-size: 7.5pt;
+            color: #7FB3D3;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* ── Document title band ────────────────────────────── */
+        .doc-title-band {
+            background: #148F77;
+            padding: 6px 16px;
+            text-align: center;
+        }
+
+        .doc-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #ffffff;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .doc-subtitle {
+            font-size: 9pt;
+            color: #A9DFBF;
+            margin: 2px 0 0 0;
+        }
+
+        /* ── Paper info card ───────────────────────────────── */
+        .paper-info-card {
+            background: white;
+            border: 1px solid #D6EAF8;
+            border-radius: 8px;
+            margin: 12px 0 16px 0;
+            overflow: hidden;
+        }
+
+        .paper-info-header {
+            background: #EBF5FB;
+            padding: 8px 12px;
+            border-bottom: 1px solid #D6EAF8;
+        }
+
+        .paper-info-header h3 {
+            margin: 0;
+            font-size: 10pt;
+            font-weight: bold;
+            color: #0D3349;
+        }
+
+        .paper-info-body {
+            padding: 12px;
+        }
+
+        .info-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-row {
+            display: table-row;
+        }
+
+        .info-item {
+            display: table-cell;
+            text-align: center;
+            padding: 8px;
+            background: #FAFCFE;
+            border: 1px solid #D6EAF8;
+        }
+
+        .info-label {
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1A5276;
+        }
+
+        /* ── Session meta strip ─────────────────────────────── */
+        .meta-strip {
+            background: #EBF5FB;
+            border-bottom: 1px solid #AED6F1;
+            padding: 6px 16px;
+            display: table;
+            width: 100%;
+        }
+
+        .meta-strip-inner {
+            display: table-row;
+        }
+
+        .meta-cell {
+            display: table-cell;
+            padding: 2px 10px 2px 0;
+            font-size: 8pt;
+            color: #1A5276;
+            white-space: nowrap;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            color: #0D3349;
+        }
+
+        .meta-divider {
+            display: table-cell;
+            padding: 2px 10px;
+            color: #AED6F1;
+            font-size: 9pt;
+        }
+
+        .meta-generated {
+            text-align: right;
+            font-size: 7.5pt;
+            color: #888;
+            font-style: italic;
+            padding: 4px 16px 4px 0;
+        }
+
+        /* ── Section header ─────────────────────────────────── */
+        .section-header {
+            background: #1B4F72;
+            color: #ffffff;
+            font-size: 9.5pt;
+            font-weight: bold;
+            padding: 5px 10px;
+            margin: 14px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-header.teal  { background: #148F77; }
+        .section-header.gold  { background: #9A6E00; }
+        .section-header.slate { background: #2C3E50; }
+
+        /* ── Stats cards ───────────────────────────────────── */
+        .stats-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 14px 0;
+        }
+
+        .stat-row {
+            display: table-row;
+        }
+
+        .stat-cell {
+            display: table-cell;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #D6EAF8;
+            background: #FAFCFE;
+        }
+
+        .stat-value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1A5276;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 7.5pt;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ── Data tables ───────────────────────────────────── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin: 0 0 14px 0;
+        }
+
+        .data-table thead tr {
+            background: #1B4F72;
+        }
+
+        .data-table thead th {
+            color: #ffffff;
+            font-weight: bold;
+            padding: 6px 8px;
+            text-align: center;
+            border: 1px solid #145374;
+            font-size: 8pt;
+        }
+
+        .data-table tbody td {
+            border: 1px solid #D6EAF8;
+            padding: 5px 8px;
+            color: #1A252F;
+        }
+
+        .data-table tbody tr:nth-child(odd) td { background: #FAFCFE; }
+        .data-table tbody tr:nth-child(even) td { background: #EBF5FB; }
+
+        .data-table tfoot td {
+            background: #D6EAF8;
+            font-weight: bold;
+            border: 1px solid #AED6F1;
+            padding: 5px 8px;
+            color: #0D3349;
+        }
+
+        .tc { text-align: center; }
+        .tr { text-align: right; }
+        .tl { text-align: left; }
+        .bold { font-weight: bold; }
+
+        /* ── Grade badge ───────────────────────────────────── */
+        .grade-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+
+        .grade-A { background: #d1fae5; color: #065f46; }
+        .grade-B { background: #d9f99d; color: #3f6212; }
+        .grade-C { background: #fef3c7; color: #92400e; }
+        .grade-D { background: #fed7aa; color: #9a3412; }
+        .grade-E { background: #ffedd5; color: #c2410c; }
+        .grade-F { background: #fee2e2; color: #991b1b; }
+        .grade-S { background: #e9d8fd; color: #5b21b6; }
+
+        /* ── Histogram ─────────────────────────────────────── */
+        .histogram {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 2px;
+            margin: 12px 0;
+        }
+
+        .histogram-bar {
+            flex: 1;
+            background: #148F77;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* ── Progress bars ─────────────────────────────────── */
+        .progress-custom {
+            height: 8px;
+            background: #E8ECF0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-custom {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .bar-wrap {
+            display: inline-block;
+            width: 80px;
+            height: 6px;
+            background: #E8ECF0;
+            border-radius: 3px;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        .bar-fill {
+            display: inline-block;
+            height: 6px;
+            border-radius: 3px;
+            background: #148F77;
+        }
+
+        /* ── Score Range Card ──────────────────────────────── */
+        .range-card {
+            background: #FAFCFE;
+            border: 1px solid #D6EAF8;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 6px;
+        }
+
+        .range-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 8pt;
+        }
+
+        /* ── Student List ──────────────────────────────────── */
+        .student-list {
+            max-height: 300px;
+        }
+
+        .student-item {
+            padding: 6px;
+            border-bottom: 1px solid #D6EAF8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-name {
+            font-weight: 500;
+        }
+
+        .student-score {
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        /* ── Percentile Indicator ──────────────────────────── */
+        .percentile-indicator {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 7pt;
+            font-weight: 600;
+        }
+
+        .percentile-high { background: #e6f4ea; color: #0f7b3a; }
+        .percentile-medium { background: #fff3cd; color: #856404; }
+        .percentile-low { background: #f8d7da; color: #721c24; }
+
+        /* ── Two column layout ─────────────────────────────── */
+        .two-col {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+        }
+
+        .col-left, .col-right {
+            display: table-cell;
+            vertical-align: top;
+            width: 50%;
+        }
+
+        /* ── Page break ────────────────────────────────────── */
+        .page-break { page-break-before: always; }
+        .avoid-break { page-break-inside: avoid; }
+
+        /* ── Footer ───────────────────────────────────────── */
+        .doc-footer {
+            margin-top: 18px;
+            padding-top: 8px;
+            border-top: 1px solid #D6EAF8;
+            font-size: 7.5pt;
+            color: #aaa;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    {# ── SCHOOL HEADER ───────────────────────────────────────── #}
+    <div class="school-header">
+        <div class="school-header-inner">
+            <p class="school-name">{{ school_info.name|default:"SCHOOL NAME NOT SET" }}</p>
+            {% if school_info.address or school_info.phone or school_info.email %}
+                <p class="school-contact">
+                    {% if school_info.address %}{{ school_info.address }}{% endif %}
+                    {% if school_info.address and school_info.phone %}  &bull;  {% endif %}
+                    {% if school_info.phone %}Tel: {{ school_info.phone }}{% endif %}
+                    {% if school_info.phone and school_info.email %}  &bull;  {% endif %}
+                    {% if school_info.email %}{{ school_info.email }}{% endif %}
+                </p>
+            {% endif %}
+            {% if school_info.motto %}
+                <p class="school-motto">&ldquo;{{ school_info.motto }}&rdquo;</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── DOCUMENT TITLE ───────────────────────────────────────── #}
+    <div class="doc-title-band">
+        <p class="doc-title">Paper Performance Analytics Report</p>
+        <p class="doc-subtitle">
+            {{ subject.name|upper }} - Paper {{ paper.paper_number }}: {{ paper.paper_name|default:"Main Paper" }}
+        </p>
+    </div>
+
+    {# ── SESSION META ─────────────────────────────────────────── #}
+    <div class="meta-strip">
+        <div class="meta-strip-inner">
+            <span class="meta-cell">
+                <span class="meta-label">Session:</span> {{ session.name }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Class:</span> {{ session.class_level.name }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Term:</span> {{ session.term }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Academic Year:</span> {{ session.academic_year }}
+            </span>
+            <span class="meta-divider">&nbsp;|&nbsp;</span>
+            <span class="meta-cell">
+                <span class="meta-label">Exam Type:</span> {{ session.exam_type.name }}
+            </span>
+        </div>
+    </div>
+    <p class="meta-generated">
+        Generated: {{ generated_date|date:"l, d F Y  H:i" }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        By: {{ request.user.get_full_name|default:request.user.username }}
+    </p>
+
+    {# ── PAPER INFORMATION CARD ────────────────────────────────── #}
+    <div class="paper-info-card avoid-break">
+        <div class="paper-info-header">
+            <h3><i class="bi bi-info-circle"></i> Paper Information</h3>
+        </div>
+        <div class="paper-info-body">
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-label">Subject</div>
+                        <div class="info-value">{{ subject.name }}</div>
+                        <div class="small text-muted">{{ subject.code }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Paper Number</div>
+                        <div class="info-value">{{ paper.paper_number }}</div>
+                        <div class="small text-muted">{{ paper.paper_name|default:"Main Paper" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Maximum Marks</div>
+                        <div class="info-value">{{ paper.max_marks|floatformat:0 }}</div>
+                        <div class="small text-muted">Total possible score</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Exam Date</div>
+                        <div class="info-value">{{ paper.exam_date|date:"M d, Y"|default:"Not set" }}</div>
+                        <div class="small text-muted">{{ paper.duration_minutes|default:"N/A" }} minutes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 1 – KEY STATISTICS
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header teal avoid-break">Key Performance Indicators</div>
+
+    <div class="stats-grid avoid-break">
+        <div class="stat-row">
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.total_students }}</span>
+                <span class="stat-label">Total Students</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.students_with_scores }}</span>
+                <span class="stat-label">With Scores</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.completion_rate|floatformat:0 }}%</span>
+                <span class="stat-label">Completion Rate</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.mean|floatformat:1 }}</span>
+                <span class="stat-label">Average Score</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.mean_percentage|floatformat:1 }}%</span>
+                <span class="stat-label">Average %</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.highest|floatformat:0 }}</span>
+                <span class="stat-label">Highest Score</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-value">{{ stats.lowest|floatformat:0 }}</span>
+                <span class="stat-label">Lowest Score</span>
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 2 – STATISTICAL SUMMARY
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header avoid-break">Statistical Summary</div>
+
+    <div class="two-col avoid-break">
+        <div class="col-left">
+            <table class="data-table">
+                <tr>
+                    <td class="lbl bold">Mean (Average)</td>
+                    <td class="val">{{ stats.mean|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                    <td class="val">{{ stats.mean_percentage|floatformat:1 }}%</td>
+                </tr>
+                <tr>
+                    <td class="lbl bold">Median</td>
+                    <td class="val">{{ stats.median|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                    <td class="val">
+                        {% if stats.max_marks > 0 %}
+                            {% widthratio stats.median stats.max_marks 100 as median_pct %}
+                            {{ median_pct|floatformat:1 }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lbl bold">Mode</td>
+                    <td class="val">{{ stats.mode|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                    <td class="val">Most frequent score</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-right">
+            <table class="data-table">
+                <tr>
+                    <td class="lbl bold">Standard Deviation</td>
+                    <td class="val">{{ stats.std_dev|floatformat:1 }}</td>
+                    <td class="val">Score variability</td>
+                </tr>
+                <tr>
+                    <td class="lbl bold">Range</td>
+                    <td class="val">{{ stats.highest|floatformat:0 }} - {{ stats.lowest|floatformat:0 }}</td>
+                    <td class="val">Highest to lowest</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 3 – SCORE DISTRIBUTION HISTOGRAM
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header slate avoid-break">Score Distribution Histogram</div>
+
+    <div class="histogram avoid-break">
+        {% for bin in score_bins %}
+        <div class="histogram-bar" style="height: {{ bin.percentage }}%;"></div>
+        {% endfor %}
+    </div>
+    <div class="d-flex justify-content-between small text-muted tc" style="margin-top: -8px; margin-bottom: 12px;">
+        <span>Lower Scores</span>
+        <span>Higher Scores</span>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 4 – GRADE DISTRIBUTION
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header avoid-break">Grade Distribution</div>
+
+    <table class="data-table avoid-break">
+        <thead>
+            <tr>
+                <th>Grade</th>
+                <th>Description</th>
+                <th>Count</th>
+                <th>Percentage</th>
+                <th>Status</th>
+                <th>Distribution</th>
+            </thead>
+        <tbody>
+            {% for grade in grade_distribution %}
+            <tr>
+                <td class="tc">
+                    <span class="grade-badge grade-{{ grade.grade }}">
+                        {{ grade.grade }}
+                    </span>
+                </td>
+                <td class="tl">{{ grade.description }}</td>
+                <td class="tc bold">{{ grade.count }}</td>
+                <td class="tc">{{ grade.percentage|floatformat:1 }}%</td>
+                <td class="tc">
+                    {% if grade.is_passing %}
+                        <span style="color:#1B5E20;font-weight:bold;">Passing</span>
+                    {% else %}
+                        <span style="color:#B71C1C;font-weight:bold;">Failing</span>
+                    {% endif %}
+                </td>
+                <td style="width: 30%;">
+                    <div class="progress-custom">
+                        <div class="progress-bar-custom" style="width: {{ grade.percentage }}%; background: 
+                            {% if grade.grade == 'A' %}#10b981
+                            {% elif grade.grade == 'B' %}#34d399
+                            {% elif grade.grade == 'C' %}#fbbf24
+                            {% elif grade.grade == 'D' %}#f59e0b
+                            {% elif grade.grade == 'E' %}#ef4444
+                            {% elif grade.grade == 'F' %}#dc2626
+                            {% else %}#8b5cf6{% endif %};">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="tc text-muted">No grade data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="tl bold">Total Students with Grades</td>
+                <td class="tc bold">{{ stats.students_with_scores }}</td>
+                <td class="tc bold">100%</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 5 – SCORE RANGE DISTRIBUTION
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header gold avoid-break">Score Range Distribution</div>
+
+    <div class="two-col avoid-break">
+        {% for range in score_ranges|slice:":4" %}
+        <div class="col-left">
+            <div class="range-card">
+                <div class="range-header">
+                    <span>{{ range.label }}</span>
+                    <span class="bold">{{ range.count }}</span>
+                </div>
+                <div class="progress-custom">
+                    <div class="progress-bar-custom" style="width: {{ range.percentage }}%; background: #148F77;"></div>
+                </div>
+                <div class="small text-muted">{{ range.percentage|floatformat:1 }}% of students</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="two-col avoid-break">
+        {% for range in score_ranges|slice:"4:8" %}
+        <div class="col-left">
+            <div class="range-card">
+                <div class="range-header">
+                    <span>{{ range.label }}</span>
+                    <span class="bold">{{ range.count }}</span>
+                </div>
+                <div class="progress-custom">
+                    <div class="progress-bar-custom" style="width: {{ range.percentage }}%; background: #148F77;"></div>
+                </div>
+                <div class="small text-muted">{{ range.percentage|floatformat:1 }}% of students</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 6 – TOP & BOTTOM PERFORMERS
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header avoid-break">Top Performers</div>
+
+    <table class="data-table avoid-break">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th class="tl">Student Name</th>
+                <th>Reg No</th>
+                <th>Marks</th>
+                <th>Percentage</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for performer in top_performers %}
+            <tr>
+                <td class="tc bold">#{{ forloop.counter }}</td>
+                <td class="tl">{{ performer.student.full_name }}</td>
+                <td class="tc">{{ performer.student.registration_number|default:"N/A" }}</td>
+                <td class="tr bold">{{ performer.marks|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                <td class="tr">{{ performer.percentage|floatformat:1 }}%</td>
+                <td class="tc">
+                    <span class="grade-badge grade-{{ performer.grade }}">
+                        {{ performer.grade }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="tc text-muted">No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-header gold avoid-break">Needs Improvement</div>
+
+    <table class="data-table avoid-break">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th class="tl">Student Name</th>
+                <th>Reg No</th>
+                <th>Marks</th>
+                <th>Percentage</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for performer in bottom_performers %}
+            <tr>
+                <td class="tc bold">#{{ forloop.revcounter }}</td>
+                <td class="tl">{{ performer.student.full_name }}</td>
+                <td class="tc">{{ performer.student.registration_number|default:"N/A" }}</td>
+                <td class="tr bold">{{ performer.marks|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                <td class="tr">{{ performer.percentage|floatformat:1 }}%</td>
+                <td class="tc">
+                    <span class="grade-badge grade-{{ performer.grade }}">
+                        {{ performer.grade }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="tc text-muted">No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 7 – PERCENTILE RANKINGS (New Page)
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="page-break"></div>
+
+    {# Repeat header on second page #}
+    <div class="school-header" style="margin-bottom:0;">
+        <div class="school-header-inner" style="padding:6px 16px 5px;">
+            <p class="school-name" style="font-size:12pt;">{{ school_info.name|default:"SCHOOL NAME NOT SET" }}</p>
+        </div>
+    </div>
+    <div class="doc-title-band" style="padding:4px 16px;">
+        <p class="doc-title" style="font-size:10pt;">
+            Paper Analytics — {{ subject.name }} - Paper {{ paper.paper_number }}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {{ session.class_level.name }} &bull; {{ session.term }} &bull; {{ session.academic_year }}
+        </p>
+    </div>
+
+    <div class="section-header" style="margin-top:8px;">Percentile Rankings</div>
+
+    <table class="data-table avoid-break">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th class="tl">Student Name</th>
+                <th>Reg No</th>
+                <th>Marks</th>
+                <th>Percentile</th>
+                <th>Interpretation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in percentile_data|slice:":25" %}
+            <tr>
+                <td class="tc bold">#{{ forloop.counter }}</td>
+                <td class="tl">{{ data.student.full_name }}</td>
+                <td class="tc">{{ data.student.registration_number|default:"N/A" }}</td>
+                <td class="tr bold">{{ data.marks|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                <td class="tc">{{ data.percentile|floatformat:1 }}th</td>
+                <td class="tc">
+                    {% if data.percentile >= 90 %}
+                        <span class="percentile-indicator percentile-high">Top 10%</span>
+                    {% elif data.percentile >= 75 %}
+                        <span class="percentile-indicator percentile-high">Above Average</span>
+                    {% elif data.percentile >= 50 %}
+                        <span class="percentile-indicator percentile-medium">Average</span>
+                    {% elif data.percentile >= 25 %}
+                        <span class="percentile-indicator percentile-medium">Below Average</span>
+                    {% else %}
+                        <span class="percentile-indicator percentile-low">Bottom 25%</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="tc text-muted">No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if percentile_data|length > 25 %}
+        <tfoot>
+            <tr>
+                <td colspan="6" class="tc small text-muted">Showing top 25 of {{ percentile_data|length }} students</td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 8 – COMPLETE STUDENT SCORES
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header teal avoid-break">Complete Student Scores</div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Reg No</th>
+                <th class="tl">Student Name</th>
+                <th>Marks</th>
+                <th>Percentage</th>
+                <th>Grade</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in score_data %}
+            <tr>
+                <td class="tc">{{ forloop.counter }}</td>
+                <td class="tc">{{ result.student.registration_number|default:"-" }}</td>
+                <td class="tl">{{ result.student.full_name }}</td>
+                <td class="tr bold">{{ result.marks|floatformat:1 }} / {{ stats.max_marks|floatformat:0 }}</td>
+                <td class="tr">{{ result.percentage|floatformat:1 }}%</td>
+                <td class="tc">
+                    <span class="grade-badge grade-{{ result.grade }}">
+                        {{ result.grade }}
+                    </span>
+                </td>
+                <td class="tc">
+                    {% if result.is_passing %}
+                        <span style="color:#1B5E20;font-weight:bold;">Passing</span>
+                    {% else %}
+                        <span style="color:#B71C1C;font-weight:bold;">Failing</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="tc text-muted">No score data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="tl bold">Total: {{ stats.students_with_scores }} student(s) with scores</td>
+                <td class="tr bold">{{ stats.mean|floatformat:1 }} avg</td>
+                <td class="tr bold">{{ stats.mean_percentage|floatformat:1 }}%</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {# ══════════════════════════════════════════════════════════════
+       SECTION 9 – PASS/FAIL ANALYSIS
+    ══════════════════════════════════════════════════════════════ #}
+    <div class="section-header gold avoid-break">Pass/Fail Analysis</div>
+
+    <div class="two-col avoid-break">
+        <div class="col-left">
+            <table class="data-table">
+                <tr>
+                    <td class="lbl bold">Passing Grades:</td>
+                    <td class="val">{{ passing_grades|join:", " }}</td>
+                </tr>
+                <tr>
+                    <td class="lbl bold">Failing Grades:</td>
+                    <td class="val">{{ failing_grades|join:", " }}</td>
+                </tr>
+                <tr>
+                    <td class="lbl bold">Students Passed:</td>
+                    <td class="val bold" style="color:#1B5E20;">{{ pass_fail_stats.passed_count }}</td>
+                </tr>
+                <tr>
+                    <td class="lbl bold">Students Failed:</td>
+                    <td class="val bold" style="color:#B71C1C;">{{ pass_fail_stats.failed_count }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-right">
+            <div class="progress-custom" style="height: 30px; margin-bottom: 10px;">
+                <div class="progress-bar-custom" style="width: {{ pass_fail_stats.pass_rate }}%; background: #0f7b3a;">
+                    {{ pass_fail_stats.pass_rate|floatformat:1 }}%
+                </div>
+                <div class="progress-bar-custom" style="width: {{ pass_fail_stats.fail_rate }}%; background: #dc3545;">
+                    {{ pass_fail_stats.fail_rate|floatformat:1 }}%
+                </div>
+            </div>
+            <div class="small text-muted tc">
+                Pass Rate: {{ pass_fail_stats.pass_rate|floatformat:1 }}% | Fail Rate: {{ pass_fail_stats.fail_rate|floatformat:1 }}%
+            </div>
+        </div>
+    </div>
+
+    {# ── DOCUMENT FOOTER ───────────────────────────────────────── #}
+    <div class="doc-footer">
+        This report is computer-generated and is valid without a signature.
+        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &copy; {{ generated_date|date:"Y" }} {{ school_info.name|default:"School" }}
+        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        Printed: {{ generated_date|date:"d M Y H:i" }}
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,1154 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} — {{ SCHOOL_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM SCHOOL PROFILE FORM STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .form-card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Form Sections */
+    .form-section {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .form-section:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .form-section h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary);
+        color: var(--gray-800);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-section h4 i {
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .form-control, .form-select, .form-textarea {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        width: 100%;
+        background-color: white;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+        border-color: var(--danger);
+        background-image: none;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        color: var(--danger);
+        background: var(--danger-light);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f5c6cb;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .form-text i {
+        font-size: 1rem;
+        color: var(--primary);
+    }
+
+    /* Checkbox Styles */
+    .form-check {
+        padding-left: 2rem;
+        margin-top: 2rem;
+    }
+
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-top: 0.1rem;
+        border: 1.5px solid var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-check-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .form-check-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        cursor: pointer;
+    }
+
+    /* Image Preview */
+    .image-preview {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--gray-200);
+        text-align: center;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        max-height: 150px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
+    }
+
+    .current-image-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--gray-200);
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    .btn-outline-primary {
+        background: transparent;
+        color: var(--primary);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 2px solid var(--primary);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+
+    .btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        text-decoration: none;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-200);
+        transform: translateY(-2px);
+        color: var(--gray-900);
+    }
+
+    /* Alert Styles */
+    .alert-general-error {
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease-out;
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid #f5c6cb;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-general-error i {
+        font-size: 1.2rem;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-section {
+            padding: 1rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary, .btn-outline-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-building me-2"></i>
+                {{ title }}
+            </h1>
+            <p class="mb-0">
+                {% if profile %}
+                    Update school profile information for {{ profile.name }}
+                {% else %}
+                    Configure school information for different educational levels
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'management:school_profile_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back to Profiles</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>
+            <i class="bi bi-pencil-square"></i>
+            School Profile Details
+        </h5>
+        {% if profile %}
+        <span class="badge bg-{{ profile.is_active|yesno:'success,danger' }} px-3 py-2" style="font-size: 0.9rem;">
+            <i class="bi bi-{{ profile.is_active|yesno:'check-circle,x-circle' }} me-1"></i>
+            {{ profile.is_active|yesno:'Active,Inactive' }}
+        </span>
+        {% endif %}
+    </div>
+
+    <form id="profile-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div id="form-general-error" class="alert-general-error" style="display: none;"></div>
+
+        <!-- Basic Information Section -->
+        <div class="form-section">
+            <h4>
+                <i class="bi bi-info-circle-fill"></i>
+                Basic Information
+            </h4>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label for="{{ form.code.id_for_label }}" class="form-label required-field">School Code</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.code.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i>
+                        {{ form.code.help_text|default:"Unique identifier for the school profile" }}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.name.id_for_label }}" class="form-label required-field">School Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.name.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.registration_number.id_for_label }}" class="form-label required-field">Registration Number</label>
+                    {{ form.registration_number }}
+                    {% if form.registration_number.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.registration_number.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i>
+                        {{ form.registration_number.help_text|default:"Official registration number from education authorities" }}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.educational_level.id_for_label }}" class="form-label">Educational Level</label>
+                    {{ form.educational_level }}
+                    {% if form.educational_level.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.educational_level.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i>
+                        {{ form.educational_level.help_text|default:"Select the educational level (leave blank for main profile)" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information Section -->
+        <div class="form-section">
+            <h4>
+                <i class="bi bi-telephone-fill"></i>
+                Contact Information
+            </h4>
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.address.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.phone.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.alternative_phone.id_for_label }}" class="form-label">Alternative Phone</label>
+                    {{ form.alternative_phone }}
+                    {% if form.alternative_phone.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.alternative_phone.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.email.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.website.id_for_label }}" class="form-label">Website</label>
+                    {{ form.website }}
+                    {% if form.website.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.website.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-12">
+                    <label for="{{ form.contact_person.id_for_label }}" class="form-label">Contact Person (Headmaster/Principal)</label>
+                    {{ form.contact_person }}
+                    {% if form.contact_person.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.contact_person.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="bi bi-person-badge"></i>
+                        Select the staff member who is the head of the institution
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- School Details Section -->
+        <div class="form-section">
+            <h4>
+                <i class="bi bi-star-fill"></i>
+                School Details
+            </h4>
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <label for="{{ form.motto.id_for_label }}" class="form-label">Motto</label>
+                    {{ form.motto }}
+                    {% if form.motto.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.motto.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="bi bi-quote"></i>
+                        The school's guiding principle or slogan
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.vision.id_for_label }}" class="form-label">Vision</label>
+                    {{ form.vision }}
+                    {% if form.vision.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.vision.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.mission.id_for_label }}" class="form-label">Mission</label>
+                    {{ form.mission }}
+                    {% if form.mission.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.mission.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="{{ form.established_year.id_for_label }}" class="form-label">Established Year</label>
+                    {{ form.established_year }}
+                    {% if form.established_year.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.established_year.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-8">
+                    <label for="{{ form.logo.id_for_label }}" class="form-label">School Logo</label>
+                    {{ form.logo }}
+                    {% if form.logo.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.logo.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="bi bi-image"></i>
+                        Upload school logo (recommended size: 200x200px)
+                    </div>
+                    
+                    {% if profile and profile.logo %}
+                    <div class="image-preview">
+                        <div class="current-image-label">Current Logo:</div>
+                        <img src="{{ profile.logo.url }}" alt="{{ profile.name }} logo">
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            <i class="bi bi-{{ form.is_active.value|yesno:'check-circle,x-circle' }} me-1"></i>
+                            Active Status
+                        </label>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            Inactive profiles will not be displayed or used in the system
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn-primary" id="submit-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    <i class="bi bi-save me-2"></i>
+                    Save
+                </span>
+            </button>
+            
+            <button type="submit" name="action" value="save_and_continue" class="btn-outline-primary" id="save-continue-btn">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span class="btn-text">
+                    <i class="bi bi-pencil me-2"></i>
+                    Save & Continue Editing
+                </span>
+            </button>
+            
+            <a href="{% url 'management:school_profile_list' %}" class="btn-secondary">
+                <i class="bi bi-x-circle me-2"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let profileId = {% if profile %}{{ profile.pk }}{% else %}null{% endif %};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    // ============================================
+    // INITIALIZE SELECT2
+    // ============================================
+    
+    // Educational Level Select
+    $('#id_educational_level').select2({
+        placeholder: 'Select educational level (optional)',
+        allowClear: true,
+        width: '100%'
+    });
+    
+    // Contact Person Select
+    $('#id_contact_person').select2({
+        placeholder: 'Select contact person',
+        allowClear: true,
+        width: '100%',
+        ajax: {
+            url: $('#id_contact_person').data('ajax-url') || '/management/staff/search/',
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return {
+                    term: params.term,
+                    page: params.page || 1
+                };
+            },
+            processResults: function(data, params) {
+                params.page = params.page || 1;
+                return {
+                    results: data.results || [],
+                    pagination: {
+                        more: data.pagination && data.pagination.more
+                    }
+                };
+            },
+            cache: true
+        },
+        minimumInputLength: 2,
+        templateResult: formatStaffResult,
+        templateSelection: formatStaffSelection
+    });
+
+    // ============================================
+    // SELECT2 FORMATTING FUNCTIONS
+    // ============================================
+    
+    function formatStaffResult(staff) {
+        if (staff.loading) {
+            return staff.text;
+        }
+        
+        var $container = $(
+            '<div class="d-flex align-items-center gap-2">' +
+                '<div class="staff-avatar-sm" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
+                    (staff.text ? staff.text.charAt(0).toUpperCase() : '?') +
+                '</div>' +
+                '<div>' +
+                    '<div class="fw-semibold">' + staff.text + '</div>' +
+                    (staff.role ? '<div class="small text-muted">' + staff.role + '</div>' : '') +
+                '</div>' +
+            '</div>'
+        );
+        
+        return $container;
+    }
+
+    function formatStaffSelection(staff) {
+        return staff.text || staff.id;
+    }
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    
+    function handleFormSubmit(submitBtn, action) {
+        const form = $('#profile-form');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('.btn-text');
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.html('<i class="bi bi-hourglass-split me-2"></i>Saving...');
+        
+        const formData = new FormData(form[0]);
+        formData.append('action', action);
+        
+        $.ajax({
+            url: form.attr('action') || window.location.href,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    
+                    if (action === 'save') {
+                        setTimeout(function() {
+                            window.location.href = data.redirect_url || "{% url 'management:school_profile_list' %}";
+                        }, 1500);
+                    } else if (action === 'save_and_continue') {
+                        if (data.profile_id) {
+                            setTimeout(function() {
+                                window.location.href = "{% url 'management:school_profile_edit' 0 %}".replace('0', data.profile_id);
+                            }, 1500);
+                        } else {
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        }
+                    }
+                } else {
+                    displayErrors(data);
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.html(action === 'save' ? '<i class="bi bi-save me-2"></i>Save' : '<i class="bi bi-pencil me-2"></i>Save & Continue Editing');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    displayErrors(response);
+                } catch (e) {
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
+                
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.html(action === 'save' ? '<i class="bi bi-save me-2"></i>Save' : '<i class="bi bi-pencil me-2"></i>Save & Continue Editing');
+            }
+        });
+    }
+    
+    $('#submit-btn').on('click', function(e) {
+        e.preventDefault();
+        handleFormSubmit($(this), 'save');
+    });
+    
+    $('#save-continue-btn').on('click', function(e) {
+        e.preventDefault();
+        handleFormSubmit($(this), 'save_and_continue');
+    });
+    
+    // Also handle normal form submission (enter key)
+    $('#profile-form').on('submit', function(e) {
+        e.preventDefault();
+        handleFormSubmit($('#submit-btn'), 'save');
+    });
+
+    // ============================================
+    // ERROR HANDLING FUNCTIONS
+    // ============================================
+    
+    function clearErrors() {
+        $('#form-general-error').hide().empty();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    }
+    
+    function displayErrors(data) {
+        let hasGeneralErrors = false;
+        let generalErrorHtml = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+        
+        // Handle main message
+        if (data.message && data.message !== 'Please correct the errors below.') {
+            generalErrorHtml += data.message;
+            hasGeneralErrors = true;
+        }
+        
+        // Handle field-specific errors
+        if (data.errors) {
+            $.each(data.errors, function(fieldName, fieldErrors) {
+                // Handle __all__ errors (non-field errors)
+                if (fieldName === '__all__') {
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        if (generalErrorHtml.includes(data.message)) {
+                            generalErrorHtml += '<br>';
+                        }
+                        generalErrorHtml += fieldErrors.join('<br>');
+                    } else {
+                        if (generalErrorHtml.includes(data.message)) {
+                            generalErrorHtml += '<br>';
+                        }
+                        generalErrorHtml += fieldErrors;
+                    }
+                    return;
+                }
+                
+                // Try to find the field by various possible name patterns
+                let field = $(`[name="${fieldName}"]`);
+                if (field.length === 0) {
+                    field = $(`#id_${fieldName}`);
+                }
+                if (field.length === 0) {
+                    field = $(`#${fieldName}`);
+                }
+                
+                if (field.length) {
+                    field.addClass('is-invalid');
+                    
+                    let errorText = '';
+                    if (Array.isArray(fieldErrors)) {
+                        errorText = fieldErrors.join('<br>');
+                    } else if (typeof fieldErrors === 'string') {
+                        errorText = fieldErrors;
+                    } else {
+                        errorText = 'Invalid value';
+                    }
+                    
+                    // Check if it's a Select2 field and handle accordingly
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        const select2Container = field.next('.select2-container');
+                        if (select2Container.length) {
+                            select2Container.after(`<div class="invalid-feedback d-block">${errorText}</div>`);
+                        } else {
+                            field.after(`<div class="invalid-feedback">${errorText}</div>`);
+                        }
+                    } else {
+                        const errorHtml = `<div class="invalid-feedback">${errorText}</div>`;
+                        field.next('.invalid-feedback').remove();
+                        field.after(errorHtml);
+                    }
+                } else {
+                    // Field not found, treat as general error
+                    hasGeneralErrors = true;
+                    if (Array.isArray(fieldErrors)) {
+                        generalErrorHtml += `<br><strong>${fieldName}:</strong> ${fieldErrors.join('<br>')}`;
+                    } else {
+                        generalErrorHtml += `<br><strong>${fieldName}:</strong> ${fieldErrors}`;
+                    }
+                }
+            });
+        }
+        
+        // Display general errors if any
+        if (hasGeneralErrors) {
+            const generalErrorDiv = $('#form-general-error');
+            generalErrorDiv.html(generalErrorHtml).show();
+            
+            // Scroll to error message
+            $('html, body').animate({
+                scrollTop: generalErrorDiv.offset().top - 100
+            }, 500);
+        }
+        
+        // If there's only a message and no errors, show it as notification
+        if (!data.errors && data.message) {
+            showNotification(data.message, 'error');
+        }
+    }
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle-fill',
+        error: 'x-octagon-fill',
+        warning: 'exclamation-triangle-fill'
+    };
+    
+    const icon = icons[type] || 'info-circle-fill';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+    
+    toast.querySelector('.btn-close')?.addEventListener('click', () => {
+        toast.remove();
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// LOADING OVERLAY FUNCTIONS
+// ============================================
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+</script>
+{% endblock %}

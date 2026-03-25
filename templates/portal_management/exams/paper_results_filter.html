@@ -1,0 +1,1272 @@
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Paper Results - {{ paper.subject.name }} Paper {{ paper.paper_number }}{% endblock %}
+{% block page_title %}Paper Results - Filter & View{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM PAPER RESULTS FILTER STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        --teal: #20c997;
+        --teal-light: #d1f0e6;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Paper Info Card */
+    .paper-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .paper-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .paper-details {
+        flex: 1;
+    }
+
+    .paper-details h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .paper-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .paper-meta i {
+        color: var(--primary);
+        margin-right: 0.3rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.draft { background: var(--warning-light); color: #856404; }
+    .status-badge.submitted { background: var(--info-light); color: var(--info); }
+    .status-badge.verified { background: var(--primary-light); color: var(--primary); }
+    .status-badge.published { background: var(--success-light); color: var(--success); }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.scored { background: var(--success-light); color: var(--success); }
+    .stat-icon.pending { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.avg { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        cursor: pointer;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .filter-btn i {
+        font-size: 1.1rem;
+    }
+    
+    .filter-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+    
+    .filter-btn.all.active { background: var(--info); border-color: var(--info); }
+    .filter-btn.with-scores.active { background: var(--success); border-color: var(--success); }
+    .filter-btn.without-scores.active { background: var(--warning); border-color: var(--warning); color: #856404; }
+    
+    .filter-btn:hover:not(.active) {
+        transform: translateY(-2px);
+        background: var(--gray-200);
+    }
+
+    /* Search Box */
+    .search-box {
+        position: relative;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        z-index: 1;
+    }
+
+    .search-box input {
+        padding-left: 35px;
+        border-radius: var(--radius-lg);
+        border: 1.5px solid var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+        outline: none;
+    }
+
+    /* Action Buttons */
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: var(--radius-xl);
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--gray-200);
+        width: 100%;
+    }
+
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        min-width: 1000px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background: var(--gray-50);
+        color: var(--gray-600);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        background-color: white;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    /* Status Badges */
+    .student-status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+    
+    .student-status-badge.scored {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    
+    .student-status-badge.not-scored {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    /* Grade Badges */
+    .grade-badge {
+        display: inline-block;
+        padding: 0.25rem 0.7rem;
+        border-radius: var(--radius-full);
+        font-weight: bold;
+        font-size: 0.75rem;
+        text-align: center;
+        min-width: 40px;
+    }
+    
+    .grade-A { background: #10b981; color: white; }
+    .grade-B { background: #34d399; color: white; }
+    .grade-C { background: #fbbf24; color: #92400e; }
+    .grade-D { background: #f59e0b; color: white; }
+    .grade-E { background: #ef4444; color: white; }
+    .grade-F { background: #dc2626; color: white; }
+    
+    /* Percentage Badges */
+    .percentage-badge {
+        display: inline-block;
+        padding: 0.25rem 0.7rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    
+    .percentage-high { background: #e8f5e9; color: #1e7e34; }
+    .percentage-medium { background: #fff3e0; color: #e65100; }
+    .percentage-low { background: #ffebee; color: #b71c1c; }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.enter:hover {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Grade Distribution Card */
+    .grade-distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .grade-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+    }
+
+    .grade-item:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .grade-letter {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+        padding: 0.25rem 0.8rem;
+        border-radius: var(--radius-full);
+    }
+
+    .grade-count {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+    }
+
+    .grade-percentage {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        padding: 0.4rem 0.8rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-md);
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary) !important;
+        color: white !important;
+        border: none;
+    }
+
+    .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .dt-button {
+        background: white !important;
+        border: 1.5px solid var(--gray-200) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--gray-700) !important;
+        transition: var(--transition) !important;
+    }
+
+    .dt-button:hover {
+        background: var(--gray-100) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success { border-left: 4px solid var(--success); }
+    .toast-notification.error { border-left: 4px solid var(--danger); }
+    .toast-notification.warning { border-left: 4px solid var(--warning); }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success { background: var(--success-light); color: var(--success); }
+    .toast-icon.error { background: var(--danger-light); color: var(--danger); }
+    .toast-icon.warning { background: var(--warning-light); color: #856404; }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-buttons {
+            justify-content: center;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .grade-distribution-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .grade-distribution-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-filter-circle me-2"></i>
+                Paper Results - Filter View
+            </h1>
+            <p class="mb-0">{{ paper.subject.name }} - Paper {{ paper.paper_number }}{% if paper.paper_name %} ({{ paper.paper_name }}){% endif %}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_paper_list' session.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Papers
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Paper Info Card -->
+<div class="paper-info-card">
+    <div class="paper-icon">
+        <i class="bi bi-file-text"></i>
+    </div>
+    <div class="paper-details">
+        <h2>{{ session.name }}</h2>
+        <div class="paper-meta">
+            <span><i class="bi bi-book"></i> {{ paper.subject.name }} ({{ paper.subject.code }})</span>
+            <span><i class="bi bi-file-text"></i> Paper {{ paper.paper_number }}</span>
+            <span><i class="bi bi-star"></i> Max Marks: {{ paper.max_marks|floatformat:0 }}</span>
+            {% if paper.duration_minutes %}
+            <span><i class="bi bi-clock"></i> {{ paper.duration_minutes }} minutes</span>
+            {% endif %}
+        </div>
+    </div>
+    <div>
+        <span class="status-badge {{ session.status }}">
+            <i class="bi bi-{% if session.status == 'draft' %}file-earmark-text{% elif session.status == 'submitted' %}send{% elif session.status == 'verified' %}check-circle{% else %}check-circle-fill{% endif %}"></i>
+            {{ session.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_students }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon scored">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-value">{{ stats.with_scores }}</div>
+        <div class="stat-label">With Scores</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon pending">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="stat-value">{{ stats.without_scores }}</div>
+        <div class="stat-label">Pending Scores</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon avg">
+            <i class="bi bi-graph-up"></i>
+        </div>
+        <div class="stat-value">{{ stats.average_score|floatformat:0 }}</div>
+        <div class="stat-label">Average Score</div>
+    </div>
+</div>
+
+<!-- Filter Bar - Add the PDF button -->
+<div class="filter-bar">
+    <div class="filter-buttons">
+        <a href="?filter=all&search={{ search_query }}" 
+           class="filter-btn all {% if filter_type == 'all' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            All Students
+            <span class="badge bg-light text-dark rounded-pill ms-1">{{ stats.total_students }}</span>
+        </a>
+        <a href="?filter=with_scores&search={{ search_query }}" 
+           class="filter-btn with-scores {% if filter_type == 'with_scores' %}active{% endif %}">
+            <i class="bi bi-check-circle-fill"></i>
+            With Scores
+            <span class="badge bg-light text-dark rounded-pill ms-1">{{ stats.with_scores }}</span>
+        </a>
+        <a href="?filter=without_scores&search={{ search_query }}" 
+           class="filter-btn without-scores {% if filter_type == 'without_scores' %}active{% endif %}">
+            <i class="bi bi-x-circle-fill"></i>
+            Without Scores
+            <span class="badge bg-light text-dark rounded-pill ms-1">{{ stats.without_scores }}</span>
+        </a>
+    </div>
+    
+    <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" 
+                       class="form-control" 
+                       id="searchInput" 
+                       placeholder="Search by name or registration number..."
+                       value="{{ search_query }}">
+            </div>
+        </div>
+        <div class="col-md-8 text-md-end">
+            <div class="d-flex gap-2 justify-content-end flex-wrap">
+                <a href="{% url 'management:bulk_paper_result_entry' paper.pk %}" class="btn-primary-custom">
+                    <i class="bi bi-table me-2"></i>
+                    Bulk Result Entry
+                </a>
+                <a href="?filter={{ filter_type }}&search={{ search_query }}&export_pdf=true" 
+                   class="btn-primary-custom" 
+                   style="background: #dc3545;"
+                   id="exportPdfBtn">
+                    <i class="bi bi-file-pdf me-2"></i>
+                    Export PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-table"></i>
+            Student Results
+            {% if filter_type == 'without_scores' %}
+            <span class="badge bg-warning ms-2">Showing students without scores</span>
+            {% elif filter_type == 'with_scores' %}
+            <span class="badge bg-success ms-2">Showing students with scores</span>
+            {% endif %}
+        </h5>
+        <div>
+            <span class="text-muted">
+                <i class="bi bi-info-circle"></i>
+                {{ filtered_results|length }} of {{ total_students }} students
+            </span>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table id="resultsTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Reg No</th>
+                    <th>Student Name</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Marks</th>
+                    <th>%</th>
+                    <th>Grade</th>
+                    <th>Actions</th>
+                </thead>
+            <tbody>
+                {% for result in filtered_results %}
+                <tr class="{% if not result.has_score %}table-warning{% endif %}" data-student-id="{{ result.student.pk }}">
+                    <td class="row-number">{{ forloop.counter }}</td>
+                    <td>{{ result.student.registration_number|default:"—" }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if result.student.profile_picture %}
+                                <img src="{{ result.student.profile_picture.url }}" class="rounded-circle" width="32" height="32" style="object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="bi bi-person text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <strong>{{ result.student.full_name }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        {% if result.student.gender == 'male' %}
+                        <i class="bi bi-gender-male text-primary me-1"></i> Male
+                        {% elif result.student.gender == 'female' %}
+                        <i class="bi bi-gender-female text-danger me-1"></i> Female
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.has_score %}
+                        <span class="student-status-badge scored">
+                            <i class="bi bi-check-circle-fill"></i> Scored
+                        </span>
+                        {% else %}
+                        <span class="student-status-badge not-scored">
+                            <i class="bi bi-exclamation-triangle-fill"></i> No Score
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.has_score %}
+                        <strong class="text-primary">{{ result.marks|floatformat:0 }}</strong> / {{ paper.max_marks|floatformat:0 }}
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.percentage %}
+                        <span class="percentage-badge {% if result.percentage >= 75 %}percentage-high{% elif result.percentage >= 50 %}percentage-medium{% else %}percentage-low{% endif %}">
+                            {{ result.percentage|floatformat:0 }}%
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.grade %}
+                        <span class="grade-badge grade-{{ result.grade }}">{{ result.grade }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if can_edit and not result.has_score %}
+                            <a href="{% url 'management:student_result_entry' session.pk result.student.pk %}" 
+                               class="btn-action enter" 
+                               title="Enter Results">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            {% elif can_edit and result.has_score %}
+                            <a href="{% url 'management:student_result_entry' session.pk result.student.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit Results">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'management:student_detail' result.student.pk %}" 
+                               class="btn-action view" 
+                               title="View Student Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+                            <h5 class="mb-2">No Students Found</h5>
+                            <p class="text-muted mb-3">
+                                {% if filter_type == 'without_scores' %}
+                                All students have scores entered for this paper.
+                                {% elif filter_type == 'with_scores' %}
+                                No scores have been entered for this paper yet.
+                                {% else %}
+                                No students are enrolled in this session.
+                                {% endif %}
+                            </p>
+                            {% if filter_type == 'with_scores' %}
+                            <a href="{% url 'management:bulk_paper_result_entry' paper.pk %}" class="btn-primary-custom">
+                                <i class="bi bi-table me-2"></i>
+                                Enter Results
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let dataTable = null;
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", csrfToken);
+            }
+        }
+    });
+
+    // ============================================
+    // INITIALIZE DATATABLE
+    // ============================================
+    if ($('#resultsTable').length && $('#resultsTable tbody tr').length > 0) {
+        dataTable = $('#resultsTable').DataTable({
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    className: 'dt-button buttons-excel',
+                    title: '{{ paper.subject.name }} Paper {{ paper.paper_number }} Results'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                    className: 'dt-button buttons-pdf',
+                    title: '{{ paper.subject.name }} Paper {{ paper.paper_number }} Results',
+                    orientation: 'landscape',
+                    pageSize: 'A4'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer me-1"></i>Print',
+                    className: 'dt-button buttons-print',
+                    title: '{{ paper.subject.name }} Paper {{ paper.paper_number }} Results'
+                }
+            ],
+            dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+            order: [[5, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: [0, 4, 8] },
+                { className: 'text-center', targets: [0, 3, 4, 5, 6, 7, 8] },
+                { className: 'text-left', targets: [1, 2] },
+                { width: '5%', targets: 0 },
+                { width: '12%', targets: 1 },
+                { width: '25%', targets: 2 },
+                { width: '8%', targets: 3 },
+                { width: '10%', targets: 4 },
+                { width: '10%', targets: 5 },
+                { width: '8%', targets: 6 },
+                { width: '8%', targets: 7 },
+                { width: '12%', targets: 8 }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search students...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ students",
+                infoEmpty: "Showing 0 to 0 of 0 students",
+                infoFiltered: "(filtered from _MAX_ total students)",
+                paginate: {
+                    first: '<i class="bi bi-chevron-double-left"></i>',
+                    previous: '<i class="bi bi-chevron-left"></i>',
+                    next: '<i class="bi bi-chevron-right"></i>',
+                    last: '<i class="bi bi-chevron-double-right"></i>'
+                }
+            },
+            scrollX: true,
+            autoWidth: false,
+            drawCallback: function() {
+                const api = this.api();
+                const rows = api.rows({ page: 'current' }).nodes();
+                const start = api.page.info().start;
+                
+                $(rows).each(function(index) {
+                    $(this).find('.row-number').text(start + index + 1);
+                });
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dt-buttons').appendTo('.dataTables_length');
+            }
+        });
+
+        $(window).on('resize', function() {
+            if (dataTable) {
+                dataTable.columns.adjust();
+            }
+        });
+
+        $('.dt-button').on('click', function() {
+            $('#loadingOverlay').addClass('show');
+            setTimeout(function() {
+                $('#loadingOverlay').removeClass('show');
+            }, 1000);
+        });
+    }
+
+    // ============================================
+    // SEARCH FUNCTIONALITY (URL-based)
+    // ============================================
+    let searchTimeout;
+    $('#searchInput').on('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchValue = $(this).val();
+            const currentFilter = '{{ filter_type }}';
+            window.location.href = `?filter=${currentFilter}&search=${encodeURIComponent(searchValue)}`;
+        }, 500);
+    });
+
+    // ============================================
+    // TOOLTIPS
+    // ============================================
+    $('[title]').tooltip({
+        placement: 'top',
+        trigger: 'hover',
+        delay: { show: 500, hide: 100 }
+    });
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+F to focus search
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            if (dataTable) {
+                $('.dataTables_filter input').focus();
+            } else {
+                $('#searchInput').focus();
+            }
+        }
+        
+        // ESC to clear search
+        if (e.key === 'Escape') {
+            if (dataTable) {
+                $('.dataTables_filter input').val('').trigger('keyup');
+            } else {
+                $('#searchInput').val('');
+                const currentFilter = '{{ filter_type }}';
+                window.location.href = `?filter=${currentFilter}`;
+            }
+        }
+    });
+});
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+function showNotification(message, type = 'success', duration = 5000) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle-fill',
+        error: 'x-octagon-fill',
+        warning: 'exclamation-triangle-fill',
+        info: 'info-circle-fill'
+    };
+    
+    const icon = icons[type] || 'info-circle-fill';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    toast.style.animation = 'slideIn 0.3s ease-out';
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, duration);
+    
+    toast.querySelector('.btn-close').addEventListener('click', () => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 300);
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('show');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('show');
+}
+</script>
+{% endblock %}

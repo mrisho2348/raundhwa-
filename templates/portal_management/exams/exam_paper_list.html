@@ -1,0 +1,1429 @@
+<!-- templates/portal_management/exams/exam_paper_list.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Exam Papers — {{ session.name }}{% endblock %}
+{% block page_title %}Exam Papers Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM EXAM PAPER MANAGEMENT STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        --indigo: #6610f2;
+        --indigo-light: #e7e3fc;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        --gray-900: #111827;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Session Info Card */
+    .session-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .session-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+    }
+
+    .session-details {
+        flex: 1;
+    }
+
+    .session-details h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .session-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .session-meta i {
+        color: var(--primary);
+        margin-right: 0.3rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.draft {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .status-badge.submitted {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .status-badge.verified {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .status-badge.published {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.total { background: var(--info-light); color: var(--info); }
+    .stat-icon.subjects { background: var(--purple-light); color: var(--purple); }
+    .stat-icon.scores { background: var(--success-light); color: var(--success); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    .btn-success-custom {
+        background: var(--success);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-success-custom:hover {
+        background: #0f7b3a;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-outline-custom {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-outline-custom:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+        color: white;
+    }
+
+    /* Paper Cards */
+    .paper-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .paper-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .paper-card-header {
+        background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .paper-card-header:hover {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--gray-50) 100%);
+    }
+
+    .paper-card-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .subject-code {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        font-family: monospace;
+    }
+
+    .subject-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: var(--gray-600);
+    }
+
+    .subject-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-subject-action {
+        background: var(--success);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-subject-action:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-analytics {
+        background: var(--purple);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-analytics:hover {
+        background: var(--indigo);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .paper-list {
+        padding: 0;
+    }
+
+    .paper-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .paper-item:last-child {
+        border-bottom: none;
+    }
+
+    .paper-item:hover {
+        background: var(--gray-50);
+    }
+
+    .paper-item.disabled {
+        background: var(--gray-100);
+        opacity: 0.7;
+    }
+
+    .paper-info {
+        flex: 1;
+    }
+
+    .paper-number {
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+
+    .paper-name {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+    }
+
+    .paper-marks {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .paper-marks i {
+        font-size: 0.7rem;
+    }
+
+    .paper-duration {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-left: 1rem;
+    }
+
+    .has-scores-badge {
+        background: var(--success-light);
+        color: var(--success);
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        align-items: center;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--gray-600);
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action.edit:hover {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .btn-action.delete:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .btn-action.view:hover {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .btn-action.results:hover {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .btn-action.analytics:hover {
+        background: var(--purple-light);
+        color: var(--purple);
+    }
+
+    .btn-action.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-state p {
+        color: var(--gray-500);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .toast-icon.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .toast-icon.error {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+
+    .toast-icon.warning {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    /* Search Box */
+    .search-box {
+        position: relative;
+        min-width: 250px;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        z-index: 1;
+    }
+
+    .search-box input {
+        padding-left: 35px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--gray-300);
+        transition: var(--transition);
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+        outline: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .paper-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .action-buttons {
+            align-self: flex-end;
+        }
+
+        .session-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-group {
+            justify-content: center;
+        }
+
+        .subject-actions {
+            margin-top: 0.5rem;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Toast Notifications Container -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-file-text me-2"></i>
+                Exam Papers
+            </h1>
+            <p class="mb-0">Configure and manage examination papers for this session</p>
+        </div>
+        <div>
+            <a href="{% url 'management:exam_session_detail' session.pk %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Session
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Session Info Card -->
+<div class="session-info-card">
+    <div class="session-icon">
+        <i class="bi bi-calendar-check"></i>
+    </div>
+    <div class="session-details">
+        <h2>{{ session.name }}</h2>
+        <div class="session-meta">
+            <span><i class="bi bi-file-text"></i> {{ session.exam_type.name }}</span>
+            <span><i class="bi bi-people"></i> {{ session.class_level.name }}{% if session.stream_class %} - {{ session.stream_class.name }}{% endif %}</span>
+            <span><i class="bi bi-calendar"></i> {{ session.exam_date|date:"l, F d, Y" }}</span>
+            <span><i class="bi bi-calendar-week"></i> {{ session.term.get_term_number_display }} - {{ session.academic_year.name }}</span>
+        </div>
+    </div>
+    <div>
+        <span class="status-badge {{ session.status }}">
+            <i class="bi bi-{% if session.status == 'draft' %}file-earmark-text{% elif session.status == 'submitted' %}send{% elif session.status == 'verified' %}check-circle{% else %}check-circle-fill{% endif %}"></i>
+            {{ session.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar">
+    <div class="action-group">
+        {% if can_edit %}
+        <a href="{% url 'management:exam_paper_bulk_create' session.pk %}" class="btn-primary-custom">
+            <i class="bi bi-collection me-2"></i>
+            Bulk Create Papers
+        </a>
+        {% endif %}
+    </div>
+    <div class="action-group">
+        {% if can_edit %}
+        <a href="{% url 'management:exam_paper_create' session.pk %}" class="btn-success-custom">
+            <i class="bi bi-plus-lg me-2"></i>
+            Add Single Paper
+        </a>
+        {% endif %}
+    </div>
+    <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" id="searchPapers" placeholder="Search papers by name or subject..." class="form-control">
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <i class="bi bi-files"></i>
+        </div>
+        <div class="stat-value">{{ papers|length }}</div>
+        <div class="stat-label">Total Papers</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon subjects">
+            <i class="bi bi-book"></i>
+        </div>
+        <div class="stat-value">{{ papers_by_subject|length }}</div>
+        <div class="stat-label">Subjects</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon scores">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ scored_papers_count|default:0 }}</div>
+        <div class="stat-label">With Scores</div>
+    </div>
+</div>
+
+<!-- Exam Papers Main Card -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-file-text"></i>
+            Exam Papers by Subject
+        </h5>
+        {% if can_edit and not papers_by_subject %}
+        <div class="d-flex gap-2">
+            <a href="{% url 'management:exam_paper_bulk_create' session.pk %}" class="btn-add">
+                <i class="bi bi-collection me-2"></i>
+                Bulk Create Papers
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Papers by Subject -->
+    {% if papers_by_subject %}
+        <div class="papers-container">
+            {% for subject, subject_papers in papers_by_subject.items %}
+            <div class="paper-card" data-subject-id="{{ subject.pk }}" data-subject-name="{{ subject.name }}">
+                <div class="paper-card-header" onclick="toggleSubjectPapers(this)">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-chevron-down collapse-icon"></i>
+                                <h3>{{ subject.name }}</h3>
+                            </div>
+                            <div class="subject-code">{{ subject.code }}</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="subject-stats">
+                                <span><i class="bi bi-files"></i> {{ subject_papers|length }} paper(s)</span>
+                                <span><i class="bi bi-star"></i> {{ subject_papers.0.max_marks|default:0 }} max marks</span>
+                            </div>
+                            <div class="subject-actions">
+                                <!-- View Results Button -->
+                                <a href="{% url 'management:subject_results_summary' session.pk subject.pk %}" 
+                                   class="btn-subject-action"
+                                   title="View Subject Results">
+                                    <i class="bi bi-table"></i>
+                                    View Results
+                                </a>
+                                <!-- Subject Analytics Button -->
+                                <a href="{% url 'management:subject_analytics' session.pk subject.pk %}" 
+                                   class="btn-analytics"
+                                   title="Subject Analytics - Top/Bottom performers, Grade Distribution, Range Analysis">
+                                    <i class="bi bi-graph-up"></i>
+                                    Analytics
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="paper-list">
+                    {% for paper in subject_papers %}
+                    <div class="paper-item {% if paper.has_scores %}disabled{% endif %}" data-paper-id="{{ paper.pk }}" data-paper-number="{{ paper.paper_number }}">
+                        <div class="paper-info">
+                            <div class="paper-number">
+                                Paper {{ paper.paper_number }}
+                                {% if paper.paper_name %}
+                                <span class="paper-name">- {{ paper.paper_name }}</span>
+                                {% endif %}
+                                {% if paper.has_scores %}
+                                <span class="has-scores-badge">
+                                    <i class="bi bi-check-circle-fill"></i> Has Scores
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="paper-marks">
+                                <i class="bi bi-star-fill"></i>
+                                Maximum Marks: {{ paper.max_marks|floatformat:0 }}
+                                {% if paper.duration_minutes %}
+                                <span class="paper-duration">
+                                    <i class="bi bi-clock"></i> {{ paper.duration_minutes }} minutes
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% if paper.exam_date %}
+                            <div class="paper-marks">
+                                <i class="bi bi-calendar"></i>
+                                Exam Date: {{ paper.exam_date|date:"M d, Y" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="action-buttons">
+
+                             <!-- New: View Paper Results with Filtering -->
+                            <a href="{% url 'management:paper_results_filter' paper.pk %}" 
+                            class="btn-action view" 
+                            title="View Results - Filter by Score Status">
+                                <i class="bi bi-filter-circle"></i>
+                            </a>
+                            <!-- Enter/View Results Button -->
+                            <a href="{% url 'management:bulk_paper_result_entry' paper.pk %}" 
+                               class="btn-action results" 
+                               title="Enter/View Results">
+                                <i class="bi bi-table"></i>
+                            </a>
+                            
+                            <!-- Paper Analytics Button -->
+                            <a href="{% url 'management:paper_analytics' paper.pk %}" 
+                               class="btn-action analytics" 
+                               title="Paper Analytics - Performance Analysis, Grade Distribution, Statistics">
+                                <i class="bi bi-graph-up"></i>
+                            </a>
+                            
+                            {% if can_edit and not paper.has_scores %}
+                            <a href="{% url 'management:exam_paper_update' paper.pk %}" 
+                               class="btn-action edit" 
+                               title="Edit Paper">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn-action delete" 
+                                    title="Delete Paper"
+                                    onclick="showDeleteModal({{ paper.pk }}, '{{ subject.name|escapejs }}', {{ paper.paper_number }})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% elif paper.has_scores %}
+                            <span class="btn-action disabled" title="Cannot edit/delete - has scores">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-file-text"></i>
+            </div>
+            <p>No exam papers configured for this session yet.</p>
+            {% if can_edit %}
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                <a href="{% url 'management:exam_paper_bulk_create' session.pk %}" class="btn-add">
+                    <i class="bi bi-collection me-2"></i>
+                    Bulk Create Papers
+                </a>
+                <a href="{% url 'management:exam_paper_create' session.pk %}" class="btn-add">
+                    <i class="bi bi-plus-lg me-2"></i>
+                    Add Single Paper
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this exam paper?</p>
+                <div class="alert alert-danger">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All scores for this paper will be permanently deleted.
+                </div>
+                <div class="alert alert-info">
+                    <strong>Subject:</strong> <span id="deleteSubject"></span><br>
+                    <strong>Paper:</strong> <span id="deletePaperNumber"></span>
+                </div>
+                <div id="paper-dependencies-warning" class="alert alert-warning d-none">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Cannot delete:</strong> <span id="paper-dependencies-list"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <span class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                    <i class="bi bi-trash me-2"></i>
+                    <span class="btn-text">Delete Paper</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let csrfToken = '{{ csrf_token }}';
+let currentPaperId = null;
+let sessionId = {{ session.pk }};
+
+$(document).ready(function () {
+    'use strict';
+
+    // ============================================
+    // CSRF Token Setup
+    // ============================================
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", csrfToken);
+            }
+        }
+    });
+    
+    // Initialize all paper lists as expanded
+    document.querySelectorAll('.paper-list').forEach(list => {
+        list.style.display = 'block';
+    });
+    
+    // Add tooltips
+    $('[title]').tooltip({
+        placement: 'top',
+        trigger: 'hover',
+        delay: { show: 500, hide: 100 }
+    });
+    
+    // Initialize search functionality
+    $('#searchPapers').on('input', searchPapers);
+});
+
+// ============================================
+// TOGGLE SUBJECT PAPERS
+// ============================================
+function toggleSubjectPapers(header) {
+    const card = header.closest('.paper-card');
+    const paperList = card.querySelector('.paper-list');
+    const icon = header.querySelector('.collapse-icon');
+    
+    if (paperList.style.display === 'none') {
+        paperList.style.display = 'block';
+        icon.classList.remove('bi-chevron-right');
+        icon.classList.add('bi-chevron-down');
+        
+        // Smooth animation
+        paperList.style.animation = 'slideDown 0.3s ease-out';
+        setTimeout(() => {
+            paperList.style.animation = '';
+        }, 300);
+    } else {
+        paperList.style.display = 'none';
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-right');
+    }
+}
+
+// ============================================
+// SEARCH FUNCTIONALITY FOR PAPERS
+// ============================================
+function searchPapers() {
+    const searchTerm = document.getElementById('searchPapers').value.toLowerCase().trim();
+    const paperCards = document.querySelectorAll('.paper-card');
+    
+    if (!searchTerm) {
+        paperCards.forEach(card => {
+            card.style.display = '';
+            const paperList = card.querySelector('.paper-list');
+            if (paperList.style.display === 'none') {
+                toggleSubjectPapers(card.querySelector('.paper-card-header'));
+            }
+        });
+        return;
+    }
+    
+    paperCards.forEach(card => {
+        const subjectName = card.getAttribute('data-subject-name')?.toLowerCase() || '';
+        const paperItems = card.querySelectorAll('.paper-item');
+        let hasVisiblePapers = false;
+        
+        paperItems.forEach(item => {
+            const paperInfo = item.querySelector('.paper-info').textContent.toLowerCase();
+            const paperNumber = item.getAttribute('data-paper-number') || '';
+            
+            if (paperInfo.includes(searchTerm) || subjectName.includes(searchTerm) || paperNumber.includes(searchTerm)) {
+                item.style.display = '';
+                hasVisiblePapers = true;
+                const paperList = card.querySelector('.paper-list');
+                if (paperList.style.display === 'none') {
+                    toggleSubjectPapers(card.querySelector('.paper-card-header'));
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        card.style.display = hasVisiblePapers ? '' : 'none';
+    });
+}
+
+// ============================================
+// DELETE PAPER FUNCTIONALITY
+// ============================================
+function showDeleteModal(paperId, subjectName, paperNumber) {
+    currentPaperId = paperId;
+    document.getElementById('deleteSubject').textContent = subjectName;
+    document.getElementById('deletePaperNumber').textContent = `Paper ${paperNumber}`;
+    document.getElementById('paper-dependencies-warning').classList.add('d-none');
+    $('#deleteModal').modal('show');
+}
+
+document.getElementById('confirmDeleteBtn')?.addEventListener('click', async function() {
+    if (!currentPaperId) return;
+    
+    const btn = this;
+    const spinner = btn.querySelector('.spinner-border');
+    const btnText = btn.querySelector('.btn-text');
+    
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    btnText.textContent = 'Deleting...';
+    
+    try {
+        const response = await fetch(`/management/exam-papers/${currentPaperId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            $('#deleteModal').modal('hide');
+            showNotification(data.message, 'success');
+            
+            // Add animation to the paper row before reload
+            const paperRow = document.querySelector(`.paper-item[data-paper-id="${currentPaperId}"]`);
+            if (paperRow) {
+                paperRow.style.animation = 'slideOut 0.3s ease-out';
+                // Reload after animation completes
+                setTimeout(() => {
+                    location.reload();
+                }, 300);
+            } else {
+                // If paper row not found, reload immediately
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        } else {
+            // Handle different error types
+            if (data.has_dependencies) {
+                document.getElementById('paper-dependencies-list').textContent = data.dependencies.join(', ');
+                document.getElementById('paper-dependencies-warning').classList.remove('d-none');
+                showNotification(data.message, 'warning');
+            } else {
+                showNotification(data.message, 'error');
+            }
+            
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = 'Delete Paper';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('An error occurred while deleting the paper. Please try again.', 'error');
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+        btnText.textContent = 'Delete Paper';
+    }
+});
+
+// Helper function to update statistics after delete
+function updateStatsAfterDelete() {
+    const totalPapersElement = document.querySelector('.stat-card:first-child .stat-value');
+    const subjectsCountElement = document.querySelectorAll('.stat-card')[1]?.querySelector('.stat-value');
+    
+    if (totalPapersElement) {
+        const currentCount = parseInt(totalPapersElement.textContent) || 0;
+        totalPapersElement.textContent = currentCount - 1;
+    }
+    
+    // Update subjects count
+    const remainingSubjects = document.querySelectorAll('.paper-card').length;
+    if (subjectsCountElement) {
+        subjectsCountElement.textContent = remainingSubjects;
+    }
+    
+    // Update scored papers count if needed
+    const scoredPapersElement = document.querySelectorAll('.stat-card')[2]?.querySelector('.stat-value');
+    // If the deleted paper had scores, we need to decrement the scored count
+    const deletedPaperRow = document.querySelector(`.paper-item[data-paper-id="${currentPaperId}"]`);
+    if (deletedPaperRow && deletedPaperRow.classList.contains('has-scores')) {
+        const currentScored = parseInt(scoredPapersElement?.textContent) || 0;
+        if (scoredPapersElement) {
+            scoredPapersElement.textContent = Math.max(0, currentScored - 1);
+        }
+    }
+}
+// ============================================
+// ANIMATION STYLES
+// ============================================
+const animationStyles = document.createElement('style');
+animationStyles.textContent = `
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(animationStyles);
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+function showNotification(message, type = 'success', duration = 5000) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    const icons = {
+        success: 'check-circle-fill',
+        error: 'x-octagon-fill',
+        warning: 'exclamation-triangle-fill',
+        info: 'info-circle-fill'
+    };
+    
+    const icon = icons[type] || 'info-circle-fill';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="bi bi-${icon}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(message)}</div>
+        </div>
+        <button class="btn-close btn-close-sm" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+    } else {
+        document.body.appendChild(toast);
+    }
+    
+    toast.style.animation = 'slideIn 0.3s ease-out';
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, duration);
+    
+    toast.querySelector('.btn-close').addEventListener('click', () => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 300);
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// MODAL CLEANUP
+// ============================================
+$('#deleteModal').on('hidden.bs.modal', function() {
+    $('#confirmDeleteBtn').prop('disabled', false);
+    $('#confirmDeleteBtn .spinner-border').addClass('d-none');
+    $('#confirmDeleteBtn .btn-text').text('Delete Paper');
+    currentPaperId = null;
+});
+
+// ============================================
+// INITIALIZATION
+// ============================================
+$(document).ready(function() {
+    $('.paper-card').each(function(index) {
+        $(this).css('animation-delay', `${index * 0.1}s`);
+    });
+});
+</script>
+{% endblock %}

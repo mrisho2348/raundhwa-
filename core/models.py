@@ -3279,3 +3279,146 @@ class AuditLog(models.Model):
             # the first IP is the original client
             return x_forwarded_for.split(',')[0].strip()
         return request.META.get('REMOTE_ADDR', '')
+
+
+
+# core/models.py
+
+class SchoolProfileManager(models.Manager):
+    """Custom manager for SchoolProfile model."""
+    
+    def get_queryset(self):
+        """Return the base queryset."""
+        return super().get_queryset()
+    
+    def get_active_profile(self, educational_level=None):
+        """
+        Get the active school profile.
+        If educational_level is provided, returns the profile for that level,
+        otherwise returns the main school profile.
+        """
+        if educational_level:
+            return self.filter(
+                educational_level=educational_level,
+                is_active=True
+            ).first()
+        return self.filter(educational_level__isnull=True, is_active=True).first()
+    
+    def get_school_info(self, educational_level=None):
+        """
+        Get school information as a dictionary for use in views.
+        """
+        profile = self.get_active_profile(educational_level)
+        if profile:
+            return {
+                'code': profile.code,
+                'name': profile.name,
+                'registration_number': profile.registration_number,
+                'address': profile.address,
+                'phone': profile.get_contact_phone(),
+                'alternative_phone': profile.alternative_phone,
+                'email': profile.email,
+                'website': profile.website,
+                'motto': profile.motto,
+                'vision': profile.vision,
+                'mission': profile.mission,
+                'established_year': profile.established_year,
+                'logo': profile.logo,
+                'contact_person': profile.get_contact_name(),
+            }
+        return self._get_default_school_info()
+    
+    def _get_default_school_info(self):
+        """Return default school information from settings."""
+        from django.conf import settings
+        return {
+            'code': getattr(settings, 'SCHOOL_CODE', 'S2348'),
+            'name': getattr(settings, 'SCHOOL_NAME', 'School Management System'),
+            'registration_number': getattr(settings, 'SCHOOL_REGISTRATION_NUMBER', ''),
+            'address': getattr(settings, 'SCHOOL_ADDRESS', ''),
+            'phone': getattr(settings, 'SCHOOL_PHONE', ''),
+            'email': getattr(settings, 'SCHOOL_EMAIL', ''),
+            'motto': getattr(settings, 'SCHOOL_MOTTO', ''),
+        }
+
+
+class SchoolProfile(models.Model):
+    """
+    School/Institution profile information supporting multiple educational levels.
+    Stores information about the current school/institution.
+    Different from School model which stores previous schools students attended.
+    """
+    
+    # School identification
+    code = models.CharField(max_length=20, unique=True, help_text="School code (e.g., RISS-PRIMARY)")
+    name = models.CharField(max_length=200, help_text="Full school name")
+    registration_number = models.CharField(max_length=50, unique=True, help_text="Official registration number")
+    
+    # Educational level (can be null for main school record)
+    educational_level = models.ForeignKey(
+        'EducationalLevel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='school_profiles',
+        help_text="Educational level this school serves (leave blank for main record)"
+    )
+    
+    # Contact information
+    address = models.TextField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    alternative_phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    website = models.URLField(blank=True)
+    
+    # School details
+    motto = models.CharField(max_length=200, blank=True)
+    vision = models.TextField(blank=True)
+    mission = models.TextField(blank=True)
+    established_year = models.PositiveIntegerField(null=True, blank=True)
+    
+    # Media
+    logo = models.ImageField(upload_to='school/logos/', blank=True, null=True)
+    
+    # Contact person (Headmaster/Principal)
+    contact_person = models.ForeignKey(
+        'Staff',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='school_profiles_managed',
+        help_text="Headmaster/Principal of this school"
+    )
+    
+    # Active status
+    is_active = models.BooleanField(default=True)
+    
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Custom manager
+    objects = SchoolProfileManager()
+    
+    class Meta:
+        verbose_name = "School Profile"
+        verbose_name_plural = "School Profiles"
+        ordering = ['code']
+        unique_together = ['code', 'educational_level']
+    
+    def __str__(self):
+        if self.educational_level:
+            return f"{self.name} ({self.educational_level.code})"
+        return self.name
+    
+    def get_contact_phone(self):
+        """Get contact phone, prioritizing headmaster's phone if available."""
+        if self.contact_person and self.contact_person.phone_number:
+            return self.contact_person.phone_number
+        return self.phone
+    
+    def get_contact_name(self):
+        """Get contact person name."""
+        if self.contact_person:
+            return self.contact_person.get_full_name()
+        return "Headmaster"

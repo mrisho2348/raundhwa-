@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ paper.subject.name }} Paper {{ paper.paper_number }} Results</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: "{{ school_info.name }}";
+                font-size: 9pt;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 8pt;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #666;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #2c3e50;
+            background: white;
+        }
+        
+        .container {
+            max-width: 100%;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #1a73e8;
+        }
+        
+        .school-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+        
+        .report-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0 5px;
+        }
+        
+        .report-subtitle {
+            font-size: 11pt;
+            color: #5a6c7e;
+            margin-bottom: 5px;
+        }
+        
+        .school-motto {
+            font-size: 8pt;
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        /* Paper Info Card */
+        .paper-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1a73e8;
+        }
+        
+        .paper-info h3 {
+            font-size: 12pt;
+            margin-bottom: 8px;
+            color: #1a73e8;
+        }
+        
+        .paper-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 8pt;
+            color: #5a6c7e;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .stat-value {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+        
+        .stat-label {
+            font-size: 8pt;
+            color: #5a6c7e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Filter Info */
+        .filter-info {
+            background: #e8f0fe;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            font-size: 9pt;
+        }
+        
+        /* Table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 8pt;
+        }
+        
+        .results-table th {
+            background: #1a73e8;
+            color: white;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #1557b0;
+        }
+        
+        .results-table td {
+            padding: 6px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .results-table td:first-child {
+            text-align: center;
+        }
+        
+        .results-table td:nth-child(3) {
+            text-align: left;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        
+        .results-table tr:hover {
+            background: #e8f0fe;
+        }
+        
+        /* Grade Badges */
+        .grade-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+        
+        .grade-A { background: #10b981; color: white; }
+        .grade-B { background: #34d399; color: white; }
+        .grade-C { background: #fbbf24; color: #92400e; }
+        .grade-D { background: #f59e0b; color: white; }
+        .grade-E { background: #ef4444; color: white; }
+        .grade-F { background: #dc2626; color: white; }
+        
+        /* Percentage Badges */
+        .percentage-high { color: #1e7e34; font-weight: bold; }
+        .percentage-medium { color: #e65100; font-weight: bold; }
+        .percentage-low { color: #b71c1c; font-weight: bold; }
+        
+        /* Status Badge */
+        .status-scored {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #e6f4ea;
+            color: #0f7b3a;
+            font-size: 7pt;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 7pt;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 7pt;
+            color: #7f8c8d;
+        }
+        
+        /* Summary Section */
+        .summary-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .summary-title {
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1a73e8;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        
+        .summary-label {
+            font-weight: 500;
+            color: #5a6c7e;
+        }
+        
+        .summary-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        @media print {
+            .results-table {
+                break-inside: avoid;
+            }
+            .stats-grid {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="school-name">{{ school_info.name|default:"SCHOOL MANAGEMENT SYSTEM" }}</div>
+            <div class="report-title">EXAMINATION RESULTS REPORT</div>
+            <div class="report-subtitle">{{ paper.subject.name }} - Paper {{ paper.paper_number }}</div>
+            {% if paper.paper_name %}
+            <div class="report-subtitle" style="font-size: 9pt;">{{ paper.paper_name }}</div>
+            {% endif %}
+            {% if school_info.motto %}
+            <div class="school-motto">{{ school_info.motto }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Paper Information -->
+        <div class="paper-info">
+            <h3>{{ session.name }}</h3>
+            <div class="paper-meta">
+                <span><strong>Class:</strong> {{ session.class_level.name }}</span>
+                <span><strong>Term:</strong> {{ session.term }}</span>
+                <span><strong>Year:</strong> {{ session.academic_year }}</span>
+                <span><strong>Exam Date:</strong> {{ session.exam_date|date:"d M Y" }}</span>
+                <span><strong>Max Marks:</strong> {{ paper.max_marks|floatformat:0 }}</span>
+                {% if paper.duration_minutes %}
+                <span><strong>Duration:</strong> {{ paper.duration_minutes }} minutes</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_students }}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.with_scores }}</div>
+                <div class="stat-label">With Scores</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.without_scores }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ pdf_stats.average_score|floatformat:0 }}</div>
+                <div class="stat-label">Avg Score</div>
+            </div>
+        </div>
+        
+        <!-- Filter Information -->
+        <div class="filter-info">
+            <strong>Filter:</strong> {{ filter_label }}
+            {% if search_query %}
+            | <strong>Search:</strong> "{{ search_query }}"
+            {% endif %}
+            | <strong>Showing:</strong> {{ filtered_results|length }} of {{ stats.total_students }} students
+        </div>
+        
+        <!-- Results Table -->
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Reg No</th>
+                    <th>Student Name</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Marks</th>
+                    <th>%</th>
+                    <th>Grade</th>
+                </thead>
+            <tbody>
+                {% for result in filtered_results %}
+                 <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ result.student.registration_number|default:"—" }}</td>
+                    <td style="text-align: left;">{{ result.student.full_name }}</td>
+                    <td>
+                        {% if result.student.gender == 'male' %}
+                        Male
+                        {% elif result.student.gender == 'female' %}
+                        Female
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.has_score %}
+                        <span class="status-scored">✓ Scored</span>
+                        {% else %}
+                        <span class="status-pending">⏳ Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.has_score %}
+                        <strong>{{ result.marks|floatformat:0 }}</strong>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.percentage %}
+                        <span class="{% if result.percentage >= 75 %}percentage-high{% elif result.percentage >= 50 %}percentage-medium{% else %}percentage-low{% endif %}">
+                            {{ result.percentage|floatformat:0 }}%
+                        </span>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result.grade %}
+                        <span class="grade-badge grade-{{ result.grade }}">{{ result.grade }}</span>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px;">
+                        No students found matching the current filter.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Summary Statistics -->
+        <div class="summary-section">
+            <div class="summary-title">Performance Summary</div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Completion Rate:</span>
+                    <span class="summary-value">{{ pdf_stats.completion_rate|floatformat:1 }}%</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Average Score:</span>
+                    <span class="summary-value">{{ pdf_stats.average_score|floatformat:1 }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Median Score:</span>
+                    <span class="summary-value">{{ pdf_stats.median_score|floatformat:1 }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Highest Score:</span>
+                    <span class="summary-value">{{ pdf_stats.highest_score|floatformat:0 }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Lowest Score:</span>
+                    <span class="summary-value">{{ pdf_stats.lowest_score|floatformat:0 }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Average Percentage:</span>
+                    <span class="summary-value">{{ pdf_stats.average_percentage|floatformat:1 }}%</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Male Students:</span>
+                    <span class="summary-value">{{ gender_counts.Male }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Female Students:</span>
+                    <span class="summary-value">{{ gender_counts.Female }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>This report is computer-generated and is valid without a signature.</p>
+            <p>© {{ generated_date|date:"Y" }} {{ school_info.name }} | Generated: {{ generated_date|date:"d M Y H:i" }}</p>
+            <p>Contact: {{ school_info.phone }} | {{ school_info.email }}</p>
+        </div>
+    </div>
+</body>
+</html>

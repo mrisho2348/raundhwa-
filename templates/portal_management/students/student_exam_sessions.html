@@ -1,0 +1,816 @@
+<!-- templates/portal_management/students/student_exam_sessions.html -->
+{% extends 'portal_management/base.html' %}
+{% load static %}
+
+{% block title %}Exam Sessions — {{ student.full_name }}{% endblock %}
+{% block page_title %}Student Exam History{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM STUDENT EXAM SESSIONS STYLES
+       ============================================ */
+    
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+        --success: #0f7b3a;
+        --success-light: #e6f4ea;
+        --danger: #dc3545;
+        --danger-light: #f8d7da;
+        --warning: #ffc107;
+        --warning-light: #fff3cd;
+        --info: #17a2b8;
+        --info-light: #d1ecf1;
+        --purple: #6f42c1;
+        --purple-light: #e9d8fd;
+        
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f293b;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-full: 9999px;
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Student Info Card */
+    .student-info-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .student-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 3px solid var(--primary-light);
+    }
+
+    .student-avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge.active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* Level Badge */
+    .level-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: var(--info-light);
+        color: var(--info);
+        display: inline-block;
+    }
+
+    .level-badge.primary {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .level-badge.nursery {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .level-badge.olevel {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .level-badge.alevel {
+        background: var(--purple-light);
+        color: var(--purple);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    .stat-card.success::before { background: linear-gradient(90deg, var(--success), #20c997); }
+    .stat-card.info::before { background: linear-gradient(90deg, var(--info), #0dcaf0); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray-500);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Main Card */
+    .main-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        animation: slideUp 0.4s ease-out;
+        margin-bottom: 2rem;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h5 i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    /* Summary Card */
+    .summary-card {
+        background: var(--gray-50);
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .summary-card:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+    }
+
+    .level-tag {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        background: var(--gray-100);
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        margin: 0.25rem;
+    }
+
+    /* Year Section */
+    .year-section {
+        margin-bottom: 2rem;
+    }
+
+    .year-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary);
+        display: inline-block;
+    }
+
+    /* Session Cards */
+    .session-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .session-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .session-header {
+        background: linear-gradient(135deg, var(--gray-50) 0%, #ffffff 100%);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .session-header:hover {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--gray-50) 100%);
+    }
+
+    .session-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--gray-800);
+    }
+
+    .session-date {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+    }
+
+    .session-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .session-status.published {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    .session-status.draft {
+        background: var(--warning-light);
+        color: #856404;
+    }
+
+    .session-status.submitted {
+        background: var(--info-light);
+        color: var(--info);
+    }
+
+    .session-status.verified {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .session-body {
+        padding: 1.5rem;
+        display: none;
+    }
+
+    .session-body.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Result Grid */
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .result-item {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1rem;
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .result-item:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+    }
+
+    .result-label {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .result-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-top: 0.25rem;
+    }
+
+    .subject-grade {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .subject-grade.A { background: #10b981; color: white; }
+    .subject-grade.B { background: #34d399; color: white; }
+    .subject-grade.C { background: #fbbf24; color: #92400e; }
+    .subject-grade.D { background: #f59e0b; color: white; }
+    .subject-grade.E { background: #ef4444; color: white; }
+    .subject-grade.F { background: #dc2626; color: white; }
+
+    /* Button */
+    .btn-view-results {
+        background: var(--primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-view-results:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Collapse Icon */
+    .collapse-icon {
+        transition: transform 0.2s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .result-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .session-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-2">
+                <i class="bi bi-journal-bookmark-fill me-2"></i>
+                Exam History
+            </h1>
+            <p class="mb-0">All examination sessions for {{ student.full_name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'management:student_list' %}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Students
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Student Info Card -->
+<div class="student-info-card">
+    {% if student.profile_picture %}
+        <img src="{{ student.profile_picture.url }}" class="student-avatar" alt="{{ student.full_name }}">
+    {% else %}
+        <div class="student-avatar-placeholder">
+            {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+        </div>
+    {% endif %}
+    <div class="flex-grow-1">
+        <h2 class="h4 mb-2">{{ student.full_name }}</h2>
+        <div class="d-flex flex-wrap gap-3 text-muted">
+            <span><i class="bi bi-person-badge me-1"></i> Reg: {{ student.registration_number|default:"—" }}</span>
+            <span><i class="bi bi-gender-{{ student.gender }} me-1"></i> {{ student.get_gender_display|default:"—" }}</span>
+            <span><i class="bi bi-calendar me-1"></i> Admission: {{ student.admission_date|date:"d M Y" }}</span>
+        </div>
+    </div>
+    <div>
+        <span class="status-badge {{ student.status }}">
+            <i class="bi bi-circle-fill"></i>
+            {{ student.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Educational Journey Summary -->
+{% if educational_levels_summary %}
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-diagram-3"></i>
+            Educational Journey
+        </h5>
+    </div>
+    <div class="row g-3">
+        {% for level in educational_levels_summary %}
+        <div class="col-md-4">
+            <div class="summary-card">
+                <span class="level-badge {{ level.level_type|lower }}">
+                    {{ level.level_type }}
+                </span>
+                <div class="mt-2">
+                    <strong>{{ level.name }}</strong>
+                    <div class="small text-muted mt-1">
+                        {% for class in level.class_levels %}
+                        <span class="level-tag">{{ class }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_sessions }}</div>
+        <div class="stat-label">Total Exam Sessions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.sessions_with_results }}</div>
+        <div class="stat-label">Sessions with Results</div>
+    </div>
+    {% if stats.best_grade %}
+    <div class="stat-card success">
+        <div class="stat-value">{{ stats.best_grade }}</div>
+        <div class="stat-label">Best Grade</div>
+        <div class="stat-trend">Primary/Nursery</div>
+    </div>
+    {% endif %}
+    {% if stats.best_division %}
+    <div class="stat-card info">
+        <div class="stat-value">{{ stats.best_division }}</div>
+        <div class="stat-label">Best Division</div>
+        <div class="stat-trend">Secondary Level</div>
+    </div>
+    {% endif %}
+    {% if stats.best_average %}
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.best_average|floatformat:1 }}%</div>
+        <div class="stat-label">Best Average</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Exam Sessions by Year -->
+<div class="main-card">
+    <div class="card-header">
+        <h5>
+            <i class="bi bi-calendar-event"></i>
+            Examination Sessions
+        </h5>
+        <div class="text-muted small">
+            <i class="bi bi-info-circle"></i>
+            Click on any session to expand details
+        </div>
+    </div>
+
+    {% if sessions_by_year %}
+        {% for year, sessions in sessions_by_year.items %}
+        <div class="year-section">
+            <div class="year-title">
+                <i class="bi bi-calendar-year me-2"></i>
+                {{ year }}
+                <span class="badge bg-secondary ms-2">{{ sessions|length }} session{{ sessions|length|pluralize }}</span>
+            </div>
+            {% for session_data in sessions %}
+            <div class="session-card">
+                <div class="session-header" onclick="toggleSession(this)">
+                    <div>
+                        <div class="session-title">
+                            <i class="bi bi-file-text me-2"></i>
+                            {{ session_data.session.name }}
+                        </div>
+                        <div class="session-date">
+                            <i class="bi bi-calendar me-1"></i>
+                            {{ session_data.session.exam_date|date:"l, F d, Y" }}
+                            <span class="ms-2">
+                                <i class="bi bi-book me-1"></i>
+                                {{ session_data.session.class_level.name }}
+                            </span>
+                            <span class="level-badge ms-2 {{ session_data.level_type|lower }}">
+                                {{ session_data.educational_level.get_level_type_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="session-status {{ session_data.session.status }}">
+                            <i class="bi bi-{% if session_data.session.status == 'published' %}check-circle-fill{% elif session_data.session.status == 'submitted' %}send{% elif session_data.session.status == 'verified' %}check-circle{% else %}file-earmark-text{% endif %}"></i>
+                            {{ session_data.session.get_status_display }}
+                        </span>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div class="session-body">
+                    {% if session_data.has_results %}
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Total Marks</div>
+                                <div class="result-value">{{ session_data.total_marks|floatformat:0|default:"—" }}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Average</div>
+                                <div class="result-value">{{ session_data.average_marks|floatformat:1|default:"—" }}%</div>
+                            </div>
+                            
+                            <!-- Primary/Nursery: Show Overall Grade -->
+                            {% if session_data.is_primary_nursery and session_data.overall_grade %}
+                            <div class="result-item">
+                                <div class="result-label">Overall Grade</div>
+                                <div class="result-value">
+                                    <span class="subject-grade {{ session_data.overall_grade }}">
+                                        {{ session_data.overall_grade }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Secondary: Show Division -->
+                            {% if session_data.is_secondary and session_data.division %}
+                            <div class="result-item">
+                                <div class="result-label">Division</div>
+                                <div class="result-value">{{ session_data.division }}</div>
+                                {% if session_data.total_points %}
+                                <div class="small text-muted">{{ session_data.total_points|floatformat:1 }} points</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if session_data.class_position %}
+                            <div class="result-item">
+                                <div class="result-label">Class Position</div>
+                                <div class="result-value">#{{ session_data.class_position }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'management:student_result_detail' student.pk session_data.session.pk %}" 
+                               class="btn-view-results">
+                                <i class="bi bi-eye"></i>
+                                View Detailed Results
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-hourglass-split fs-1 text-muted"></i>
+                            <p class="text-muted mt-2 mb-0">Results not yet available for this session.</p>
+                            <small class="text-muted">Results will appear after the session is published.</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-calendar-x"></i>
+            </div>
+            <h5 class="mb-2">No Exam Sessions Found</h5>
+            <p class="text-muted mb-3">{{ student.full_name }} has not participated in any exam sessions yet.</p>
+            <a href="{% url 'management:student_detail' student.pk %}" class="btn btn-primary">
+                <i class="bi bi-person me-2"></i>
+                View Student Profile
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleSession(header) {
+    const card = header.closest('.session-card');
+    const body = card.querySelector('.session-body');
+    const icon = header.querySelector('.collapse-icon');
+    
+    if (body.classList.contains('show')) {
+        body.classList.remove('show');
+        icon.classList.remove('bi-chevron-up');
+        icon.classList.add('bi-chevron-down');
+    } else {
+        body.classList.add('show');
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-up');
+    }
+}
+
+// Auto-expand sessions with results on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.session-card').forEach(card => {
+        const hasResults = card.querySelector('.btn-view-results');
+        if (hasResults) {
+            const header = card.querySelector('.session-header');
+            const body = card.querySelector('.session-body');
+            const icon = header.querySelector('.collapse-icon');
+            body.classList.add('show');
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-up');
+        }
+    });
+    
+    // Add animation to stat cards
+    document.querySelectorAll('.stat-card').forEach((card, index) => {
+        card.style.animation = `slideUp 0.4s ease-out ${index * 0.1}s`;
+        card.style.animationFillMode = 'backwards';
+    });
+    
+    // Add tooltips to elements with titles
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

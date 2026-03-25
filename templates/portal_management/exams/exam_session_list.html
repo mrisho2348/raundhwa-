@@ -1,4 +1,3 @@
-<!-- templates/portal_management/exams/exam_session_list.html -->
 {% extends 'portal_management/base.html' %}
 {% load static %}
 
@@ -25,6 +24,8 @@
         --info-light: #d1ecf1;
         --purple: #6f42c1;
         --purple-light: #e9d8fd;
+        --teal: #20c997;
+        --teal-light: #d1f0e6;
         
         --gray-50: #f9fafb;
         --gray-100: #f3f4f6;
@@ -313,19 +314,16 @@
         color: white;
     }
 
-    /* Action Buttons */
+    /* Quick Actions Button - Single action button */
     .action-buttons {
         display: flex;
-        gap: 0.5rem;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
+        justify-content: center;
         align-items: center;
-        min-width: 100px;
     }
 
-    .btn-action {
-        width: 32px;
-        height: 32px;
+    .btn-quick-actions {
+        width: 36px;
+        height: 36px;
         border-radius: var(--radius-lg);
         display: inline-flex;
         align-items: center;
@@ -336,31 +334,43 @@
         text-decoration: none;
         cursor: pointer;
         border: none;
-        flex-shrink: 0;
+        font-size: 1.2rem;
     }
 
-    .btn-action:hover {
+    .btn-quick-actions:hover {
+        background: var(--primary-light);
+        color: var(--primary);
         transform: translateY(-2px);
     }
 
-    .btn-action.view:hover {
-        background: var(--info-light);
-        color: var(--info);
+    /* Tooltip */
+    .btn-quick-actions {
+        position: relative;
     }
 
-    .btn-action.edit:hover {
-        background: var(--warning-light);
-        color: var(--warning);
+    .btn-quick-actions::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--gray-800);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-md);
+        font-size: 0.7rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+        pointer-events: none;
+        margin-bottom: 5px;
+        z-index: 1000;
     }
 
-    .btn-action.delete:hover {
-        background: var(--danger-light);
-        color: var(--danger);
-    }
-
-    .btn-action.results:hover {
-        background: var(--success-light);
-        color: var(--success);
+    .btn-quick-actions:hover::after {
+        opacity: 1;
+        visibility: visible;
     }
 
     /* Status Badges */
@@ -704,12 +714,18 @@
             align-items: flex-start;
         }
 
-        .action-buttons {
-            min-width: 80px;
-        }
-
         .dt-buttons {
             justify-content: center;
+        }
+
+        .btn-quick-actions::after {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -737,7 +753,7 @@
         <div>
             <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
                 <i class="bi bi-calendar-check me-2"></i>
-                {{ sessions|length }} Exam Sessions
+                {{ total_count|default:sessions|length }} Exam Sessions
             </span>
         </div>
     </div>
@@ -849,7 +865,7 @@
     </div>
 
     <div class="table-responsive">
-        <table id="examSessionsTable" class="table table-hover">
+        <table id="examSessionsTable" class="table text-nowrap table-hover">
             <thead>
                 <tr>
                     <th>#</th>
@@ -865,7 +881,7 @@
             <tbody>
                 {% for session in sessions %}
                 <tr id="exam-session-row-{{ session.pk }}">
-                    <td class="row-number">{{ forloop.counter }}</td>
+                    <td class="row-number">{{ forloop.counter }}  </td>
                     <td>
                         <strong>{{ session.name }}</strong>
                         {% if session.stream_class %}
@@ -873,13 +889,11 @@
                         {% endif %}
                     </td>
                     <td>
-                        <span class="code-badge" style="background: var(--info-light); color: var(--info); padding: 0.25rem 0.5rem; border-radius: var(--radius-full); font-size: 0.75rem;">
+                        <span style="background: var(--info-light); color: var(--info); padding: 0.25rem 0.5rem; border-radius: var(--radius-full); font-size: 0.75rem;">
                             {{ session.exam_type.name }}
                         </span>
                     </td>
-                    <td>
-                        <span class="class-badge">{{ session.class_level.name }}</span>
-                    </td>
+                    <td><span class="class-badge">{{ session.class_level.name }}</span></td>
                     <td>{{ session.term.get_term_number_display }}</td>
                     <td>{{ session.academic_year.name }}</td>
                     <td class="date-display">{{ session.exam_date|date:"M d, Y" }}</td>
@@ -891,38 +905,88 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <a href="{% url 'management:exam_session_detail' session.pk %}" 
-                               class="btn-action view" 
-                               title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            {% if session.status != 'published' %}
-                            <a href="{% url 'management:exam_session_update' session.pk %}" 
-                               class="btn-action edit" 
-                               title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            {% endif %}
+                            <!-- Single Quick Actions Button -->
                             <button type="button" 
-                                    class="btn-action delete" 
-                                    title="Delete"
-                                    onclick="showDeleteModal({{ session.pk }}, '{{ session.name|escapejs }}')"
-                                    {% if session.status == 'published' %}disabled{% endif %}>
-                                <i class="bi bi-trash"></i>
+                                    class="btn-quick-actions" 
+                                    title="Quick Actions"
+                                    onclick="showSessionActions({{ session.pk }}, '{{ session.name|escapejs }}', '{{ session.status|escapejs }}')">
+                                <i class="bi bi-three-dots-vertical"></i>
                             </button>
-                            {% if session.status == 'published' %}
-                            <a href="{% url 'management:export_session_report' session.pk %}" 
-                               class="btn-action results" 
-                               title="Export Results">
-                                <i class="bi bi-download"></i>
-                            </a>
-                            {% endif %}
                         </div>
                     </td>
-                </tr>                
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-calendar-x"></i>
+                            </div>
+                            <h5 class="mb-2">No Exam Sessions Found</h5>
+                            <p class="text-muted mb-3">Get started by creating your first exam session.</p>
+                            <a href="{% url 'management:exam_session_create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Create Exam Session
+                            </a>
+                        </div>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Quick Actions Modal -->
+<div class="modal fade" id="sessionActionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-lightning-charge me-2"></i>
+                    Exam Session Quick Actions
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action" id="viewDetailLink">
+                        <i class="bi bi-eye text-primary me-3"></i>
+                        View Session Details
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="managePapersLink">
+                        <i class="bi bi-file-text text-purple me-3"></i>
+                        Manage Exam Papers
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="enterResultsLink">
+                        <i class="bi bi-table text-success me-3"></i>
+                        Enter/View Results
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="viewAnalyticsLink">
+                        <i class="bi bi-graph-up text-teal me-3"></i>
+                        Result Analytics & Statistics
+                    </a>
+                    <div class="dropdown-divider" id="editDivider"></div>
+                    <a href="#" class="list-group-item list-group-item-action" id="editSessionLink">
+                        <i class="bi bi-pencil text-warning me-3"></i>
+                        Edit Session Details
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action text-danger" id="deleteSessionLink">
+                        <i class="bi bi-trash text-danger me-3"></i>
+                        Delete Session
+                    </a>
+                    <div class="dropdown-divider" id="exportDivider"></div>
+                    <a href="#" class="list-group-item list-group-item-action" id="exportResultsLink">
+                        <i class="bi bi-download text-info me-3"></i>
+                        Export Results Report
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" id="exportAllStudentsLink">
+                        <i class="bi bi-file-pdf text-danger me-3"></i>
+                        Download All Student Reports (PDF)
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -974,6 +1038,8 @@
 // ============================================
 let csrfToken = '{{ csrf_token }}';
 let currentSessionId = null;
+let currentSessionName = null;
+let currentSessionStatus = null;
 let dataTable = null;
 
 $(document).ready(function () {
@@ -1033,19 +1099,19 @@ $(document).ready(function () {
             dom: "<'row'<'col-md-6'l><'col-md-6'f>>" +
                  "<'row'<'col-sm-12'tr>>" +
                  "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
-            order: [[6, 'desc']], // Order by exam date descending
+            order: [[6, 'desc']],
             columnDefs: [
-                { orderable: false, targets: [0, -1] }, // Disable sorting on # and Actions
-                { className: 'text-center', targets: [0, 4, 5, 6, 7] },
+                { orderable: false, targets: [0, -1] },
+                { className: 'text-center', targets: [0, 4, 5, 6, 7, 8] },
                 { width: '5%', targets: 0 },
                 { width: '20%', targets: 1 },
                 { width: '10%', targets: 2 },
-                { width: '10%', targets: 3 },
+                { width: '12%', targets: 3 },
                 { width: '8%', targets: 4 },
                 { width: '12%', targets: 5 },
                 { width: '10%', targets: 6 },
                 { width: '10%', targets: 7 },
-                { width: '15%', targets: 8 }
+                { width: '8%', targets: 8 }
             ],
             language: {
                 search: "_INPUT_",
@@ -1116,6 +1182,78 @@ $(document).ready(function () {
         }
     });
 });
+
+// ============================================
+// QUICK ACTIONS MODAL - Dynamically show/hide options based on status
+// ============================================
+function showSessionActions(sessionId, sessionName, sessionStatus) {
+    currentSessionId = sessionId;
+    currentSessionName = sessionName;
+    currentSessionStatus = sessionStatus;
+    
+    // Base URL for the session
+    const baseUrl = `/management/exam-sessions/${sessionId}/`;
+    
+    // Update modal links with correct URL patterns from urls.py
+    // View Details: exam-sessions/<int:pk>/
+    document.getElementById('viewDetailLink').href = `${baseUrl}`;
+    
+    // Manage Exam Papers: exam-sessions/<int:session_pk>/papers/
+    document.getElementById('managePapersLink').href = `${baseUrl}papers/`;
+    
+    // Enter/View Results: exams/sessions/<int:pk>/results/  (Note: 'exams/' prefix, not 'exam-sessions/')
+    document.getElementById('enterResultsLink').href = `/management/exams/sessions/${sessionId}/results/`;
+    
+    // Result Analytics: exam-sessions/<int:pk>/analytics/ (from urls.py: exam-sessions/<int:pk>/analytics/)
+    document.getElementById('viewAnalyticsLink').href = `${baseUrl}analytics/`;
+    
+    // Edit Session: exam-sessions/<int:pk>/update/ (not /edit/)
+    document.getElementById('editSessionLink').href = `${baseUrl}update/`;
+    
+    // Export Results: exam-sessions/<int:pk>/export/ (from urls.py)
+    document.getElementById('exportResultsLink').href = `${baseUrl}export/`;
+     // NEW: Add link for downloading all student reports
+    document.getElementById('exportAllStudentsLink').href = `${baseUrl}export-all-students-pdf/`;
+
+    // Dynamically show/hide options based on session status
+    const editLink = document.getElementById('editSessionLink');
+    const editDivider = document.getElementById('editDivider');
+    const deleteLink = document.getElementById('deleteSessionLink');
+    const exportLink = document.getElementById('exportResultsLink');
+    const exportDivider = document.getElementById('exportDivider');
+    const exportAllLink = document.getElementById('exportAllStudentsLink');
+    
+    // For published sessions, hide edit and delete, show export
+    if (sessionStatus === 'published') {
+        editLink.style.display = 'none';
+        editDivider.style.display = 'none';
+        deleteLink.style.display = 'none';
+        exportLink.style.display = 'flex';
+        exportAllLink.style.display = 'flex';
+        exportDivider.style.display = 'block';
+    } 
+    // For draft/submitted/verified sessions, show edit and delete, hide export
+    else {
+        editLink.style.display = 'flex';
+        editDivider.style.display = 'block';
+        deleteLink.style.display = 'flex';
+        exportLink.style.display = 'none';
+        exportAllLink.style.display = 'none';
+        exportDivider.style.display = 'none';
+    }
+    
+    // Delete link - show delete modal instead of direct link
+    deleteLink.href = '#';
+    deleteLink.onclick = function(e) {
+        e.preventDefault();
+        $('#sessionActionsModal').modal('hide');
+        showDeleteModal(sessionId, sessionName);
+    };
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('sessionActionsModal'));
+    modal.show();
+}
 
 // ============================================
 // SHOW DELETE MODAL
@@ -1224,5 +1362,34 @@ function hideLoading() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.classList.remove('show');
 }
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+F to focus search
+    if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        $('.dataTables_filter input').focus();
+    }
+    
+    // Ctrl+N for new exam session
+    if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        window.location.href = "{% url 'management:exam_session_create' %}";
+    }
+    
+    // ESC to close modals
+    if (e.key === 'Escape') {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('sessionActionsModal'));
+        if (modal) modal.hide();
+        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+        if (deleteModal) deleteModal.hide();
+    }
+});
+
+// Show tooltips on quick action buttons
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('.btn-quick-actions'));
+var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
 </script>
 {% endblock %}

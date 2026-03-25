@@ -16,6 +16,7 @@ from .suspensions import urlpatterns as suspension_urls
 from .student_withdrawal  import urlpatterns as student_withdrawal_urls
 from .student_education_history   import urlpatterns as student_education_history_urls
 from .parent   import urlpatterns as parent_urls
+from .school_profile   import urlpatterns as school_profile_urls
 
 app_name = "management"
 
@@ -29,6 +30,7 @@ urlpatterns = (
     school_urls +
     student_withdrawal_urls +
     suspension_urls +
+    school_profile_urls +
     parent_urls +
     student_education_history_urls
 
